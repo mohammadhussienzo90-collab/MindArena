@@ -1,0 +1,261 @@
+[
+  {
+    "slug": "cn-creative-prompt-1",
+    "challenge_type": "creative_prompt",
+    "title_en": "The Unusual Use",
+    "title_ar": "الاستخدام غير المعتاد",
+    "description_en": "Think of creative uses for an everyday object.",
+    "difficulty": 2,
+    "primary_trait": "creative_thinking",
+    "base_xp": 15,
+    "bonus_xp": 8,
+    "time_limit_secs": 60,
+    "content": {
+      "prompt_en": "List as many unusual uses for a paperclip as you can think of. Go beyond the obvious — the more creative, the better!",
+      "prompt_ar": "اذكر أكبر عدد ممكن من الاستخدامات غير العادية لمشبك الورق. تجاوز الواضح — كلما كان أكثر إبداعاً، كان أفضل!",
+      "explanation_en": "This is a classic divergent thinking exercise used by psychologists. It measures creative fluency (quantity), flexibility (variety of categories), and originality (uniqueness).",
+      "explanation_ar": "هذا تمرين تفكير تباعدي كلاسيكي يستخدمه علماء النفس. يقيس الطلاقة الإبداعية والمرونة والأصالة."
+    }
+  },
+  {
+    "slug": "cn-perspective-shift-1",
+    "challenge_type": "scenario_choice",
+    "title_en": "The Inventor's Dilemma",
+    "title_ar": "معضلة المخترع",
+    "description_en": "Think outside the box to solve a problem.",
+    "difficulty": 3,
+    "primary_trait": "creative_thinking",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": null,
+    "content": {
+      "question_en": "You need to get a ping pong ball out of a narrow pipe cemented into the ground. You have: a box of cereal, a file, a wire hanger, and a jug of water. What's the most creative solution?",
+      "question_ar": "تحتاج إلى إخراج كرة بينج بونج من أنبوب ضيق مثبت في الأرض. لديك: علبة حبوب، مبرد، علاقة سلكية، وإبريق ماء. ما الحل الأكثر إبداعاً؟",
+      "choices": [
+        {
+          "text_en": "Bend the hanger into a hook and try to fish it out",
+          "text_ar": "اثنِ العلاقة لتصبح خطافاً وحاول إخراجها",
+          "scores": {"creative_thinking": 2, "practical_thinking": 3}
+        },
+        {
+          "text_en": "Pour water into the pipe — the ball will float to the top",
+          "text_ar": "اسكب الماء في الأنبوب — الكرة ستطفو للأعلى",
+          "scores": {"creative_thinking": 4, "practical_thinking": 2}
+        },
+        {
+          "text_en": "Use the file to widen the pipe opening",
+          "text_ar": "استخدم المبرد لتوسيع فتحة الأنبوب",
+          "scores": {"creative_thinking": 1, "practical_thinking": 2}
+        },
+        {
+          "text_en": "Crush the cereal and pour it in, hoping the ball rides the pile up",
+          "text_ar": "اسحق الحبوب واسكبها، آملاً أن ترتفع الكرة مع الكومة",
+          "scores": {"creative_thinking": 3, "practical_thinking": 0}
+        }
+      ],
+      "explanation_en": "Pouring water uses lateral thinking — instead of reaching in, let physics bring the ball to you. Creative solutions often reframe the problem entirely.",
+      "explanation_ar": "سكب الماء يستخدم التفكير الجانبي — بدلاً من الوصول للداخل، دع الفيزياء تجلب الكرة إليك."
+    }
+  },
+  {
+    "slug": "cn-word-association-1",
+    "challenge_type": "multiple_choice",
+    "title_en": "Remote Association",
+    "title_ar": "الترابط البعيد",
+    "description_en": "Find the word that connects three seemingly unrelated words.",
+    "difficulty": 4,
+    "primary_trait": "creative_thinking",
+    "base_xp": 25,
+    "bonus_xp": 12,
+    "time_limit_secs": 45,
+    "content": {
+      "question_en": "What single word connects: COTTAGE, SWISS, CAKE?",
+      "question_ar": "ما الكلمة الواحدة التي تربط: COTTAGE، SWISS، CAKE؟",
+      "options_en": ["House", "Cheese", "Chocolate", "Mountain"],
+      "options_ar": ["بيت", "جبن", "شوكولاتة", "جبل"],
+      "correct_index": 1,
+      "explanation_en": "Cottage cheese, Swiss cheese, cheesecake. Remote association tests measure creative thinking by testing your ability to find non-obvious connections.",
+      "explanation_ar": "جبن القريش، جبن سويسري، كعكة الجبن. اختبارات الترابط البعيد تقيس التفكير الإبداعي."
+    }
+  },
+  {
+    "slug": "cn-word-association-2",
+    "challenge_type": "multiple_choice",
+    "title_en": "Triple Connection",
+    "title_ar": "الاتصال الثلاثي",
+    "description_en": "Find what links three different words.",
+    "difficulty": 4,
+    "primary_trait": "creative_thinking",
+    "base_xp": 25,
+    "bonus_xp": 12,
+    "time_limit_secs": 45,
+    "content": {
+      "question_en": "What single word connects: FIRE, BASKET, FOOT?",
+      "question_ar": "ما الكلمة الواحدة التي تربط: FIRE، BASKET، FOOT؟",
+      "options_en": ["Shoe", "Ball", "Hot", "Game"],
+      "options_ar": ["حذاء", "كرة", "حار", "لعبة"],
+      "correct_index": 1,
+      "explanation_en": "Fireball, basketball, football. Each word pairs with 'ball' to form a compound word.",
+      "explanation_ar": "كرة النار، كرة السلة، كرة القدم. كل كلمة تقترن بـ 'كرة' لتشكيل كلمة مركبة."
+    }
+  },
+  {
+    "slug": "cn-story-build-1",
+    "challenge_type": "creative_prompt",
+    "title_en": "Six-Word Story",
+    "title_ar": "قصة من ست كلمات",
+    "description_en": "Write a complete story in just six words.",
+    "difficulty": 3,
+    "primary_trait": "creative_thinking",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": 90,
+    "content": {
+      "prompt_en": "Write a complete story using exactly six words. It should have a beginning, middle, and emotional impact. Example: 'For sale: baby shoes, never worn.' — Hemingway",
+      "prompt_ar": "اكتب قصة كاملة باستخدام ست كلمات بالضبط. يجب أن يكون لها بداية ووسط وتأثير عاطفي. مثال: 'للبيع: حذاء طفل، لم يُلبس.' — همنجواي",
+      "explanation_en": "Constraint breeds creativity. Working within tight limits forces you to choose every word carefully, developing precision and creative economy.",
+      "explanation_ar": "القيود تولّد الإبداع. العمل ضمن حدود ضيقة يجبرك على اختيار كل كلمة بعناية."
+    }
+  },
+  {
+    "slug": "cn-visual-thinking-1",
+    "challenge_type": "multiple_choice",
+    "title_en": "Shape Transformation",
+    "title_ar": "تحويل الأشكال",
+    "description_en": "Visualize how shapes can transform.",
+    "difficulty": 3,
+    "primary_trait": "creative_thinking",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": 30,
+    "content": {
+      "question_en": "If you fold a square piece of paper in half diagonally, then cut off the top corner, what shape do you get when you unfold it?",
+      "question_ar": "إذا طويت ورقة مربعة من المنتصف قطرياً، ثم قطعت الزاوية العلوية، ما الشكل الذي تحصل عليه عند فتحها؟",
+      "options_en": ["Triangle", "Diamond with hole", "Square with diamond hole", "Pentagon"],
+      "options_ar": ["مثلث", "معين بثقب", "مربع بثقب ماسي", "خماسي"],
+      "correct_index": 2,
+      "explanation_en": "The diagonal fold means the cut appears mirrored. Cutting the top corner creates a diamond-shaped hole in the center of the square when unfolded.",
+      "explanation_ar": "الطي القطري يعني أن القطع يظهر معكوساً. قطع الزاوية العلوية يخلق ثقباً ماسي الشكل في وسط المربع عند فتحه."
+    }
+  },
+  {
+    "slug": "cn-metaphor-1",
+    "challenge_type": "multiple_choice",
+    "title_en": "Metaphor Master",
+    "title_ar": "سيد الاستعارات",
+    "description_en": "Understand and create powerful metaphors.",
+    "difficulty": 3,
+    "primary_trait": "creative_thinking",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": 30,
+    "content": {
+      "question_en": "Which metaphor best describes the feeling of finally understanding a difficult concept?",
+      "question_ar": "أي استعارة تصف بشكل أفضل شعور فهم مفهوم صعب أخيراً؟",
+      "options_en": [
+        "A door opening in a dark room",
+        "Finding money in an old jacket",
+        "A light bulb turning on",
+        "Reaching the mountain summit"
+      ],
+      "options_ar": [
+        "باب ينفتح في غرفة مظلمة",
+        "إيجاد نقود في سترة قديمة",
+        "مصباح ينير",
+        "الوصول لقمة الجبل"
+      ],
+      "correct_index": 2,
+      "explanation_en": "While all metaphors have merit, 'a light bulb turning on' is the most universally recognized metaphor for sudden understanding (the 'aha!' moment). It captures the instantaneous, illuminating nature of insight.",
+      "explanation_ar": "بينما كل الاستعارات لها قيمة، 'مصباح ينير' هو الاستعارة الأكثر شهرة عالمياً للفهم المفاجئ (لحظة 'آها!')."
+    }
+  },
+  {
+    "slug": "cn-reverse-thinking-1",
+    "challenge_type": "scenario_choice",
+    "title_en": "Reverse Brainstorm",
+    "title_ar": "العصف الذهني العكسي",
+    "description_en": "Think backwards to find creative solutions.",
+    "difficulty": 5,
+    "primary_trait": "creative_thinking",
+    "base_xp": 30,
+    "bonus_xp": 15,
+    "time_limit_secs": null,
+    "content": {
+      "question_en": "Instead of asking 'How do we make our school better?', let's reverse it: 'How would we make our school the WORST possible?' Pick the reverse-idea that would actually reveal the best improvement.",
+      "question_ar": "بدلاً من السؤال 'كيف نجعل مدرستنا أفضل؟'، لنعكسه: 'كيف نجعل مدرستنا الأسوأ؟' اختر الفكرة العكسية التي ستكشف أفضل تحسين.",
+      "choices": [
+        {
+          "text_en": "Make all classes start at 5 AM (reverse: optimize class scheduling)",
+          "text_ar": "اجعل كل الحصص تبدأ الساعة 5 صباحاً (عكسها: تحسين جدول الحصص)",
+          "scores": {"creative_thinking": 2, "practical_thinking": 2}
+        },
+        {
+          "text_en": "Never let students ask questions (reverse: create more interactive, question-driven learning)",
+          "text_ar": "لا تسمح للطلاب بطرح الأسئلة أبداً (عكسها: خلق تعلم تفاعلي قائم على الأسئلة)",
+          "scores": {"creative_thinking": 4, "practical_thinking": 3}
+        },
+        {
+          "text_en": "Remove all windows (reverse: add natural light)",
+          "text_ar": "أزل كل النوافذ (عكسها: أضف إضاءة طبيعية)",
+          "scores": {"creative_thinking": 2, "practical_thinking": 2}
+        },
+        {
+          "text_en": "Serve only cold soup for lunch (reverse: improve food quality)",
+          "text_ar": "قدم الشوربة الباردة فقط للغداء (عكسها: تحسين جودة الطعام)",
+          "scores": {"creative_thinking": 1, "practical_thinking": 1}
+        }
+      ],
+      "explanation_en": "Reverse brainstorming is a powerful creative technique. 'Never let students ask questions' reveals the most impactful improvement: fostering curiosity and interactive learning — the core of education.",
+      "explanation_ar": "العصف الذهني العكسي تقنية إبداعية قوية. 'عدم السماح للطلاب بالأسئلة' يكشف أكثر تحسين تأثيراً: تعزيز الفضول والتعلم التفاعلي."
+    }
+  },
+  {
+    "slug": "cn-connect-dots-1",
+    "challenge_type": "multiple_choice",
+    "title_en": "Cross-Domain Connection",
+    "title_ar": "ربط بين المجالات",
+    "description_en": "Find surprising connections between unrelated fields.",
+    "difficulty": 5,
+    "primary_trait": "creative_thinking",
+    "base_xp": 30,
+    "bonus_xp": 15,
+    "time_limit_secs": 40,
+    "content": {
+      "question_en": "What do Velcro, penicillin, and the microwave oven have in common?",
+      "question_ar": "ما القاسم المشترك بين الفيلكرو والبنسلين وفرن الميكروويف؟",
+      "options_en": [
+        "All invented by the same person",
+        "All discovered by accident",
+        "All invented in the same decade",
+        "All inspired by nature"
+      ],
+      "options_ar": [
+        "اخترعها نفس الشخص",
+        "اكتُشفت بالصدفة",
+        "اختُرعت في نفس العقد",
+        "مستوحاة من الطبيعة"
+      ],
+      "correct_index": 1,
+      "explanation_en": "All three were accidental discoveries: Velcro from burrs sticking to fabric, penicillin from contaminated petri dishes, microwaves from a melted candy bar near radar equipment. Creativity often means noticing the unexpected.",
+      "explanation_ar": "الثلاثة اكتشافات بالصدفة: الفيلكرو من نباتات علقت بالقماش، البنسلين من أطباق بتري ملوثة، الميكروويف من شريط حلوى ذاب بالقرب من معدات الرادار."
+    }
+  },
+  {
+    "slug": "cn-improv-1",
+    "challenge_type": "creative_prompt",
+    "title_en": "Yes, And...",
+    "title_ar": "نعم، و...",
+    "description_en": "Practice the improv technique of building on ideas.",
+    "difficulty": 2,
+    "primary_trait": "creative_thinking",
+    "base_xp": 15,
+    "bonus_xp": 8,
+    "time_limit_secs": 60,
+    "content": {
+      "prompt_en": "Start with this sentence and keep adding to it using 'Yes, and...': 'A cat walked into a library...' Write at least 5 'Yes, and...' additions to build an unexpected story.",
+      "prompt_ar": "ابدأ بهذه الجملة واستمر بالإضافة باستخدام 'نعم، و...': 'قطة دخلت مكتبة...' اكتب 5 إضافات على الأقل لبناء قصة غير متوقعة.",
+      "explanation_en": "The 'Yes, And' technique from improv comedy builds creative confidence by removing self-censorship. Every idea is valid and builds on what came before.",
+      "explanation_ar": "تقنية 'نعم، و' من الكوميديا الارتجالية تبني الثقة الإبداعية عن طريق إزالة الرقابة الذاتية."
+    }
+  }
+]

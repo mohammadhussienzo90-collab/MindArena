@@ -1,0 +1,320 @@
+[
+  {
+    "slug": "eo-empathy-scenario-1",
+    "challenge_type": "scenario_choice",
+    "title_en": "The Struggling Friend",
+    "title_ar": "الصديق المتعثر",
+    "description_en": "How would you respond to a friend in need?",
+    "difficulty": 2,
+    "primary_trait": "empathy",
+    "base_xp": 15,
+    "bonus_xp": 8,
+    "time_limit_secs": null,
+    "content": {
+      "question_en": "Your friend tells you they failed an important exam and feels worthless. What do you say?",
+      "question_ar": "صديقك يخبرك أنه رسب في امتحان مهم ويشعر بأنه بلا قيمة. ماذا تقول؟",
+      "choices": [
+        {
+          "text_en": "Don't worry, it's just one exam. You'll do better next time.",
+          "text_ar": "لا تقلق، إنه مجرد امتحان واحد. ستحقق نتيجة أفضل في المرة القادمة.",
+          "scores": {"empathy": 2, "emotional_regulation": 1}
+        },
+        {
+          "text_en": "I can see this really hurts you. Tell me more about how you're feeling.",
+          "text_ar": "أستطيع أن أرى أن هذا يؤلمك حقاً. أخبرني أكثر عن شعورك.",
+          "scores": {"empathy": 4, "self_awareness": 2}
+        },
+        {
+          "text_en": "You should have studied harder. Let me help you make a study plan.",
+          "text_ar": "كان يجب أن تدرس أكثر. دعني أساعدك في وضع خطة للمذاكرة.",
+          "scores": {"empathy": 0, "emotional_regulation": 1}
+        },
+        {
+          "text_en": "I failed once too. Here's what I did to bounce back...",
+          "text_ar": "أنا أيضاً رسبت مرة. إليك ما فعلته للعودة...",
+          "scores": {"empathy": 2, "social_skills": 2}
+        }
+      ],
+      "explanation_en": "Active listening and acknowledging feelings shows the highest empathy. Jumping to solutions or minimizing feelings can feel dismissive.",
+      "explanation_ar": "الاستماع الفعال والاعتراف بالمشاعر يُظهر أعلى درجات التعاطف. القفز إلى الحلول أو التقليل من المشاعر قد يبدو رافضاً."
+    }
+  },
+  {
+    "slug": "eo-emotion-read-1",
+    "challenge_type": "multiple_choice",
+    "title_en": "Reading Between the Lines",
+    "title_ar": "القراءة بين السطور",
+    "description_en": "Identify the underlying emotion.",
+    "difficulty": 3,
+    "primary_trait": "empathy",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": 30,
+    "content": {
+      "question_en": "Your colleague says 'I'm fine' but speaks quietly, avoids eye contact, and fidgets with their hands. What are they likely feeling?",
+      "question_ar": "زميلك يقول 'أنا بخير' لكنه يتحدث بهدوء، يتجنب التواصل البصري، ويعبث بيديه. ما الذي يشعر به على الأرجح؟",
+      "options_en": ["Content and relaxed", "Anxious or upset", "Bored", "Excited"],
+      "options_ar": ["مرتاح وهادئ", "قلق أو منزعج", "يشعر بالملل", "متحمس"],
+      "correct_index": 1,
+      "explanation_en": "Body language often reveals more than words. Quiet voice, avoidance, and fidgeting are classic signs of anxiety or distress, even when someone says they're 'fine'.",
+      "explanation_ar": "لغة الجسد غالباً تكشف أكثر من الكلمات. الصوت الهادئ والتجنب والعبث باليدين علامات كلاسيكية للقلق أو الضيق."
+    }
+  },
+  {
+    "slug": "eo-self-awareness-1",
+    "challenge_type": "scenario_choice",
+    "title_en": "The Anger Trigger",
+    "title_ar": "محفز الغضب",
+    "description_en": "Practice self-awareness in a frustrating situation.",
+    "difficulty": 3,
+    "primary_trait": "self_awareness",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": null,
+    "content": {
+      "question_en": "Someone cuts in front of you in a long line. You feel your face getting hot and fists clenching. What's the best first step?",
+      "question_ar": "شخص يتخطاك في طابور طويل. تشعر بحرارة في وجهك وقبضتيك تنقبضان. ما أفضل خطوة أولى؟",
+      "choices": [
+        {
+          "text_en": "Immediately confront them loudly",
+          "text_ar": "مواجهتهم فوراً بصوت عالٍ",
+          "scores": {"self_awareness": 0, "emotional_regulation": 0}
+        },
+        {
+          "text_en": "Notice your body's anger signals and take three deep breaths before deciding what to do",
+          "text_ar": "ملاحظة إشارات الغضب في جسمك وأخذ ثلاثة أنفاس عميقة قبل تقرير ما ستفعل",
+          "scores": {"self_awareness": 4, "emotional_regulation": 4}
+        },
+        {
+          "text_en": "Ignore it and pretend it didn't happen",
+          "text_ar": "تجاهل الأمر والتظاهر بأنه لم يحدث",
+          "scores": {"self_awareness": 1, "emotional_regulation": 2}
+        },
+        {
+          "text_en": "Complain to the person behind you about how rude people are",
+          "text_ar": "الشكوى للشخص خلفك عن وقاحة الناس",
+          "scores": {"self_awareness": 1, "emotional_regulation": 1}
+        }
+      ],
+      "explanation_en": "Recognizing physical signals of emotion (hot face, clenched fists) is the foundation of self-awareness. Pausing to breathe before acting prevents reactive behavior.",
+      "explanation_ar": "التعرف على الإشارات الجسدية للمشاعر (حرارة الوجه، قبض اليدين) هو أساس الوعي الذاتي. التوقف للتنفس قبل التصرف يمنع السلوك الانفعالي."
+    }
+  },
+  {
+    "slug": "eo-regulation-1",
+    "challenge_type": "scenario_choice",
+    "title_en": "Exam Stress",
+    "title_ar": "ضغط الامتحانات",
+    "description_en": "Manage overwhelming stress effectively.",
+    "difficulty": 2,
+    "primary_trait": "emotional_regulation",
+    "base_xp": 15,
+    "bonus_xp": 8,
+    "time_limit_secs": null,
+    "content": {
+      "question_en": "You have a major deadline tomorrow and feel completely overwhelmed. Your mind is racing and you can't focus. What's the most effective approach?",
+      "question_ar": "لديك موعد نهائي مهم غداً وتشعر بالإرهاق التام. عقلك يتسارع ولا تستطيع التركيز. ما أكثر نهج فعال؟",
+      "choices": [
+        {
+          "text_en": "Push through the panic and work all night",
+          "text_ar": "تجاوز الذعر والعمل طوال الليل",
+          "scores": {"emotional_regulation": 1, "self_awareness": 0}
+        },
+        {
+          "text_en": "Take 10 minutes to calm down, then break the task into small steps and tackle the most important one first",
+          "text_ar": "خذ 10 دقائق للتهدئة، ثم قسّم المهمة إلى خطوات صغيرة وابدأ بأهمها",
+          "scores": {"emotional_regulation": 4, "self_awareness": 3}
+        },
+        {
+          "text_en": "Give up — it's too late anyway",
+          "text_ar": "استسلم — الوقت متأخر على أي حال",
+          "scores": {"emotional_regulation": 0, "self_awareness": 0}
+        },
+        {
+          "text_en": "Distract yourself with social media to feel better",
+          "text_ar": "اشغل نفسك بوسائل التواصل الاجتماعي لتشعر بتحسن",
+          "scores": {"emotional_regulation": 1, "self_awareness": 1}
+        }
+      ],
+      "explanation_en": "Emotional regulation means acknowledging the feeling, calming the nervous system, then taking structured action. Breaking tasks into small steps makes overwhelming situations manageable.",
+      "explanation_ar": "تنظيم المشاعر يعني الاعتراف بالشعور، تهدئة الجهاز العصبي، ثم اتخاذ إجراء منظم. تقسيم المهام إلى خطوات صغيرة يجعل المواقف المرهقة قابلة للإدارة."
+    }
+  },
+  {
+    "slug": "eo-social-skill-1",
+    "challenge_type": "scenario_choice",
+    "title_en": "The Disagreement",
+    "title_ar": "الخلاف",
+    "description_en": "Navigate a conflict with someone you care about.",
+    "difficulty": 4,
+    "primary_trait": "social_skills",
+    "base_xp": 25,
+    "bonus_xp": 12,
+    "time_limit_secs": null,
+    "content": {
+      "question_en": "You and your best friend disagree on where to go for dinner. They seem set on their choice and you can tell it matters to them. How do you handle it?",
+      "question_ar": "أنت وصديقك المقرب تختلفان على مكان العشاء. يبدو مصراً على اختياره ويمكنك أن تلاحظ أنه يهمه. كيف تتعامل مع الموقف؟",
+      "choices": [
+        {
+          "text_en": "Insist on your choice — you picked last time it was their turn",
+          "text_ar": "أصر على اختيارك — اخترت آخر مرة وجاء دورهم",
+          "scores": {"social_skills": 1, "empathy": 0}
+        },
+        {
+          "text_en": "Give in immediately without expressing your preference",
+          "text_ar": "تنازل فوراً دون التعبير عن تفضيلك",
+          "scores": {"social_skills": 1, "empathy": 2}
+        },
+        {
+          "text_en": "Suggest a compromise — maybe try their choice tonight and yours next time, or find a place you'd both enjoy",
+          "text_ar": "اقترح حلاً وسطاً — ربما نجرب اختيارهم الليلة واختيارك المرة القادمة، أو نجد مكاناً يعجبكما معاً",
+          "scores": {"social_skills": 4, "empathy": 3}
+        },
+        {
+          "text_en": "Get a third friend to vote and decide",
+          "text_ar": "اطلب من صديق ثالث التصويت وحسم الأمر",
+          "scores": {"social_skills": 2, "empathy": 1}
+        }
+      ],
+      "explanation_en": "Compromise maintains the relationship while honoring both people's needs. It shows emotional intelligence and builds trust over time.",
+      "explanation_ar": "الحل الوسط يحافظ على العلاقة مع احترام احتياجات كلا الطرفين. يُظهر الذكاء العاطفي ويبني الثقة مع الوقت."
+    }
+  },
+  {
+    "slug": "eo-emotion-vocab-1",
+    "challenge_type": "multiple_choice",
+    "title_en": "Emotion Vocabulary",
+    "title_ar": "مفردات المشاعر",
+    "description_en": "Expand your emotional vocabulary.",
+    "difficulty": 2,
+    "primary_trait": "self_awareness",
+    "base_xp": 15,
+    "bonus_xp": 8,
+    "time_limit_secs": 25,
+    "content": {
+      "question_en": "Which word best describes the feeling of happiness mixed with relief after overcoming a difficult challenge?",
+      "question_ar": "ما الكلمة التي تصف بشكل أفضل شعور السعادة الممزوج بالارتياح بعد التغلب على تحدٍ صعب؟",
+      "options_en": ["Euphoria", "Elation", "Gratification", "Contentment"],
+      "options_ar": ["نشوة", "ابتهاج", "إشباع", "رضا"],
+      "correct_index": 2,
+      "explanation_en": "Gratification combines satisfaction (from achievement) with relief (from overcoming difficulty). Building precise emotional vocabulary improves self-awareness.",
+      "explanation_ar": "الإشباع يجمع بين الرضا (من الإنجاز) والارتياح (من التغلب على الصعوبة). بناء مفردات عاطفية دقيقة يحسن الوعي الذاتي."
+    }
+  },
+  {
+    "slug": "eo-perspective-1",
+    "challenge_type": "scenario_choice",
+    "title_en": "Walking in Their Shoes",
+    "title_ar": "في مكانهم",
+    "description_en": "Practice perspective-taking.",
+    "difficulty": 4,
+    "primary_trait": "empathy",
+    "base_xp": 25,
+    "bonus_xp": 12,
+    "time_limit_secs": null,
+    "content": {
+      "question_en": "A new student joins your class mid-year. They sit alone at lunch and don't talk to anyone. Others say they're 'weird'. What's most likely going on?",
+      "question_ar": "طالب جديد ينضم لفصلك في منتصف العام. يجلس وحيداً في الغداء ولا يتحدث مع أحد. الآخرون يقولون إنه 'غريب'. ما الأرجح حدوثه؟",
+      "choices": [
+        {
+          "text_en": "They're probably unfriendly and prefer to be alone",
+          "text_ar": "ربما هو غير ودود ويفضل أن يكون وحيداً",
+          "scores": {"empathy": 0, "social_skills": 0}
+        },
+        {
+          "text_en": "They might be anxious about fitting in, missing their old friends, and unsure how to start conversations in a new place",
+          "text_ar": "قد يكون قلقاً بشأن الاندماج، يفتقد أصدقاءه القدامى، وغير متأكد كيف يبدأ محادثات في مكان جديد",
+          "scores": {"empathy": 4, "social_skills": 2}
+        },
+        {
+          "text_en": "They're just shy — they'll come around eventually",
+          "text_ar": "هو فقط خجول — سيتأقلم في النهاية",
+          "scores": {"empathy": 2, "social_skills": 1}
+        },
+        {
+          "text_en": "It's not really your problem to worry about",
+          "text_ar": "ليست مشكلتك لتقلق بشأنها",
+          "scores": {"empathy": 0, "social_skills": 0}
+        }
+      ],
+      "explanation_en": "True empathy means imagining the full emotional experience of another person — the anxiety, loss, and uncertainty of being new. Labels like 'weird' often mask our failure to understand others.",
+      "explanation_ar": "التعاطف الحقيقي يعني تخيل التجربة العاطفية الكاملة لشخص آخر — القلق والخسارة وعدم اليقين من كونه جديداً."
+    }
+  },
+  {
+    "slug": "eo-boundary-1",
+    "challenge_type": "scenario_choice",
+    "title_en": "Setting Boundaries",
+    "title_ar": "وضع الحدود",
+    "description_en": "Learn to set healthy emotional boundaries.",
+    "difficulty": 5,
+    "primary_trait": "emotional_regulation",
+    "base_xp": 30,
+    "bonus_xp": 15,
+    "time_limit_secs": null,
+    "content": {
+      "question_en": "A friend constantly calls you late at night to vent about their problems. You care about them but it's affecting your sleep and mental health. What's the best approach?",
+      "question_ar": "صديق يتصل بك باستمرار في وقت متأخر من الليل للتنفيس عن مشاكله. تهتم لأمره لكن هذا يؤثر على نومك وصحتك النفسية. ما أفضل نهج؟",
+      "choices": [
+        {
+          "text_en": "Stop answering their calls",
+          "text_ar": "توقف عن الرد على مكالماتهم",
+          "scores": {"emotional_regulation": 1, "empathy": 0, "social_skills": 0}
+        },
+        {
+          "text_en": "Keep answering — a good friend is always available",
+          "text_ar": "استمر في الرد — الصديق الجيد متاح دائماً",
+          "scores": {"emotional_regulation": 0, "empathy": 3, "social_skills": 1}
+        },
+        {
+          "text_en": "Have an honest conversation: 'I care about you and want to be there, but late-night calls are affecting my health. Can we talk during the day instead?'",
+          "text_ar": "أجرِ محادثة صادقة: 'أنا أهتم بك وأريد أن أكون موجوداً، لكن المكالمات المتأخرة تؤثر على صحتي. هل يمكننا التحدث خلال النهار بدلاً من ذلك؟'",
+          "scores": {"emotional_regulation": 4, "empathy": 3, "social_skills": 4}
+        },
+        {
+          "text_en": "Answer but keep the conversations short",
+          "text_ar": "أجب لكن اجعل المحادثات قصيرة",
+          "scores": {"emotional_regulation": 2, "empathy": 2, "social_skills": 2}
+        }
+      ],
+      "explanation_en": "Healthy boundaries protect your wellbeing while maintaining the relationship. Being honest about your needs is a sign of emotional maturity, not selfishness.",
+      "explanation_ar": "الحدود الصحية تحمي رفاهيتك مع الحفاظ على العلاقة. الصدق بشأن احتياجاتك علامة على النضج العاطفي وليس الأنانية."
+    }
+  },
+  {
+    "slug": "eo-emotional-scenario-1",
+    "challenge_type": "emotional_scenario",
+    "title_en": "Gratitude Reflection",
+    "title_ar": "تأمل الامتنان",
+    "description_en": "Reflect on what you're grateful for today.",
+    "difficulty": 1,
+    "primary_trait": "self_awareness",
+    "base_xp": 15,
+    "bonus_xp": 5,
+    "time_limit_secs": null,
+    "content": {
+      "prompt_en": "Take a moment to think about three things you're grateful for today — big or small. Write them down and notice how acknowledging them makes you feel.",
+      "prompt_ar": "خذ لحظة للتفكير في ثلاثة أشياء تشعر بالامتنان لها اليوم — كبيرة أو صغيرة. اكتبها ولاحظ كيف يجعلك الاعتراف بها تشعر.",
+      "explanation_en": "Research shows that regularly practicing gratitude increases emotional wellbeing, reduces stress, and improves relationships. Even small moments of gratitude rewire the brain toward positivity.",
+      "explanation_ar": "تُظهر الأبحاث أن ممارسة الامتنان بانتظام يزيد من الرفاهية العاطفية ويقلل التوتر ويحسن العلاقات."
+    }
+  },
+  {
+    "slug": "eo-creative-prompt-1",
+    "challenge_type": "creative_prompt",
+    "title_en": "Letter to Your Future Self",
+    "title_ar": "رسالة لنفسك المستقبلية",
+    "description_en": "Write a message of encouragement to your future self.",
+    "difficulty": 2,
+    "primary_trait": "self_awareness",
+    "base_xp": 20,
+    "bonus_xp": 8,
+    "time_limit_secs": null,
+    "content": {
+      "prompt_en": "Write a short letter to yourself one year from now. What do you hope you've accomplished? What advice would you give? What would you want to remember about who you are right now?",
+      "prompt_ar": "اكتب رسالة قصيرة لنفسك بعد سنة من الآن. ما الذي تأمل أنك حققته؟ ما النصيحة التي ستقدمها؟ ماذا تريد أن تتذكر عن شخصيتك الآن؟",
+      "explanation_en": "Self-reflection through writing strengthens self-awareness and clarifies personal values. This exercise builds a bridge between your present and future self.",
+      "explanation_ar": "التأمل الذاتي من خلال الكتابة يقوي الوعي الذاتي ويوضح القيم الشخصية."
+    }
+  }
+]
