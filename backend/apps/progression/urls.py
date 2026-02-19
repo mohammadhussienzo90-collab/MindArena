@@ -1,0 +1,11 @@
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from . import views
+
+router = DefaultRouter()
+router.register(r'progression', views.ProgressionViewSet, basename='progression')
+router.register(r'achievements', views.AchievementViewSet)
+
+urlpatterns = [
+    path('', include(router.urls)),
+]
