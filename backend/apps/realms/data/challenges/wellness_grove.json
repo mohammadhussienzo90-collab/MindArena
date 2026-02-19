@@ -1,0 +1,303 @@
+[
+  {
+    "slug": "wv-mcq-1",
+    "challenge_type": "multiple_choice",
+    "title_en": "Sleep Science",
+    "title_ar": "علم النوم",
+    "description_en": "Know how much sleep you really need.",
+    "difficulty": 1,
+    "primary_trait": "self_awareness",
+    "base_xp": 15,
+    "bonus_xp": 8,
+    "time_limit_secs": 30,
+    "content": {
+      "question_en": "According to the National Sleep Foundation, how many hours of sleep do teenagers (14-17) need per night?",
+      "question_ar": "وفقاً لمؤسسة النوم الوطنية، كم ساعة نوم يحتاج المراهقون (14-17) في الليلة؟",
+      "options_en": ["5-6 hours", "6-7 hours", "8-10 hours", "11-12 hours"],
+      "options_ar": ["5-6 ساعات", "6-7 ساعات", "8-10 ساعات", "11-12 ساعة"],
+      "correct_index": 2,
+      "explanation_en": "Teenagers need 8-10 hours of sleep for optimal brain development, memory consolidation, and emotional regulation. Sleep deprivation impairs learning, mood, and even physical growth. It's not laziness — it's biology.",
+      "explanation_ar": "المراهقون يحتاجون 8-10 ساعات نوم لنمو الدماغ الأمثل وتعزيز الذاكرة والتنظيم العاطفي. الحرمان من النوم يضعف التعلم والمزاج وحتى النمو البدني. إنه ليس كسلاً — إنه بيولوجيا."
+    }
+  },
+  {
+    "slug": "wv-scenario-1",
+    "challenge_type": "scenario_choice",
+    "title_en": "The Stress Response",
+    "title_ar": "استجابة التوتر",
+    "description_en": "Handle overwhelming stress in a healthy way.",
+    "difficulty": 2,
+    "primary_trait": "self_awareness",
+    "base_xp": 15,
+    "bonus_xp": 8,
+    "time_limit_secs": null,
+    "content": {
+      "question_en": "You have exams, family expectations, and social pressure all hitting at once. You feel your chest tightening and your mind racing. What's the best first step?",
+      "question_ar": "لديك امتحانات وتوقعات عائلية وضغط اجتماعي كلها تضرب في نفس الوقت. تشعر بضيق في صدرك وأفكارك تتسارع. ما أفضل خطوة أولى؟",
+      "choices": [
+        {
+          "text_en": "Push through — sleep when you're dead",
+          "text_ar": "تابع المقاومة — نم عندما تموت",
+          "scores": {"self_awareness": 0, "emotional_regulation": 0}
+        },
+        {
+          "text_en": "Pause, take 5 deep breaths, then write down what's actually in your control",
+          "text_ar": "توقف، خذ 5 أنفاس عميقة، ثم اكتب ما هو فعلاً تحت سيطرتك",
+          "scores": {"self_awareness": 4, "emotional_regulation": 4}
+        },
+        {
+          "text_en": "Vent to everyone around you about how stressed you are",
+          "text_ar": "نفّس عن غضبك لكل من حولك عن مدى توترك",
+          "scores": {"self_awareness": 1, "emotional_regulation": 1}
+        },
+        {
+          "text_en": "Distract yourself with social media or gaming until the feeling passes",
+          "text_ar": "شتّت نفسك بوسائل التواصل أو الألعاب حتى يمر الشعور",
+          "scores": {"self_awareness": 1, "emotional_regulation": 0}
+        }
+      ],
+      "explanation_en": "When overwhelmed, the first step is to activate your parasympathetic nervous system with deep breathing — this physically calms the stress response. Then, separating what you can control from what you can't makes the situation feel manageable. This is the foundation of stress management.",
+      "explanation_ar": "عند الشعور بالإرهاق، الخطوة الأولى هي تنشيط جهازك العصبي السمبتاوي بالتنفس العميق — هذا يهدئ استجابة التوتر جسدياً. ثم فصل ما يمكنك التحكم فيه عما لا يمكنك يجعل الموقف يبدو قابلاً للإدارة."
+    }
+  },
+  {
+    "slug": "wv-mcq-2",
+    "challenge_type": "multiple_choice",
+    "title_en": "What Is Mindfulness?",
+    "title_ar": "ما هو اليقظة الذهنية؟",
+    "description_en": "Understand the basics of mindfulness meditation.",
+    "difficulty": 2,
+    "primary_trait": "self_awareness",
+    "base_xp": 15,
+    "bonus_xp": 8,
+    "time_limit_secs": 30,
+    "content": {
+      "question_en": "Mindfulness meditation is best described as:",
+      "question_ar": "التأمل اليقظ يُوصف بأفضل شكل بأنه:",
+      "options_en": [
+        "Emptying your mind of all thoughts",
+        "Paying attention to the present moment without judgment",
+        "A religious practice that only certain people can do",
+        "Thinking positive thoughts to feel happy"
+      ],
+      "options_ar": [
+        "إفراغ عقلك من كل الأفكار",
+        "الانتباه للحظة الحالية بدون حكم",
+        "ممارسة دينية يمكن لأشخاص معينين فقط القيام بها",
+        "التفكير بأفكار إيجابية للشعور بالسعادة"
+      ],
+      "correct_index": 1,
+      "explanation_en": "Mindfulness isn't about emptying your mind — that's nearly impossible. It's about noticing your thoughts, feelings, and sensations without judging them as good or bad. Research shows even 10 minutes daily reduces anxiety, improves focus, and strengthens emotional regulation.",
+      "explanation_ar": "اليقظة الذهنية ليست عن إفراغ عقلك — ذلك شبه مستحيل. إنها عن ملاحظة أفكارك ومشاعرك وأحاسيسك بدون الحكم عليها كجيدة أو سيئة. الأبحاث تُظهر أن 10 دقائق يومياً تقلل القلق وتحسن التركيز."
+    }
+  },
+  {
+    "slug": "wv-creative-1",
+    "challenge_type": "creative_prompt",
+    "title_en": "My Self-Care Plan",
+    "title_ar": "خطة العناية بالنفس",
+    "description_en": "Design a self-care routine for stressful times.",
+    "difficulty": 2,
+    "primary_trait": "self_awareness",
+    "base_xp": 15,
+    "bonus_xp": 8,
+    "time_limit_secs": 90,
+    "content": {
+      "prompt_en": "Design a self-care toolkit for a stressful week. Include: (1) A morning ritual (5 min), (2) A midday reset (3 min), (3) An evening wind-down (10 min), (4) One 'emergency' technique for acute stress moments. Use things that are free and available to anyone.",
+      "prompt_ar": "صمم حقيبة أدوات العناية بالنفس لأسبوع مرهق. اشمل: (1) طقس صباحي (5 دقائق)، (2) إعادة ضبط منتصف اليوم (3 دقائق)، (3) تهدئة مسائية (10 دقائق)، (4) تقنية 'طوارئ' واحدة للحظات التوتر الحاد. استخدم أشياء مجانية ومتاحة للجميع.",
+      "explanation_en": "Self-care isn't selfish — it's maintenance. Just like a phone needs charging, humans need intentional recovery. Having a pre-planned toolkit means you don't have to think about what to do when you're already stressed.",
+      "explanation_ar": "العناية بالنفس ليست أنانية — إنها صيانة. كما يحتاج الهاتف للشحن، يحتاج البشر للتعافي المتعمد. وجود حقيبة أدوات مخططة مسبقاً يعني أنك لن تضطر للتفكير فيما تفعله عندما تكون متوتراً بالفعل."
+    }
+  },
+  {
+    "slug": "wv-mcq-3",
+    "challenge_type": "multiple_choice",
+    "title_en": "The Cortisol Cure",
+    "title_ar": "علاج الكورتيزول",
+    "description_en": "Know what reduces the stress hormone.",
+    "difficulty": 3,
+    "primary_trait": "self_awareness",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": 30,
+    "content": {
+      "question_en": "Which activity has been scientifically proven to be the MOST effective at reducing cortisol (the stress hormone)?",
+      "question_ar": "أي نشاط أثبت علمياً أنه الأكثر فعالية في تقليل الكورتيزول (هرمون التوتر)؟",
+      "options_en": [
+        "Watching TV for extended periods",
+        "Moderate physical exercise (30 min walk or jog)",
+        "Eating comfort food",
+        "Scrolling through social media"
+      ],
+      "options_ar": [
+        "مشاهدة التلفزيون لفترات طويلة",
+        "التمرين البدني المعتدل (30 دقيقة مشي أو هرولة)",
+        "أكل الطعام المريح",
+        "تصفح وسائل التواصل الاجتماعي"
+      ],
+      "correct_index": 1,
+      "explanation_en": "Exercise is nature's anti-anxiety medication. A 30-minute walk or jog significantly lowers cortisol, releases endorphins, and improves mood for hours afterward. It doesn't have to be intense — even gentle movement works. Comfort food and screen time provide temporary relief but can increase stress long-term.",
+      "explanation_ar": "التمرين هو دواء الطبيعة المضاد للقلق. 30 دقيقة مشي أو هرولة تخفض الكورتيزول بشكل ملحوظ وتطلق الإندورفين وتحسن المزاج لساعات. لا يجب أن يكون مكثفاً — حتى الحركة اللطيفة تعمل."
+    }
+  },
+  {
+    "slug": "wv-scenario-2",
+    "challenge_type": "scenario_choice",
+    "title_en": "The Burnout Signal",
+    "title_ar": "إشارة الإرهاق",
+    "description_en": "Recognize and respond to burnout signs in others.",
+    "difficulty": 3,
+    "primary_trait": "self_awareness",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": null,
+    "content": {
+      "question_en": "Your normally energetic friend has been canceling plans, sleeping more, and saying 'I'm fine' when they clearly aren't. They seem exhausted and withdrawn. How do you best support them?",
+      "question_ar": "صديقك الذي عادةً ما يكون نشيطاً بدأ يلغي الخطط وينام أكثر ويقول 'أنا بخير' عندما يكون واضحاً أنه ليس كذلك. يبدو منهكاً ومنسحباً. كيف تدعمه بأفضل شكل؟",
+      "choices": [
+        {
+          "text_en": "Tell them to cheer up and stop being negative",
+          "text_ar": "أخبرهم أن يبتهجوا ويتوقفوا عن السلبية",
+          "scores": {"self_awareness": 0, "emotional_regulation": 0}
+        },
+        {
+          "text_en": "Create a low-pressure way to connect, listen without trying to fix, suggest professional help if needed",
+          "text_ar": "أنشئ طريقة تواصل بدون ضغط، استمع بدون محاولة الإصلاح، واقترح مساعدة مهنية إذا لزم الأمر",
+          "scores": {"self_awareness": 4, "emotional_regulation": 4}
+        },
+        {
+          "text_en": "Give them space — they'll come to you when they're ready",
+          "text_ar": "أعطهم مساحة — سيأتون إليك عندما يكونون جاهزين",
+          "scores": {"self_awareness": 2, "emotional_regulation": 2}
+        },
+        {
+          "text_en": "Post about mental health on social media and tag them",
+          "text_ar": "انشر عن الصحة النفسية على وسائل التواصل وضع إشارة لهم",
+          "scores": {"self_awareness": 0, "emotional_regulation": 0}
+        }
+      ],
+      "explanation_en": "The best support combines gentle presence with respect for boundaries. A simple 'I've noticed you seem tired lately — I'm here if you want to talk, no pressure' can mean everything. Listening without trying to fix is more powerful than advice. Suggesting professional help is responsible, not offensive.",
+      "explanation_ar": "أفضل دعم يجمع بين الحضور اللطيف واحترام الحدود. جملة بسيطة 'لاحظت أنك تبدو متعباً مؤخراً — أنا هنا إذا أردت التحدث، بدون ضغط' يمكن أن تعني كل شيء. الاستماع بدون محاولة الإصلاح أقوى من النصيحة."
+    }
+  },
+  {
+    "slug": "wv-mcq-4",
+    "challenge_type": "multiple_choice",
+    "title_en": "Move Your Mood",
+    "title_ar": "حرّك مزاجك",
+    "description_en": "Understand the exercise-mental health connection.",
+    "difficulty": 3,
+    "primary_trait": "self_awareness",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": 30,
+    "content": {
+      "question_en": "Research has shown that regular moderate exercise can be as effective as medication for treating:",
+      "question_ar": "أظهرت الأبحاث أن التمرين المعتدل المنتظم يمكن أن يكون فعالاً كالأدوية في علاج:",
+      "options_en": [
+        "Only physical conditions like heart disease",
+        "Mild to moderate depression and anxiety",
+        "All mental health conditions regardless of severity",
+        "Only stress, not clinical conditions"
+      ],
+      "options_ar": [
+        "الحالات البدنية فقط كأمراض القلب",
+        "الاكتئاب والقلق الخفيف إلى المعتدل",
+        "جميع حالات الصحة النفسية بغض النظر عن الشدة",
+        "التوتر فقط، وليس الحالات السريرية"
+      ],
+      "correct_index": 1,
+      "explanation_en": "Multiple studies, including a landmark Duke University study, found that 30 minutes of exercise 3 times a week was as effective as antidepressants for mild to moderate depression. Exercise isn't a replacement for professional help in severe cases, but it's a powerful complementary tool.",
+      "explanation_ar": "دراسات متعددة، بما فيها دراسة تاريخية من جامعة ديوك، وجدت أن 30 دقيقة تمرين 3 مرات أسبوعياً كانت فعالة كمضادات الاكتئاب للاكتئاب الخفيف إلى المعتدل. التمرين ليس بديلاً عن المساعدة المهنية في الحالات الشديدة، لكنه أداة مكملة قوية."
+    }
+  },
+  {
+    "slug": "wv-scenario-3",
+    "challenge_type": "scenario_choice",
+    "title_en": "The Blue Light Trap",
+    "title_ar": "فخ الضوء الأزرق",
+    "description_en": "Address phone use before sleep.",
+    "difficulty": 3,
+    "primary_trait": "self_awareness",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": null,
+    "content": {
+      "question_en": "It's 11 PM and you need to wake up at 7 AM. You've been scrolling your phone in bed for 2 hours. You're not tired yet even though you should be. What's the healthiest response?",
+      "question_ar": "الساعة 11 مساءً وتحتاج للاستيقاظ الساعة 7 صباحاً. كنت تتصفح هاتفك في السرير لمدة ساعتين. لست متعباً بعد رغم أنه يجب أن تكون. ما الاستجابة الأصح؟",
+      "choices": [
+        {
+          "text_en": "Keep scrolling — you'll fall asleep eventually",
+          "text_ar": "تابع التصفح — ستنام في النهاية",
+          "scores": {"self_awareness": 0, "emotional_regulation": 0}
+        },
+        {
+          "text_en": "Put the phone outside your room, read a physical book or do a breathing exercise",
+          "text_ar": "ضع الهاتف خارج غرفتك، اقرأ كتاباً ورقياً أو قم بتمرين تنفس",
+          "scores": {"self_awareness": 4, "emotional_regulation": 4}
+        },
+        {
+          "text_en": "Switch to watching TV instead — at least the screen is farther away",
+          "text_ar": "انتقل لمشاهدة التلفزيون بدلاً — على الأقل الشاشة أبعد",
+          "scores": {"self_awareness": 1, "emotional_regulation": 1}
+        },
+        {
+          "text_en": "Take a sleeping pill to force yourself to sleep",
+          "text_ar": "خذ حبة منوم لإجبار نفسك على النوم",
+          "scores": {"self_awareness": 0, "emotional_regulation": 0}
+        }
+      ],
+      "explanation_en": "Blue light from screens suppresses melatonin production, making your brain think it's daytime. Removing the phone and doing a calming activity allows your natural sleep signals to return. Sleep hygiene experts recommend no screens 30-60 minutes before bed.",
+      "explanation_ar": "الضوء الأزرق من الشاشات يثبط إنتاج الميلاتونين، مما يجعل دماغك يظن أنه نهار. إزالة الهاتف والقيام بنشاط مهدئ يسمح لإشارات نومك الطبيعية بالعودة. خبراء نظافة النوم يوصون بعدم استخدام الشاشات 30-60 دقيقة قبل النوم."
+    }
+  },
+  {
+    "slug": "wv-creative-2",
+    "challenge_type": "creative_prompt",
+    "title_en": "5-Minute Calm",
+    "title_ar": "5 دقائق هدوء",
+    "description_en": "Design a quick daily mindfulness practice.",
+    "difficulty": 2,
+    "primary_trait": "self_awareness",
+    "base_xp": 15,
+    "bonus_xp": 8,
+    "time_limit_secs": 90,
+    "content": {
+      "prompt_en": "Design a 5-minute daily mindfulness practice that anyone can do anywhere — no app, no equipment, no special room needed. Include: (1) A 1-minute body scan, (2) A 2-minute breathing exercise with specific counts, (3) A 2-minute gratitude or intention-setting exercise. Write step-by-step instructions.",
+      "prompt_ar": "صمم ممارسة يقظة ذهنية يومية مدتها 5 دقائق يمكن لأي شخص القيام بها في أي مكان — بدون تطبيق، بدون معدات، بدون غرفة خاصة. اشمل: (1) مسح جسدي لمدة دقيقة، (2) تمرين تنفس لمدة دقيقتين بعدّات محددة، (3) تمرين امتنان أو تحديد نية لمدة دقيقتين. اكتب تعليمات خطوة بخطوة.",
+      "explanation_en": "Consistency beats intensity with mindfulness. A daily 5-minute practice is more transformative than occasional 30-minute sessions. Making it location-independent removes the biggest barrier to building the habit.",
+      "explanation_ar": "الاستمرارية تتفوق على الكثافة في اليقظة الذهنية. ممارسة يومية 5 دقائق أكثر تحويلاً من جلسات عرضية 30 دقيقة. جعلها مستقلة عن المكان يزيل أكبر عائق لبناء العادة."
+    }
+  },
+  {
+    "slug": "wv-mcq-5",
+    "challenge_type": "multiple_choice",
+    "title_en": "Recovery Balance",
+    "title_ar": "توازن التعافي",
+    "description_en": "Understand stress-recovery balance.",
+    "difficulty": 4,
+    "primary_trait": "self_awareness",
+    "base_xp": 25,
+    "bonus_xp": 12,
+    "time_limit_secs": 35,
+    "content": {
+      "question_en": "In sports science, the concept of 'supercompensation' teaches us that growth happens:",
+      "question_ar": "في علم الرياضة، مفهوم 'التعويض الفائق' يعلمنا أن النمو يحدث:",
+      "options_en": [
+        "Only during intense training sessions",
+        "During the recovery period after stress, not during the stress itself",
+        "When you never take breaks",
+        "Only with professional coaching"
+      ],
+      "options_ar": [
+        "فقط أثناء جلسات التدريب المكثفة",
+        "خلال فترة التعافي بعد الإجهاد، وليس أثناء الإجهاد نفسه",
+        "عندما لا تأخذ استراحات أبداً",
+        "فقط مع تدريب مهني"
+      ],
+      "correct_index": 1,
+      "explanation_en": "This principle applies to everything: muscles grow during rest, not during exercise. Your brain consolidates learning during sleep, not during study. Stress without recovery leads to breakdown, not growth. The key is cycling between challenge and recovery — this applies to physical training, studying, work, and emotional health.",
+      "explanation_ar": "هذا المبدأ ينطبق على كل شيء: العضلات تنمو أثناء الراحة، وليس أثناء التمرين. دماغك يعزز التعلم أثناء النوم، وليس أثناء الدراسة. الإجهاد بدون تعافي يؤدي للانهيار، وليس النمو. المفتاح هو التناوب بين التحدي والتعافي."
+    }
+  }
+]

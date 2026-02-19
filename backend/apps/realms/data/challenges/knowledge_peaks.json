@@ -1,0 +1,313 @@
+[
+  {
+    "slug": "kp-mcq-1",
+    "challenge_type": "multiple_choice",
+    "title_en": "The Spacing Effect",
+    "title_ar": "تأثير التباعد",
+    "description_en": "Understand why spaced repetition works.",
+    "difficulty": 3,
+    "primary_trait": "curiosity",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": 30,
+    "content": {
+      "question_en": "Spaced repetition is considered one of the most effective study techniques. Why does it work?",
+      "question_ar": "التكرار المتباعد يعتبر من أكثر تقنيات الدراسة فعالية. لماذا ينجح؟",
+      "options_en": [
+        "It makes studying more fun",
+        "It forces the brain to actively recall, strengthening memory each time",
+        "It reduces the total time spent studying",
+        "It works only for language learning"
+      ],
+      "options_ar": [
+        "يجعل الدراسة أكثر متعة",
+        "يجبر الدماغ على الاسترجاع النشط، مما يقوي الذاكرة في كل مرة",
+        "يقلل إجمالي وقت الدراسة",
+        "يعمل فقط لتعلم اللغات"
+      ],
+      "correct_index": 1,
+      "explanation_en": "Spaced repetition exploits the 'testing effect' — each time you actively recall information just before forgetting it, the memory trace becomes stronger. This is why flashcard apps like Anki are so effective.",
+      "explanation_ar": "التكرار المتباعد يستغل 'تأثير الاختبار' — في كل مرة تسترجع المعلومات بنشاط قبل نسيانها، يصبح أثر الذاكرة أقوى. لهذا تطبيقات البطاقات التعليمية مثل Anki فعالة جداً."
+    }
+  },
+  {
+    "slug": "kp-scenario-1",
+    "challenge_type": "scenario_choice",
+    "title_en": "The Viral Headline",
+    "title_ar": "العنوان الفيروسي",
+    "description_en": "Practice information literacy with unverified news.",
+    "difficulty": 3,
+    "primary_trait": "curiosity",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": null,
+    "content": {
+      "question_en": "A friend shares an alarming news article on social media. The headline says 'Scientists Prove That [Popular Food] Causes Cancer!' You notice it's from a website you've never heard of. What do you do?",
+      "question_ar": "صديق يشارك مقالاً إخبارياً مثيراً للقلق على وسائل التواصل. العنوان يقول 'علماء يثبتون أن [طعام شائع] يسبب السرطان!' تلاحظ أنه من موقع لم تسمع به. ماذا تفعل؟",
+      "choices": [
+        {
+          "text_en": "Share it immediately — better safe than sorry",
+          "text_ar": "شاركه فوراً — الحذر أفضل من الندم",
+          "scores": {"curiosity": 0, "critical_thinking": 0}
+        },
+        {
+          "text_en": "Check if reputable sources report the same finding, read the actual study",
+          "text_ar": "تحقق مما إذا كانت مصادر موثوقة تذكر نفس النتيجة، واقرأ الدراسة الفعلية",
+          "scores": {"curiosity": 4, "critical_thinking": 4}
+        },
+        {
+          "text_en": "Ignore it completely — if it were true, you'd hear about it from real news",
+          "text_ar": "تجاهله تماماً — لو كان صحيحاً لسمعت عنه من الأخبار الحقيقية",
+          "scores": {"curiosity": 1, "critical_thinking": 2}
+        },
+        {
+          "text_en": "Tell your friend it's probably fake without checking",
+          "text_ar": "أخبر صديقك أنه على الأرجح مزيف بدون التحقق",
+          "scores": {"curiosity": 1, "critical_thinking": 1}
+        }
+      ],
+      "explanation_en": "Critical thinking means verifying claims before accepting or rejecting them. The best approach is 'lateral reading' — checking if credible sources confirm the claim and looking at the actual research methodology, not just headlines.",
+      "explanation_ar": "التفكير النقدي يعني التحقق من الادعاءات قبل قبولها أو رفضها. أفضل نهج هو 'القراءة الجانبية' — التحقق مما إذا كانت مصادر موثوقة تؤكد الادعاء والنظر في منهجية البحث الفعلية."
+    }
+  },
+  {
+    "slug": "kp-mcq-2",
+    "challenge_type": "multiple_choice",
+    "title_en": "The Feynman Technique",
+    "title_ar": "تقنية فاينمان",
+    "description_en": "Learn the Nobel laureate's learning method.",
+    "difficulty": 2,
+    "primary_trait": "curiosity",
+    "base_xp": 15,
+    "bonus_xp": 8,
+    "time_limit_secs": 30,
+    "content": {
+      "question_en": "The Feynman Technique, named after physicist Richard Feynman, is a learning method. What is its core principle?",
+      "question_ar": "تقنية فاينمان، المسماة على اسم الفيزيائي ريتشارد فاينمان، هي طريقة تعلم. ما مبدأها الأساسي؟",
+      "options_en": [
+        "Read the textbook at least five times",
+        "Explain the concept in simple terms as if teaching a child",
+        "Create elaborate color-coded notes",
+        "Study for exactly 4 hours per day"
+      ],
+      "options_ar": [
+        "اقرأ الكتاب خمس مرات على الأقل",
+        "اشرح المفهوم بمصطلحات بسيطة كأنك تعلّم طفلاً",
+        "أنشئ ملاحظات مفصلة مرمّزة بالألوان",
+        "ادرس لمدة 4 ساعات بالضبط يومياً"
+      ],
+      "correct_index": 1,
+      "explanation_en": "Feynman believed that if you can't explain something simply, you don't truly understand it. The technique: (1) Choose a concept, (2) Explain it in simple language, (3) Identify gaps in your explanation, (4) Go back and study those gaps.",
+      "explanation_ar": "اعتقد فاينمان أنك إذا لم تستطع شرح شيء ببساطة، فأنت لا تفهمه حقاً. التقنية: (1) اختر مفهوماً، (2) اشرحه بلغة بسيطة، (3) حدد الفجوات في شرحك، (4) ارجع وادرس تلك الفجوات."
+    }
+  },
+  {
+    "slug": "kp-creative-1",
+    "challenge_type": "creative_prompt",
+    "title_en": "Explain Like I'm 10",
+    "title_ar": "اشرح كأنني بعمر 10",
+    "description_en": "Simplify a complex topic for a young audience.",
+    "difficulty": 3,
+    "primary_trait": "curiosity",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": 90,
+    "content": {
+      "prompt_en": "Pick one of these complex topics and explain it so a 10-year-old would understand: (A) How the internet works, (B) Why the sky is blue, (C) How vaccines work, (D) What gravity is. Use analogies, everyday examples, and simple words.",
+      "prompt_ar": "اختر أحد هذه المواضيع المعقدة واشرحه بحيث يفهمه طفل بعمر 10 سنوات: (أ) كيف يعمل الإنترنت، (ب) لماذا السماء زرقاء، (ج) كيف تعمل اللقاحات، (د) ما هي الجاذبية. استخدم التشبيهات والأمثلة اليومية والكلمات البسيطة.",
+      "explanation_en": "The ability to simplify complex ideas is a sign of deep understanding. Einstein said: 'If you can't explain it to a six-year-old, you don't understand it yourself.' This skill is central to the Feynman Technique.",
+      "explanation_ar": "القدرة على تبسيط الأفكار المعقدة هي علامة على الفهم العميق. قال أينشتاين: 'إذا لم تستطع شرحه لطفل في السادسة، فأنت لا تفهمه بنفسك.' هذه المهارة محورية في تقنية فاينمان."
+    }
+  },
+  {
+    "slug": "kp-mcq-3",
+    "challenge_type": "multiple_choice",
+    "title_en": "The Dunning-Kruger Effect",
+    "title_ar": "تأثير دانينج-كروجر",
+    "description_en": "Recognize a common cognitive bias about knowledge.",
+    "difficulty": 4,
+    "primary_trait": "curiosity",
+    "base_xp": 25,
+    "bonus_xp": 12,
+    "time_limit_secs": 35,
+    "content": {
+      "question_en": "The Dunning-Kruger effect describes a cognitive bias where:",
+      "question_ar": "تأثير دانينج-كروجر يصف انحيازاً معرفياً حيث:",
+      "options_en": [
+        "Experts always underestimate their abilities",
+        "People with low ability overestimate their competence, while highly skilled people underestimate theirs",
+        "Everyone accurately assesses their own skill level",
+        "Intelligence decreases with age"
+      ],
+      "options_ar": [
+        "الخبراء يقللون دائماً من قدراتهم",
+        "الأشخاص ذوو القدرة المنخفضة يبالغون في تقدير كفاءتهم، بينما الأكثر مهارة يقللون من كفاءتهم",
+        "الجميع يقيّم مستوى مهارته بدقة",
+        "الذكاء ينخفض مع العمر"
+      ],
+      "correct_index": 1,
+      "explanation_en": "The less you know about a topic, the more confident you tend to be — because you don't know enough to recognize what you don't know. As you learn more, you realize how much more there is to learn. True wisdom begins with intellectual humility.",
+      "explanation_ar": "كلما قلّت معرفتك بموضوع، كلما زادت ثقتك — لأنك لا تعرف ما يكفي لتدرك ما لا تعرفه. كلما تعلمت أكثر، أدركت كم هناك المزيد لتعلمه. الحكمة الحقيقية تبدأ بالتواضع الفكري."
+    }
+  },
+  {
+    "slug": "kp-scenario-2",
+    "challenge_type": "scenario_choice",
+    "title_en": "The Uncomfortable Truth",
+    "title_ar": "الحقيقة المزعجة",
+    "description_en": "Handle discovering your beliefs might be wrong.",
+    "difficulty": 4,
+    "primary_trait": "curiosity",
+    "base_xp": 25,
+    "bonus_xp": 12,
+    "time_limit_secs": null,
+    "content": {
+      "question_en": "You've held a strong opinion about a topic for years. A trusted friend shares a well-researched article that contradicts your belief with solid evidence. What do you do?",
+      "question_ar": "كنت تحمل رأياً قوياً حول موضوع لسنوات. صديق موثوق يشارك مقالاً مدروساً جيداً يتناقض مع اعتقادك بأدلة قوية. ماذا تفعل؟",
+      "choices": [
+        {
+          "text_en": "Dismiss it — you've believed this for too long to change now",
+          "text_ar": "تجاهله — لقد آمنت بهذا لفترة طويلة لتتغير الآن",
+          "scores": {"curiosity": 0, "critical_thinking": 0}
+        },
+        {
+          "text_en": "Read the article carefully, examine the evidence, and update your view if warranted",
+          "text_ar": "اقرأ المقال بعناية، افحص الأدلة، وحدّث وجهة نظرك إذا كان ذلك مبرراً",
+          "scores": {"curiosity": 4, "critical_thinking": 4}
+        },
+        {
+          "text_en": "Search specifically for articles that confirm your original belief",
+          "text_ar": "ابحث تحديداً عن مقالات تؤكد اعتقادك الأصلي",
+          "scores": {"curiosity": 1, "critical_thinking": 1}
+        },
+        {
+          "text_en": "Avoid the topic entirely to prevent conflict with your friend",
+          "text_ar": "تجنب الموضوع تماماً لمنع الخلاف مع صديقك",
+          "scores": {"curiosity": 0, "critical_thinking": 1}
+        }
+      ],
+      "explanation_en": "Intellectual humility — the willingness to update beliefs based on evidence — is a hallmark of strong critical thinking. Searching only for confirming evidence is called 'confirmation bias' and it's one of the biggest obstacles to genuine learning.",
+      "explanation_ar": "التواضع الفكري — الاستعداد لتحديث المعتقدات بناءً على الأدلة — هو سمة التفكير النقدي القوي. البحث عن أدلة مؤكدة فقط يسمى 'انحياز التأكيد' وهو من أكبر عقبات التعلم الحقيقي."
+    }
+  },
+  {
+    "slug": "kp-mcq-4",
+    "challenge_type": "multiple_choice",
+    "title_en": "Study Smarter",
+    "title_ar": "ادرس بذكاء",
+    "description_en": "Identify the most effective study method.",
+    "difficulty": 3,
+    "primary_trait": "curiosity",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": 30,
+    "content": {
+      "question_en": "Research consistently shows that which study technique leads to the BEST long-term retention?",
+      "question_ar": "تُظهر الأبحاث باستمرار أن أي تقنية دراسة تؤدي لأفضل احتفاظ طويل المدى؟",
+      "options_en": [
+        "Re-reading notes multiple times",
+        "Highlighting important passages",
+        "Practice testing (self-quizzing)",
+        "Copying notes by hand word for word"
+      ],
+      "options_ar": [
+        "إعادة قراءة الملاحظات عدة مرات",
+        "تظليل الفقرات المهمة",
+        "الاختبار التدريبي (الاختبار الذاتي)",
+        "نسخ الملاحظات يدوياً كلمة بكلمة"
+      ],
+      "correct_index": 2,
+      "explanation_en": "Dunlosky et al.'s landmark 2013 review of study techniques rated practice testing as the #1 most effective strategy. Re-reading and highlighting feel productive but are largely passive. Active recall — testing yourself — is far more powerful for long-term memory.",
+      "explanation_ar": "مراجعة دانلوسكي التاريخية عام 2013 لتقنيات الدراسة صنّفت الاختبار التدريبي كأكثر استراتيجية فعالية. إعادة القراءة والتظليل تبدو منتجة لكنها سلبية إلى حد كبير. الاسترجاع النشط أقوى بكثير للذاكرة طويلة المدى."
+    }
+  },
+  {
+    "slug": "kp-scenario-3",
+    "challenge_type": "scenario_choice",
+    "title_en": "Deep vs Surface",
+    "title_ar": "العميق مقابل السطحي",
+    "description_en": "Choose between deep learning and quick cramming.",
+    "difficulty": 3,
+    "primary_trait": "curiosity",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": null,
+    "content": {
+      "question_en": "You have an exam in 3 days on a topic you find genuinely interesting. You could either deeply understand the material or just memorize enough to pass. What approach do you take?",
+      "question_ar": "لديك امتحان بعد 3 أيام في موضوع تجده مثيراً للاهتمام حقاً. يمكنك إما فهم المادة بعمق أو حفظ ما يكفي للنجاح. أي نهج تتبع؟",
+      "choices": [
+        {
+          "text_en": "Memorize key facts and formulas — just need to pass",
+          "text_ar": "احفظ الحقائق والصيغ الرئيسية — تحتاج فقط للنجاح",
+          "scores": {"curiosity": 1, "critical_thinking": 1}
+        },
+        {
+          "text_en": "Focus on understanding concepts deeply, using examples and connections",
+          "text_ar": "ركّز على فهم المفاهيم بعمق، باستخدام أمثلة وروابط",
+          "scores": {"curiosity": 4, "critical_thinking": 4}
+        },
+        {
+          "text_en": "Find someone else's summary notes and study those",
+          "text_ar": "اعثر على ملخصات شخص آخر وادرس منها",
+          "scores": {"curiosity": 0, "critical_thinking": 1}
+        },
+        {
+          "text_en": "Study deeply for the parts you like, memorize the rest",
+          "text_ar": "ادرس بعمق الأجزاء التي تحبها، واحفظ الباقي",
+          "scores": {"curiosity": 3, "critical_thinking": 3}
+        }
+      ],
+      "explanation_en": "Deep understanding lasts far longer than memorization and creates connections you can use in other areas. When you understand 'why' rather than just 'what,' you can solve novel problems, not just recall facts.",
+      "explanation_ar": "الفهم العميق يدوم أطول بكثير من الحفظ ويخلق روابط يمكنك استخدامها في مجالات أخرى. عندما تفهم 'لماذا' وليس فقط 'ماذا'، يمكنك حل مشاكل جديدة."
+    }
+  },
+  {
+    "slug": "kp-creative-2",
+    "challenge_type": "creative_prompt",
+    "title_en": "30-Day Learning Plan",
+    "title_ar": "خطة تعلم 30 يوماً",
+    "description_en": "Design a self-learning plan for a new skill.",
+    "difficulty": 3,
+    "primary_trait": "curiosity",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": 120,
+    "content": {
+      "prompt_en": "Choose a skill you want to learn (coding, drawing, a language, cooking, etc.). Design a 30-day learning plan with: (1) Your specific goal by day 30, (2) Resources you'd use (free ones!), (3) Daily practice time, (4) How you'd measure progress each week.",
+      "prompt_ar": "اختر مهارة تريد تعلمها (البرمجة، الرسم، لغة، الطبخ، إلخ). صمم خطة تعلم 30 يوماً مع: (1) هدفك المحدد بحلول اليوم 30، (2) الموارد التي ستستخدمها (مجانية!)، (3) وقت الممارسة اليومي، (4) كيف ستقيس التقدم أسبوعياً.",
+      "explanation_en": "Structured learning plans dramatically improve outcomes. Having a clear goal, timeline, and measurement system turns vague 'I want to learn X' into actionable steps. The best learners are intentional and systematic.",
+      "explanation_ar": "خطط التعلم المنظمة تحسّن النتائج بشكل كبير. وجود هدف واضح وجدول زمني ونظام قياس يحوّل 'أريد تعلم X' الغامض إلى خطوات قابلة للتنفيذ."
+    }
+  },
+  {
+    "slug": "kp-mcq-5",
+    "challenge_type": "multiple_choice",
+    "title_en": "Mindset Matters",
+    "title_ar": "العقلية مهمة",
+    "description_en": "Understand growth vs fixed mindset.",
+    "difficulty": 3,
+    "primary_trait": "curiosity",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": 30,
+    "content": {
+      "question_en": "Carol Dweck's research on 'growth mindset' vs 'fixed mindset' shows that students who believe intelligence can be developed tend to:",
+      "question_ar": "بحث كارول دويك حول 'عقلية النمو' مقابل 'العقلية الثابتة' يُظهر أن الطلاب الذين يعتقدون أن الذكاء يمكن تطويره يميلون إلى:",
+      "options_en": [
+        "Avoid challenges to protect their self-image",
+        "Embrace challenges and persist through setbacks",
+        "Perform the same as fixed-mindset students",
+        "Only succeed in creative subjects, not math or science"
+      ],
+      "options_ar": [
+        "تجنب التحديات لحماية صورتهم الذاتية",
+        "تقبل التحديات والمثابرة عبر النكسات",
+        "أداؤهم مماثل لطلاب العقلية الثابتة",
+        "النجاح في المواد الإبداعية فقط، وليس الرياضيات أو العلوم"
+      ],
+      "correct_index": 1,
+      "explanation_en": "Growth mindset students see effort as the path to mastery and failure as a learning opportunity. They outperform fixed-mindset students because they persist through difficulty rather than giving up when things get hard.",
+      "explanation_ar": "طلاب عقلية النمو يرون الجهد كطريق للإتقان والفشل كفرصة للتعلم. يتفوقون على طلاب العقلية الثابتة لأنهم يثابرون عبر الصعوبات بدلاً من الاستسلام."
+    }
+  }
+]

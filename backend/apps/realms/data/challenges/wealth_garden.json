@@ -1,0 +1,322 @@
+[
+  {
+    "slug": "wg-mcq-1",
+    "challenge_type": "multiple_choice",
+    "title_en": "The Eighth Wonder",
+    "title_ar": "الأعجوبة الثامنة",
+    "description_en": "Understand the power of compound interest.",
+    "difficulty": 2,
+    "primary_trait": "financial_awareness",
+    "base_xp": 15,
+    "bonus_xp": 8,
+    "time_limit_secs": 30,
+    "content": {
+      "question_en": "Albert Einstein allegedly called compound interest 'the eighth wonder of the world.' What makes compound interest so powerful?",
+      "question_ar": "يُقال أن ألبرت أينشتاين وصف الفائدة المركبة بـ'الأعجوبة الثامنة في العالم'. ما الذي يجعل الفائدة المركبة قوية جداً؟",
+      "options_en": [
+        "You earn a fixed amount every year",
+        "You earn interest on your interest, creating exponential growth",
+        "The government adds extra money to your account",
+        "It only works if you invest millions"
+      ],
+      "options_ar": [
+        "تكسب مبلغاً ثابتاً كل عام",
+        "تكسب فائدة على الفائدة، مما يخلق نمواً أسياً",
+        "الحكومة تضيف أموالاً إضافية لحسابك",
+        "تعمل فقط إذا استثمرت ملايين"
+      ],
+      "correct_index": 1,
+      "explanation_en": "Compound interest means you earn returns on your original investment AND on previous returns. Over time, this creates exponential growth. Starting to save even small amounts early gives compound interest more time to work its magic.",
+      "explanation_ar": "الفائدة المركبة تعني أنك تكسب عوائد على استثمارك الأصلي وعلى العوائد السابقة. بمرور الوقت، يخلق هذا نمواً أسياً. البدء بادخار مبالغ صغيرة مبكراً يمنح الفائدة المركبة وقتاً أكثر."
+    }
+  },
+  {
+    "slug": "wg-scenario-1",
+    "challenge_type": "scenario_choice",
+    "title_en": "The Windfall",
+    "title_ar": "المال غير المتوقع",
+    "description_en": "Decide what to do with unexpected money.",
+    "difficulty": 2,
+    "primary_trait": "financial_awareness",
+    "base_xp": 15,
+    "bonus_xp": 8,
+    "time_limit_secs": null,
+    "content": {
+      "question_en": "You unexpectedly receive $500 (or equivalent) as a gift. You have no debt and no immediate needs. What's the smartest thing to do with it?",
+      "question_ar": "تتلقى بشكل غير متوقع 500 دولار (أو ما يعادلها) كهدية. ليس لديك ديون ولا احتياجات فورية. ما أذكى شيء تفعله بها؟",
+      "choices": [
+        {
+          "text_en": "Spend it all on something you've been wanting",
+          "text_ar": "أنفقها كلها على شيء كنت تريده",
+          "scores": {"financial_awareness": 0, "practical_thinking": 0}
+        },
+        {
+          "text_en": "Save/invest most of it, use a small portion for something enjoyable",
+          "text_ar": "ادخر/استثمر معظمها، واستخدم جزءاً صغيراً لشيء ممتع",
+          "scores": {"financial_awareness": 4, "practical_thinking": 4}
+        },
+        {
+          "text_en": "Hide it under your mattress for emergencies",
+          "text_ar": "خبّئها تحت مرتبتك للطوارئ",
+          "scores": {"financial_awareness": 1, "practical_thinking": 2}
+        },
+        {
+          "text_en": "Lend it all to a friend who asked for money",
+          "text_ar": "أقرضها كلها لصديق طلب مالاً",
+          "scores": {"financial_awareness": 1, "practical_thinking": 1}
+        }
+      ],
+      "explanation_en": "The balanced approach — investing most while allowing a small 'fun' portion — is psychologically sustainable and financially smart. Cash under the mattress loses value to inflation. The 80/20 split (save 80%, enjoy 20%) is a common recommendation for windfalls.",
+      "explanation_ar": "النهج المتوازن — استثمار الأغلبية مع السماح بجزء صغير 'للمتعة' — مستدام نفسياً وذكي مالياً. النقد تحت المرتبة يفقد قيمته بسبب التضخم. تقسيم 80/20 (ادخر 80%، استمتع بـ20%) توصية شائعة."
+    }
+  },
+  {
+    "slug": "wg-mcq-2",
+    "challenge_type": "multiple_choice",
+    "title_en": "The 50/30/20 Rule",
+    "title_ar": "قاعدة 50/30/20",
+    "description_en": "Learn the popular budgeting framework.",
+    "difficulty": 3,
+    "primary_trait": "financial_awareness",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": 30,
+    "content": {
+      "question_en": "The 50/30/20 budgeting rule divides your income into three categories. What are they?",
+      "question_ar": "قاعدة الميزانية 50/30/20 تقسم دخلك إلى ثلاث فئات. ما هي؟",
+      "options_en": [
+        "50% savings, 30% food, 20% entertainment",
+        "50% needs, 30% wants, 20% savings/debt repayment",
+        "50% rent, 30% savings, 20% everything else",
+        "50% spending, 30% charity, 20% taxes"
+      ],
+      "options_ar": [
+        "50% مدخرات، 30% طعام، 20% ترفيه",
+        "50% احتياجات، 30% رغبات، 20% مدخرات/سداد ديون",
+        "50% إيجار، 30% مدخرات، 20% كل شيء آخر",
+        "50% إنفاق، 30% صدقات، 20% ضرائب"
+      ],
+      "correct_index": 1,
+      "explanation_en": "Popularized by Senator Elizabeth Warren, the 50/30/20 rule is a simple starting framework: 50% for needs (rent, food, bills), 30% for wants (dining out, entertainment), and 20% for savings and debt repayment. It's a guideline, not a rigid rule.",
+      "explanation_ar": "أشهرتها السيناتور إليزابيث وارن، قاعدة 50/30/20 إطار بداية بسيط: 50% للاحتياجات (إيجار، طعام، فواتير)، 30% للرغبات (تناول الطعام خارجاً، ترفيه)، و20% للمدخرات وسداد الديون."
+    }
+  },
+  {
+    "slug": "wg-scenario-2",
+    "challenge_type": "scenario_choice",
+    "title_en": "The Friendship Loan",
+    "title_ar": "قرض الصداقة",
+    "description_en": "Navigate money and friendship boundaries.",
+    "difficulty": 4,
+    "primary_trait": "financial_awareness",
+    "base_xp": 25,
+    "bonus_xp": 12,
+    "time_limit_secs": null,
+    "content": {
+      "question_en": "A close friend asks to borrow a significant amount of money — about one month's savings for you. They say they'll pay you back 'soon' but don't give a specific date. What do you do?",
+      "question_ar": "صديق مقرب يطلب اقتراض مبلغ كبير — حوالي مدخرات شهر بالنسبة لك. يقول سيرده 'قريباً' لكن لا يحدد تاريخاً. ماذا تفعل؟",
+      "choices": [
+        {
+          "text_en": "Lend it all immediately — they're your friend",
+          "text_ar": "أقرضه كله فوراً — إنه صديقك",
+          "scores": {"financial_awareness": 0, "practical_thinking": 0}
+        },
+        {
+          "text_en": "Offer a smaller amount you can afford to lose, set a clear repayment date",
+          "text_ar": "اعرض مبلغاً أصغر يمكنك تحمل خسارته، وحدد تاريخ سداد واضح",
+          "scores": {"financial_awareness": 4, "practical_thinking": 4}
+        },
+        {
+          "text_en": "Say no — never lend money to friends",
+          "text_ar": "قل لا — لا تقرض المال لأصدقاء أبداً",
+          "scores": {"financial_awareness": 3, "practical_thinking": 2}
+        },
+        {
+          "text_en": "Lend it but keep reminding them daily until they pay back",
+          "text_ar": "أقرضه لكن ذكّرهم يومياً حتى يسددوا",
+          "scores": {"financial_awareness": 1, "practical_thinking": 1}
+        }
+      ],
+      "explanation_en": "The golden rule of lending to friends: never lend more than you can afford to lose. Setting clear terms (amount, repayment date) protects both the money and the friendship. Vague 'I'll pay you back' agreements destroy more friendships than the money itself.",
+      "explanation_ar": "القاعدة الذهبية لإقراض الأصدقاء: لا تقرض أكثر مما يمكنك تحمل خسارته. وضع شروط واضحة (المبلغ، تاريخ السداد) يحمي المال والصداقة. اتفاقيات 'سأردها' الغامضة تدمر صداقات أكثر من المال نفسه."
+    }
+  },
+  {
+    "slug": "wg-mcq-3",
+    "challenge_type": "multiple_choice",
+    "title_en": "The Invisible Tax",
+    "title_ar": "الضريبة الخفية",
+    "description_en": "Understand how inflation affects your money.",
+    "difficulty": 3,
+    "primary_trait": "financial_awareness",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": 30,
+    "content": {
+      "question_en": "If inflation is 5% per year and you keep $1,000 in cash (not invested), what happens to its purchasing power after one year?",
+      "question_ar": "إذا كان التضخم 5% سنوياً وأبقيت 1000 دولار نقداً (غير مستثمرة)، ماذا يحدث لقوتها الشرائية بعد سنة؟",
+      "options_en": [
+        "It stays the same — you still have $1,000",
+        "It's worth about $950 in real purchasing power",
+        "It gains value because cash is king",
+        "Inflation only affects businesses, not individuals"
+      ],
+      "options_ar": [
+        "تبقى كما هي — لا يزال لديك 1000 دولار",
+        "تساوي حوالي 950 دولاراً في القوة الشرائية الحقيقية",
+        "تكتسب قيمة لأن النقد هو الملك",
+        "التضخم يؤثر على الشركات فقط، وليس الأفراد"
+      ],
+      "correct_index": 1,
+      "explanation_en": "Inflation is like an invisible tax on your savings. At 5% inflation, your $1,000 can only buy what $950 could buy last year. This is why keeping large amounts in cash long-term actually loses money. Investing helps your money grow faster than inflation.",
+      "explanation_ar": "التضخم كضريبة خفية على مدخراتك. بتضخم 5%، ألف دولارك يمكنها شراء ما كانت 950 دولاراً تشتريه العام الماضي. لهذا الاحتفاظ بمبالغ كبيرة نقداً على المدى الطويل يفقدك المال. الاستثمار يساعد مالك على النمو أسرع من التضخم."
+    }
+  },
+  {
+    "slug": "wg-creative-1",
+    "challenge_type": "creative_prompt",
+    "title_en": "The Mini Business",
+    "title_ar": "المشروع الصغير",
+    "description_en": "Design a small business solving a local problem.",
+    "difficulty": 3,
+    "primary_trait": "financial_awareness",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": 120,
+    "content": {
+      "prompt_en": "Think of a real problem in your neighborhood or community. Design a simple business idea to solve it. Describe: (1) The problem, (2) Your solution, (3) How you'd make money from it, (4) What you'd need to get started (keep it under $100).",
+      "prompt_ar": "فكّر في مشكلة حقيقية في حيّك أو مجتمعك. صمم فكرة عمل بسيطة لحلها. اوصف: (1) المشكلة، (2) حلك، (3) كيف ستجني المال منها، (4) ما تحتاجه للبدء (أبقِ التكلفة تحت 100 دولار).",
+      "explanation_en": "Entrepreneurial thinking starts with seeing problems as opportunities. The best businesses solve real problems for real people. Starting with minimal investment (lean startup approach) reduces risk and forces creativity.",
+      "explanation_ar": "التفكير الريادي يبدأ برؤية المشاكل كفرص. أفضل الأعمال تحل مشاكل حقيقية لأشخاص حقيقيين. البدء باستثمار أدنى (نهج الشركة الناشئة الرشيقة) يقلل المخاطر ويفرض الإبداع."
+    }
+  },
+  {
+    "slug": "wg-scenario-3",
+    "challenge_type": "scenario_choice",
+    "title_en": "Passion vs Paycheck",
+    "title_ar": "الشغف مقابل الراتب",
+    "description_en": "Navigate career choices between money and meaning.",
+    "difficulty": 4,
+    "primary_trait": "financial_awareness",
+    "base_xp": 25,
+    "bonus_xp": 12,
+    "time_limit_secs": null,
+    "content": {
+      "question_en": "You have two job offers. Job A pays 2x more but you find the work boring. Job B pays modestly but aligns with your passion and has growth potential. You have no debt and basic expenses are covered either way. Which do you choose?",
+      "question_ar": "لديك عرضا عمل. الوظيفة أ تدفع ضعفين أكثر لكن العمل ممل. الوظيفة ب تدفع بشكل متواضع لكنها تتماشى مع شغفك ولديها إمكانية نمو. ليس لديك ديون ونفقاتك الأساسية مغطاة في كلتا الحالتين. أيهما تختار؟",
+      "choices": [
+        {
+          "text_en": "Job A — money is everything; you can pursue passion later",
+          "text_ar": "الوظيفة أ — المال هو كل شيء؛ يمكنك متابعة الشغف لاحقاً",
+          "scores": {"financial_awareness": 2, "practical_thinking": 2}
+        },
+        {
+          "text_en": "Job B — aligning work with passion leads to better long-term outcomes and growth",
+          "text_ar": "الوظيفة ب — مواءمة العمل مع الشغف يؤدي لنتائج أفضل على المدى الطويل ونمو",
+          "scores": {"financial_awareness": 3, "practical_thinking": 4}
+        },
+        {
+          "text_en": "Neither — wait for a perfect job that has both",
+          "text_ar": "لا هذه ولا تلك — انتظر وظيفة مثالية فيها الاثنان",
+          "scores": {"financial_awareness": 1, "practical_thinking": 0}
+        },
+        {
+          "text_en": "Take Job A for 1 year to save money, then switch to your passion field",
+          "text_ar": "خذ الوظيفة أ لسنة لادخار المال، ثم انتقل لمجال شغفك",
+          "scores": {"financial_awareness": 4, "practical_thinking": 3}
+        }
+      ],
+      "explanation_en": "Both Job B and the 'save then switch' strategy are strong answers. Research shows people in passion-aligned work often earn more long-term through mastery and innovation. The strategic save-then-switch approach combines financial wisdom with following your purpose.",
+      "explanation_ar": "كل من الوظيفة ب واستراتيجية 'ادخر ثم انتقل' إجابات قوية. تُظهر الأبحاث أن الأشخاص في عمل متوافق مع شغفهم غالباً يكسبون أكثر على المدى الطويل. النهج الاستراتيجي يجمع الحكمة المالية مع متابعة هدفك."
+    }
+  },
+  {
+    "slug": "wg-mcq-4",
+    "challenge_type": "multiple_choice",
+    "title_en": "Assets vs Liabilities",
+    "title_ar": "الأصول مقابل الالتزامات",
+    "description_en": "Know the fundamental building blocks of wealth.",
+    "difficulty": 2,
+    "primary_trait": "financial_awareness",
+    "base_xp": 15,
+    "bonus_xp": 8,
+    "time_limit_secs": 30,
+    "content": {
+      "question_en": "In Robert Kiyosaki's 'Rich Dad Poor Dad' framework, what is the key difference between an asset and a liability?",
+      "question_ar": "في إطار 'الأب الغني الأب الفقير' لروبرت كيوساكي، ما الفرق الرئيسي بين الأصل والالتزام؟",
+      "options_en": [
+        "Assets are expensive, liabilities are cheap",
+        "Assets put money in your pocket, liabilities take money out",
+        "Assets are physical things, liabilities are digital",
+        "There is no real difference"
+      ],
+      "options_ar": [
+        "الأصول غالية، الالتزامات رخيصة",
+        "الأصول تضع المال في جيبك، الالتزامات تأخذ المال منه",
+        "الأصول أشياء مادية، الالتزامات رقمية",
+        "لا يوجد فرق حقيقي"
+      ],
+      "correct_index": 1,
+      "explanation_en": "An asset generates income or appreciates in value (rental property, investments, skills). A liability costs you money over time (car loans, credit card debt, depreciating purchases). Building wealth means acquiring more assets than liabilities.",
+      "explanation_ar": "الأصل يولّد دخلاً أو تزداد قيمته (عقار مؤجر، استثمارات، مهارات). الالتزام يكلفك مالاً بمرور الوقت (قروض سيارات، ديون بطاقات ائتمان). بناء الثروة يعني اكتساب أصول أكثر من الالتزامات."
+    }
+  },
+  {
+    "slug": "wg-scenario-4",
+    "challenge_type": "scenario_choice",
+    "title_en": "The Impulse Test",
+    "title_ar": "اختبار الشراء الاندفاعي",
+    "description_en": "Practice mindful spending habits.",
+    "difficulty": 3,
+    "primary_trait": "financial_awareness",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": null,
+    "content": {
+      "question_en": "You're online shopping and find a limited-time deal: 50% off something you've seen before but never planned to buy. The sale ends in 2 hours. What's the wisest response?",
+      "question_ar": "أنت تتسوق عبر الإنترنت وتجد عرضاً لفترة محدودة: خصم 50% على شيء رأيته من قبل لكن لم تخطط لشرائه. ينتهي العرض خلال ساعتين. ما الاستجابة الأحكم؟",
+      "choices": [
+        {
+          "text_en": "Buy it immediately — 50% off is too good to miss",
+          "text_ar": "اشتره فوراً — خصم 50% أفضل من أن يفوتك",
+          "scores": {"financial_awareness": 0, "practical_thinking": 0}
+        },
+        {
+          "text_en": "Apply the 24-hour rule: if you still want it tomorrow, consider buying it at full price",
+          "text_ar": "طبّق قاعدة 24 ساعة: إذا كنت لا تزال تريده غداً، فكّر في شرائه بالسعر الكامل",
+          "scores": {"financial_awareness": 4, "practical_thinking": 4}
+        },
+        {
+          "text_en": "Buy it and return it if you change your mind",
+          "text_ar": "اشتره وأرجعه إذا غيّرت رأيك",
+          "scores": {"financial_awareness": 1, "practical_thinking": 2}
+        },
+        {
+          "text_en": "Ask friends on social media if you should buy it",
+          "text_ar": "اسأل أصدقاءك على وسائل التواصل إذا يجب أن تشتريه",
+          "scores": {"financial_awareness": 1, "practical_thinking": 1}
+        }
+      ],
+      "explanation_en": "Artificial urgency ('sale ends in 2 hours!') is a marketing tactic designed to bypass rational thinking. The 24-hour rule breaks this spell. If you wouldn't buy it at full price, you don't really need it — 50% off something you don't need is still 100% wasted.",
+      "explanation_ar": "الاستعجال المصطنع ('العرض ينتهي خلال ساعتين!') تكتيك تسويقي مصمم لتجاوز التفكير العقلاني. قاعدة 24 ساعة تكسر هذا السحر. إذا لن تشتريه بالسعر الكامل، فأنت لا تحتاجه حقاً."
+    }
+  },
+  {
+    "slug": "wg-creative-2",
+    "challenge_type": "creative_prompt",
+    "title_en": "My Monthly Budget",
+    "title_ar": "ميزانيتي الشهرية",
+    "description_en": "Create a realistic personal budget plan.",
+    "difficulty": 2,
+    "primary_trait": "financial_awareness",
+    "base_xp": 15,
+    "bonus_xp": 8,
+    "time_limit_secs": 90,
+    "content": {
+      "prompt_en": "Imagine you have a monthly income of $1,000 (or equivalent). Create a budget plan that covers: (1) Essential needs, (2) Wants/entertainment, (3) Savings goal, (4) One 'investment in yourself' (course, book, tool). List each category with specific amounts.",
+      "prompt_ar": "تخيل أن دخلك الشهري 1000 دولار (أو ما يعادلها). أنشئ خطة ميزانية تغطي: (1) الاحتياجات الأساسية، (2) الرغبات/الترفيه، (3) هدف ادخار، (4) 'استثمار في نفسك' واحد (دورة، كتاب، أداة). اذكر كل فئة بمبالغ محددة.",
+      "explanation_en": "Budgeting is the foundation of financial health. Writing down specific numbers forces you to make conscious choices about your money instead of wondering where it went. Even rough budgets dramatically improve spending awareness.",
+      "explanation_ar": "الميزانية هي أساس الصحة المالية. كتابة أرقام محددة تجبرك على اتخاذ خيارات واعية بشأن مالك بدلاً من التساؤل أين ذهب. حتى الميزانيات التقريبية تحسّن الوعي بالإنفاق بشكل كبير."
+    }
+  }
+]

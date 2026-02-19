@@ -1,0 +1,322 @@
+[
+  {
+    "slug": "sb-scenario-1",
+    "challenge_type": "scenario_choice",
+    "title_en": "The Mediator",
+    "title_ar": "الوسيط",
+    "description_en": "Navigate a conflict between two friends.",
+    "difficulty": 3,
+    "primary_trait": "social_skills",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": null,
+    "content": {
+      "question_en": "Two of your close friends had a big argument and both come to you separately, each saying the other is wrong. They expect you to take sides. What do you do?",
+      "question_ar": "صديقان مقربان تشاجرا بشدة وكلاهما يأتي إليك منفرداً، كل منهما يقول أن الآخر مخطئ. يتوقعان أن تنحاز لأحدهما. ماذا تفعل؟",
+      "choices": [
+        {
+          "text_en": "Side with the friend you agree with more",
+          "text_ar": "انحز للصديق الذي تتفق معه أكثر",
+          "scores": {"social_skills": 1, "empathy": 1}
+        },
+        {
+          "text_en": "Listen to both, validate their feelings, then encourage them to talk directly",
+          "text_ar": "استمع لكليهما، اعترف بمشاعرهما، ثم شجعهما على التحدث مباشرة",
+          "scores": {"social_skills": 4, "empathy": 4}
+        },
+        {
+          "text_en": "Avoid both of them until the conflict blows over",
+          "text_ar": "تجنب كليهما حتى ينتهي الخلاف",
+          "scores": {"social_skills": 0, "empathy": 0}
+        },
+        {
+          "text_en": "Tell them both they're being childish and should get over it",
+          "text_ar": "أخبرهما أنهما يتصرفان بطفولية ويجب أن يتجاوزا الأمر",
+          "scores": {"social_skills": 1, "empathy": 0}
+        }
+      ],
+      "explanation_en": "Effective mediation means listening without judgment, validating emotions, and empowering people to resolve their own conflicts. Taking sides damages trust, while avoidance lets problems grow. The best mediators help others find their own solutions.",
+      "explanation_ar": "الوساطة الفعالة تعني الاستماع بدون حكم، والاعتراف بالمشاعر، وتمكين الأشخاص من حل خلافاتهم. الانحياز يضر بالثقة، بينما التجنب يترك المشاكل تنمو. أفضل الوسطاء يساعدون الآخرين على إيجاد حلولهم."
+    }
+  },
+  {
+    "slug": "sb-mcq-1",
+    "challenge_type": "multiple_choice",
+    "title_en": "Active Listening",
+    "title_ar": "الاستماع الفعال",
+    "description_en": "Identify what active listening looks like.",
+    "difficulty": 2,
+    "primary_trait": "social_skills",
+    "base_xp": 15,
+    "bonus_xp": 8,
+    "time_limit_secs": 30,
+    "content": {
+      "question_en": "Which of these behaviors BEST demonstrates active listening?",
+      "question_ar": "أي من هذه السلوكيات يُظهر الاستماع الفعال بشكل أفضل؟",
+      "options_en": [
+        "Thinking about what you'll say next while the other person talks",
+        "Paraphrasing what the speaker said and asking clarifying questions",
+        "Nodding constantly while checking your phone",
+        "Immediately offering solutions before they finish speaking"
+      ],
+      "options_ar": [
+        "التفكير فيما ستقوله بعد ذلك بينما يتحدث الشخص الآخر",
+        "إعادة صياغة ما قاله المتحدث وطرح أسئلة توضيحية",
+        "الإيماء باستمرار أثناء تفحص هاتفك",
+        "تقديم الحلول فوراً قبل أن ينهوا كلامهم"
+      ],
+      "correct_index": 1,
+      "explanation_en": "Active listening involves fully concentrating on the speaker, then reflecting back what you heard to confirm understanding. It includes paraphrasing ('So what you're saying is...'), asking open questions, and giving your full attention.",
+      "explanation_ar": "الاستماع الفعال يتضمن التركيز الكامل على المتحدث، ثم عكس ما سمعته لتأكيد الفهم. يشمل إعادة الصياغة ('إذن ما تقوله هو...') وطرح أسئلة مفتوحة ومنح انتباهك الكامل."
+    }
+  },
+  {
+    "slug": "sb-scenario-2",
+    "challenge_type": "scenario_choice",
+    "title_en": "The Team Disagreement",
+    "title_ar": "خلاف الفريق",
+    "description_en": "Handle disagreeing with your team's decision.",
+    "difficulty": 3,
+    "primary_trait": "social_skills",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": null,
+    "content": {
+      "question_en": "In a group project, the team votes 4-1 to take an approach you believe will fail. You have strong reasons for your concern. How do you handle it?",
+      "question_ar": "في مشروع جماعي، يصوّت الفريق 4-1 لاتباع نهج تعتقد أنه سيفشل. لديك أسباب قوية لقلقك. كيف تتعامل مع الأمر؟",
+      "choices": [
+        {
+          "text_en": "Go along silently but don't contribute much — they'll see you were right",
+          "text_ar": "وافق بصمت لكن لا تساهم كثيراً — سيرون أنك كنت محقاً",
+          "scores": {"social_skills": 0, "empathy": 0}
+        },
+        {
+          "text_en": "Calmly present your concerns with evidence, then support the team's final decision",
+          "text_ar": "اعرض مخاوفك بهدوء مع أدلة، ثم ادعم قرار الفريق النهائي",
+          "scores": {"social_skills": 4, "empathy": 3}
+        },
+        {
+          "text_en": "Insist they change their minds — you know better",
+          "text_ar": "أصر على أن يغيروا رأيهم — أنت تعرف أفضل",
+          "scores": {"social_skills": 1, "empathy": 0}
+        },
+        {
+          "text_en": "Leave the group and do the project alone",
+          "text_ar": "غادر المجموعة وأنجز المشروع وحدك",
+          "scores": {"social_skills": 0, "empathy": 0}
+        }
+      ],
+      "explanation_en": "Effective team players voice disagreement constructively while ultimately supporting group decisions. This is called 'disagree and commit' — you share your perspective respectfully, then give full effort regardless of the outcome.",
+      "explanation_ar": "أعضاء الفريق الفعّالون يعبّرون عن اختلافهم بشكل بنّاء مع دعم قرارات المجموعة في النهاية. هذا يسمى 'اختلف والتزم' — تشارك وجهة نظرك باحترام، ثم تبذل جهداً كاملاً بغض النظر عن النتيجة."
+    }
+  },
+  {
+    "slug": "sb-creative-1",
+    "challenge_type": "creative_prompt",
+    "title_en": "The Introduction",
+    "title_ar": "التعريف بالنفس",
+    "description_en": "Write an engaging self-introduction for a new group.",
+    "difficulty": 2,
+    "primary_trait": "social_skills",
+    "base_xp": 15,
+    "bonus_xp": 8,
+    "time_limit_secs": 90,
+    "content": {
+      "prompt_en": "You just joined a new club, team, or class. Write a 30-second introduction that: (1) Shares something unique about you, (2) Shows genuine interest in the group, (3) Invites connection. Make it memorable but authentic — not a rehearsed speech.",
+      "prompt_ar": "انضممت للتو إلى نادٍ أو فريق أو فصل جديد. اكتب تعريفاً بنفسك مدته 30 ثانية: (1) يشارك شيئاً فريداً عنك، (2) يُظهر اهتماماً حقيقياً بالمجموعة، (3) يدعو للتواصل. اجعله لا يُنسى لكن صادقاً — ليس خطاباً محفوظاً.",
+      "explanation_en": "First impressions are formed in 7 seconds but can last forever. The best introductions balance sharing about yourself with showing curiosity about others. People remember how you made them feel, not what you said.",
+      "explanation_ar": "الانطباعات الأولى تتشكل في 7 ثوانٍ لكن يمكن أن تدوم للأبد. أفضل التعريفات توازن بين المشاركة عن نفسك وإظهار الفضول تجاه الآخرين. يتذكر الناس كيف جعلتهم يشعرون، وليس ما قلته."
+    }
+  },
+  {
+    "slug": "sb-mcq-2",
+    "challenge_type": "multiple_choice",
+    "title_en": "Reading Body Language",
+    "title_ar": "قراءة لغة الجسد",
+    "description_en": "Understand nonverbal communication cues.",
+    "difficulty": 2,
+    "primary_trait": "social_skills",
+    "base_xp": 15,
+    "bonus_xp": 8,
+    "time_limit_secs": 30,
+    "content": {
+      "question_en": "During a conversation, your friend's arms are crossed, they avoid eye contact, and give short answers. This most likely indicates:",
+      "question_ar": "أثناء محادثة، ذراعا صديقك متقاطعتان، يتجنب التواصل البصري، ويعطي إجابات قصيرة. هذا على الأرجح يشير إلى:",
+      "options_en": [
+        "They are cold and need a jacket",
+        "They feel uncomfortable, defensive, or want to end the conversation",
+        "They are deeply focused on what you're saying",
+        "They always stand this way — it means nothing"
+      ],
+      "options_ar": [
+        "يشعرون بالبرد ويحتاجون سترة",
+        "يشعرون بعدم الارتياح أو الدفاعية أو يريدون إنهاء المحادثة",
+        "يركزون بعمق على ما تقوله",
+        "يقفون هكذا دائماً — لا يعني شيئاً"
+      ],
+      "correct_index": 1,
+      "explanation_en": "Clusters of closed body language (crossed arms + avoided eye contact + short responses) typically signal discomfort or disengagement. While any single cue might mean nothing, multiple cues together form a pattern worth noticing.",
+      "explanation_ar": "مجموعات لغة الجسد المنغلقة (ذراعان متقاطعتان + تجنب التواصل البصري + إجابات قصيرة) عادةً تشير إلى عدم الارتياح. بينما أي إشارة واحدة قد لا تعني شيئاً، عدة إشارات معاً تشكل نمطاً يستحق الملاحظة."
+    }
+  },
+  {
+    "slug": "sb-scenario-3",
+    "challenge_type": "scenario_choice",
+    "title_en": "Stolen Credit",
+    "title_ar": "الفضل المسروق",
+    "description_en": "Handle someone taking credit for your work.",
+    "difficulty": 4,
+    "primary_trait": "social_skills",
+    "base_xp": 25,
+    "bonus_xp": 12,
+    "time_limit_secs": null,
+    "content": {
+      "question_en": "During a team presentation, a colleague presents your idea as their own in front of the teacher/boss. Everyone seems impressed with 'their' idea. What do you do?",
+      "question_ar": "أثناء عرض فريقي، زميل يقدم فكرتك على أنها فكرته أمام المعلم/المدير. الجميع يبدو معجباً بـ'فكرتهم'. ماذا تفعل؟",
+      "choices": [
+        {
+          "text_en": "Call them out publicly right then and there",
+          "text_ar": "فاضحهم علناً في تلك اللحظة",
+          "scores": {"social_skills": 1, "empathy": 0}
+        },
+        {
+          "text_en": "Talk to them privately after, express how it affected you, and set boundaries",
+          "text_ar": "تحدث معهم على انفراد بعد ذلك، عبّر عن تأثير ذلك عليك، وضع حدوداً",
+          "scores": {"social_skills": 4, "empathy": 3}
+        },
+        {
+          "text_en": "Say nothing and let it go — it's not worth the conflict",
+          "text_ar": "لا تقل شيئاً ودعها تمر — لا تستحق الخلاف",
+          "scores": {"social_skills": 1, "empathy": 2}
+        },
+        {
+          "text_en": "Complain about them to other colleagues but never confront them",
+          "text_ar": "تشتكِ منهم لزملاء آخرين لكن لا تواجههم أبداً",
+          "scores": {"social_skills": 0, "empathy": 0}
+        }
+      ],
+      "explanation_en": "Private confrontation protects the relationship while asserting your rights. Public call-outs create enemies. Silence enables the behavior. The 'I' statement approach ('When you presented my idea, I felt...') is assertive without being aggressive.",
+      "explanation_ar": "المواجهة الخاصة تحمي العلاقة مع تأكيد حقوقك. الفضح العلني يخلق أعداء. الصمت يمكّن السلوك. نهج عبارة 'أنا' ('عندما قدمت فكرتي، شعرت بـ...') حازم بدون عدوانية."
+    }
+  },
+  {
+    "slug": "sb-mcq-3",
+    "challenge_type": "multiple_choice",
+    "title_en": "I-Statements",
+    "title_ar": "عبارات الأنا",
+    "description_en": "Master assertive communication technique.",
+    "difficulty": 3,
+    "primary_trait": "social_skills",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": 30,
+    "content": {
+      "question_en": "The 'I statement' technique is used in healthy communication. Which is a proper 'I statement'?",
+      "question_ar": "تقنية 'عبارات الأنا' تُستخدم في التواصل الصحي. أيها عبارة 'أنا' صحيحة؟",
+      "options_en": [
+        "You always ignore me and it's your fault",
+        "I feel hurt when my messages go unanswered because I value our communication",
+        "I think you're being selfish",
+        "I'm right and you need to accept that"
+      ],
+      "options_ar": [
+        "أنت دائماً تتجاهلني وهذا خطأك",
+        "أشعر بالأذى عندما لا تُجاب رسائلي لأنني أقدّر تواصلنا",
+        "أعتقد أنك أناني",
+        "أنا على حق وعليك أن تقبل ذلك"
+      ],
+      "correct_index": 1,
+      "explanation_en": "A proper 'I statement' has three parts: 'I feel [emotion] when [specific behavior] because [reason/need].' It expresses your feelings without blaming or attacking the other person, making them more likely to listen and respond positively.",
+      "explanation_ar": "عبارة 'أنا' الصحيحة لها ثلاثة أجزاء: 'أشعر بـ[عاطفة] عندما [سلوك محدد] لأن [سبب/حاجة].' تعبّر عن مشاعرك بدون لوم أو مهاجمة الشخص الآخر، مما يجعلهم أكثر احتمالاً للاستماع والاستجابة إيجابياً."
+    }
+  },
+  {
+    "slug": "sb-scenario-4",
+    "challenge_type": "scenario_choice",
+    "title_en": "The Silent Member",
+    "title_ar": "العضو الصامت",
+    "description_en": "Lead a team when someone isn't contributing.",
+    "difficulty": 4,
+    "primary_trait": "social_skills",
+    "base_xp": 25,
+    "bonus_xp": 12,
+    "time_limit_secs": null,
+    "content": {
+      "question_en": "You're leading a group project and one team member hasn't contributed anything in two weeks. The deadline is approaching. The rest of the team is frustrated. As the leader, what's your best move?",
+      "question_ar": "أنت تقود مشروعاً جماعياً وأحد أعضاء الفريق لم يساهم بأي شيء لمدة أسبوعين. الموعد النهائي يقترب. بقية الفريق محبطون. كقائد، ما أفضل خطوة لك؟",
+      "choices": [
+        {
+          "text_en": "Remove them from the group and split their work among others",
+          "text_ar": "أزلهم من المجموعة ووزّع عملهم على الآخرين",
+          "scores": {"social_skills": 1, "empathy": 0}
+        },
+        {
+          "text_en": "Reach out privately to understand if something is going on, then assign a small achievable task",
+          "text_ar": "تواصل معهم على انفراد لفهم إن كان هناك شيء يحدث، ثم كلّفهم بمهمة صغيرة قابلة للتحقيق",
+          "scores": {"social_skills": 4, "empathy": 4}
+        },
+        {
+          "text_en": "Send an angry message in the group chat calling them out",
+          "text_ar": "أرسل رسالة غاضبة في محادثة المجموعة تفضحهم",
+          "scores": {"social_skills": 0, "empathy": 0}
+        },
+        {
+          "text_en": "Do their work yourself — it's easier than dealing with the conflict",
+          "text_ar": "أنجز عملهم بنفسك — أسهل من التعامل مع الخلاف",
+          "scores": {"social_skills": 1, "empathy": 1}
+        }
+      ],
+      "explanation_en": "Great leaders check in with empathy before assuming the worst. The person might be dealing with personal issues, anxiety, or confusion about their role. A private conversation + a small, clear task re-engages them without public shame.",
+      "explanation_ar": "القادة العظماء يتواصلون بتعاطف قبل افتراض الأسوأ. قد يتعامل الشخص مع مشاكل شخصية أو قلق أو ارتباك حول دوره. محادثة خاصة + مهمة صغيرة واضحة تعيد إشراكهم بدون إحراج علني."
+    }
+  },
+  {
+    "slug": "sb-creative-2",
+    "challenge_type": "creative_prompt",
+    "title_en": "The Misunderstanding Fix",
+    "title_ar": "إصلاح سوء الفهم",
+    "description_en": "Practice resolving a communication breakdown.",
+    "difficulty": 3,
+    "primary_trait": "social_skills",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": 90,
+    "content": {
+      "prompt_en": "Your friend sent you a text that you misunderstood, and you replied harshly. Now they're upset. Write the message you'd send to: (1) Acknowledge the misunderstanding, (2) Take responsibility for your reaction, (3) Repair the connection. Be sincere, not defensive.",
+      "prompt_ar": "أرسل لك صديقك رسالة أسأت فهمها، وردّيت بقسوة. الآن هم منزعجون. اكتب الرسالة التي سترسلها لـ: (1) الاعتراف بسوء الفهم، (2) تحمل مسؤولية ردة فعلك، (3) إصلاح العلاقة. كن صادقاً، ليس دفاعياً.",
+      "explanation_en": "Repair attempts are the #1 predictor of healthy relationships according to John Gottman's research. Taking responsibility without making excuses shows emotional maturity and builds deeper trust.",
+      "explanation_ar": "محاولات الإصلاح هي المؤشر الأول للعلاقات الصحية وفقاً لبحث جون غوتمان. تحمل المسؤولية بدون أعذار يُظهر نضجاً عاطفياً ويبني ثقة أعمق."
+    }
+  },
+  {
+    "slug": "sb-mcq-4",
+    "challenge_type": "multiple_choice",
+    "title_en": "The Power of Nonverbal",
+    "title_ar": "قوة غير اللفظي",
+    "description_en": "Know how much of communication is nonverbal.",
+    "difficulty": 3,
+    "primary_trait": "social_skills",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": 30,
+    "content": {
+      "question_en": "According to Albert Mehrabian's research on emotional communication, when words and body language contradict each other, people tend to believe:",
+      "question_ar": "وفقاً لبحث ألبرت محرابيان حول التواصل العاطفي، عندما تتناقض الكلمات ولغة الجسد، يميل الناس لتصديق:",
+      "options_en": [
+        "The words over body language",
+        "Body language and tone over words",
+        "Neither — they get confused and ignore both",
+        "Whoever speaks louder"
+      ],
+      "options_ar": [
+        "الكلمات على لغة الجسد",
+        "لغة الجسد ونبرة الصوت على الكلمات",
+        "لا شيء — يرتبكون ويتجاهلون الاثنين",
+        "من يتحدث بصوت أعلى"
+      ],
+      "correct_index": 1,
+      "explanation_en": "When words conflict with body language, people trust nonverbal cues (tone, facial expressions, posture) far more than the actual words. This is why saying 'I'm fine' while looking upset doesn't convince anyone. Congruence between your words and body language builds trust.",
+      "explanation_ar": "عندما تتعارض الكلمات مع لغة الجسد، يثق الناس بالإشارات غير اللفظية (النبرة، تعبيرات الوجه، الوضعية) أكثر بكثير من الكلمات. لهذا قول 'أنا بخير' أثناء الانزعاج لا يقنع أحداً."
+    }
+  }
+]

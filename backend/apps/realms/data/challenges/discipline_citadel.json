@@ -1,0 +1,292 @@
+[
+  {
+    "slug": "dc-scenario-1",
+    "challenge_type": "scenario_choice",
+    "title_en": "The Snooze Button Battle",
+    "title_ar": "معركة زر الغفوة",
+    "description_en": "Face the morning alarm dilemma.",
+    "difficulty": 2,
+    "primary_trait": "self_discipline",
+    "base_xp": 15,
+    "bonus_xp": 8,
+    "time_limit_secs": null,
+    "content": {
+      "question_en": "Your alarm goes off at 6 AM for an important goal you set — waking up early to exercise before school/work. You're exhausted and your bed is warm. What do you do?",
+      "question_ar": "رن منبهك الساعة 6 صباحاً لهدف مهم وضعته — الاستيقاظ مبكراً للتمرين قبل المدرسة/العمل. أنت منهك وسريرك دافئ. ماذا تفعل؟",
+      "choices": [
+        {
+          "text_en": "Hit snooze three times, then rush through the morning",
+          "text_ar": "اضغط غفوة ثلاث مرات، ثم أسرع في الصباح",
+          "scores": {"self_discipline": 0, "practical_thinking": 1}
+        },
+        {
+          "text_en": "Get up immediately — you made a commitment to yourself",
+          "text_ar": "انهض فوراً — لقد قطعت وعداً لنفسك",
+          "scores": {"self_discipline": 4, "practical_thinking": 3}
+        },
+        {
+          "text_en": "Snooze once, then do a shorter workout",
+          "text_ar": "اضغط غفوة مرة، ثم قم بتمرين أقصر",
+          "scores": {"self_discipline": 2, "practical_thinking": 3}
+        },
+        {
+          "text_en": "Skip today and promise to start tomorrow",
+          "text_ar": "تخطَّ اليوم وعد نفسك بالبدء غداً",
+          "scores": {"self_discipline": 0, "practical_thinking": 0}
+        }
+      ],
+      "explanation_en": "Getting up immediately honors your commitment. Discipline is doing what you planned even when you don't feel like it. The 'I'll start tomorrow' trap is the biggest enemy of habit formation.",
+      "explanation_ar": "النهوض فوراً يحترم التزامك. الانضباط هو فعل ما خططت له حتى عندما لا ترغب. فخ 'سأبدأ غداً' هو أكبر عدو لبناء العادات."
+    }
+  },
+  {
+    "slug": "dc-mcq-1",
+    "challenge_type": "multiple_choice",
+    "title_en": "The Habit Timeline",
+    "title_ar": "الجدول الزمني للعادات",
+    "description_en": "How long does it really take to form a habit?",
+    "difficulty": 3,
+    "primary_trait": "self_discipline",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": 30,
+    "content": {
+      "question_en": "According to research by Phillippa Lally at University College London, how long does it take on average to form a new habit?",
+      "question_ar": "وفقاً لبحث فيليبا لالي في كلية لندن الجامعية، كم يستغرق تكوين عادة جديدة في المتوسط؟",
+      "options_en": ["7 days", "21 days", "66 days", "365 days"],
+      "options_ar": ["7 أيام", "21 يوماً", "66 يوماً", "365 يوماً"],
+      "correct_index": 2,
+      "explanation_en": "Lally's 2009 study found it takes an average of 66 days for a new behavior to become automatic. The popular '21 days' myth comes from a misquoted plastic surgery book from the 1960s. Real habit formation takes patience.",
+      "explanation_ar": "وجدت دراسة لالي عام 2009 أن الأمر يستغرق 66 يوماً في المتوسط ليصبح السلوك الجديد تلقائياً. خرافة '21 يوماً' الشائعة تأتي من كتاب جراحة تجميل من الستينيات. بناء العادات الحقيقي يتطلب صبراً."
+    }
+  },
+  {
+    "slug": "dc-scenario-2",
+    "challenge_type": "scenario_choice",
+    "title_en": "The Social Media Trap",
+    "title_ar": "فخ وسائل التواصل",
+    "description_en": "Handle digital temptation during focused work.",
+    "difficulty": 3,
+    "primary_trait": "self_discipline",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": null,
+    "content": {
+      "question_en": "You're studying for an important exam. Your phone buzzes with a notification — your favorite creator just posted something new. You've been studying for 30 minutes. What's your move?",
+      "question_ar": "أنت تدرس لامتحان مهم. هاتفك يهتز بإشعار — صانع المحتوى المفضل لديك نشر شيئاً جديداً. كنت تدرس لمدة 30 دقيقة. ما خطوتك؟",
+      "choices": [
+        {
+          "text_en": "Quick peek — it'll only take a minute",
+          "text_ar": "نظرة سريعة — ستستغرق دقيقة فقط",
+          "scores": {"self_discipline": 1, "practical_thinking": 1}
+        },
+        {
+          "text_en": "Put your phone in another room and continue studying",
+          "text_ar": "ضع هاتفك في غرفة أخرى وتابع الدراسة",
+          "scores": {"self_discipline": 4, "practical_thinking": 4}
+        },
+        {
+          "text_en": "Finish your current study session, then watch as a reward",
+          "text_ar": "أنهِ جلسة الدراسة الحالية، ثم شاهد كمكافأة",
+          "scores": {"self_discipline": 3, "practical_thinking": 4}
+        },
+        {
+          "text_en": "Give up studying — you've lost focus anyway",
+          "text_ar": "تخلَّ عن الدراسة — لقد فقدت تركيزك على أي حال",
+          "scores": {"self_discipline": 0, "practical_thinking": 0}
+        }
+      ],
+      "explanation_en": "Removing temptation (phone in another room) is the strongest discipline strategy. Research shows that 'just one minute' on social media typically turns into 20+. Using content as a reward after studying is also a solid strategy called 'temptation bundling'.",
+      "explanation_ar": "إزالة الإغراء (الهاتف في غرفة أخرى) هي أقوى استراتيجية انضباط. تُظهر الأبحاث أن 'دقيقة واحدة فقط' على وسائل التواصل تتحول عادةً إلى 20+. استخدام المحتوى كمكافأة بعد الدراسة هو أيضاً استراتيجية جيدة تسمى 'تجميع الإغراءات'."
+    }
+  },
+  {
+    "slug": "dc-creative-1",
+    "challenge_type": "creative_prompt",
+    "title_en": "Design Your Morning",
+    "title_ar": "صمّم صباحك",
+    "description_en": "Create your ideal morning routine.",
+    "difficulty": 2,
+    "primary_trait": "self_discipline",
+    "base_xp": 15,
+    "bonus_xp": 8,
+    "time_limit_secs": 90,
+    "content": {
+      "prompt_en": "Design your ideal morning routine from the moment you wake up until you start your main activity (school/work). Include at least 5 specific activities with time allocations. Think about what would set you up for the most productive, positive day.",
+      "prompt_ar": "صمّم روتينك الصباحي المثالي من لحظة استيقاظك حتى بدء نشاطك الرئيسي (المدرسة/العمل). اذكر 5 أنشطة محددة على الأقل مع تخصيص الوقت. فكّر فيما سيعدّك لأكثر يوم إنتاجي وإيجابي.",
+      "explanation_en": "Morning routines reduce decision fatigue — the more you automate your morning, the more mental energy you save for important decisions later. The best routines include movement, hydration, and a moment of intention-setting.",
+      "explanation_ar": "الروتين الصباحي يقلل إرهاق القرارات — كلما أتمتت صباحك، حفظت طاقة ذهنية أكثر للقرارات المهمة لاحقاً. أفضل الروتينات تشمل الحركة والترطيب ولحظة لتحديد النية."
+    }
+  },
+  {
+    "slug": "dc-mcq-2",
+    "challenge_type": "multiple_choice",
+    "title_en": "The Marshmallow Test",
+    "title_ar": "اختبار المارشميلو",
+    "description_en": "Understand delayed gratification research.",
+    "difficulty": 3,
+    "primary_trait": "self_discipline",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": 30,
+    "content": {
+      "question_en": "In Walter Mischel's famous 'Marshmallow Experiment,' children who waited for the second marshmallow were later found to have better outcomes in which area?",
+      "question_ar": "في تجربة المارشميلو الشهيرة لوالتر ميشيل، الأطفال الذين انتظروا المارشميلو الثاني وُجد لاحقاً أن لديهم نتائج أفضل في أي مجال؟",
+      "options_en": ["Physical strength", "SAT scores and academic achievement", "Musical ability", "Height and weight"],
+      "options_ar": ["القوة البدنية", "درجات SAT والإنجاز الأكاديمي", "القدرة الموسيقية", "الطول والوزن"],
+      "correct_index": 1,
+      "explanation_en": "Children who could delay gratification scored an average of 210 points higher on the SAT years later. Delayed gratification is one of the strongest predictors of life success — it's a skill you can practice and improve.",
+      "explanation_ar": "الأطفال الذين استطاعوا تأخير الإشباع سجلوا بمعدل 210 نقاط أعلى في اختبار SAT بعد سنوات. تأخير الإشباع هو أحد أقوى مؤشرات النجاح في الحياة — إنها مهارة يمكنك ممارستها وتحسينها."
+    }
+  },
+  {
+    "slug": "dc-scenario-3",
+    "challenge_type": "scenario_choice",
+    "title_en": "The Deadline Dilemma",
+    "title_ar": "معضلة الموعد النهائي",
+    "description_en": "Balance social life with responsibilities.",
+    "difficulty": 4,
+    "primary_trait": "self_discipline",
+    "base_xp": 25,
+    "bonus_xp": 12,
+    "time_limit_secs": null,
+    "content": {
+      "question_en": "Your friends invite you to an exciting event tonight, but you have a project deadline tomorrow morning. You're about 60% done. What do you choose?",
+      "question_ar": "أصدقاؤك يدعونك لحدث مثير الليلة، لكن لديك موعد نهائي لمشروع غداً صباحاً. أنت منتهٍ بنسبة 60% تقريباً. ماذا تختار؟",
+      "choices": [
+        {
+          "text_en": "Go to the event — you'll finish the project when you get back late",
+          "text_ar": "اذهب للحدث — ستنهي المشروع عندما تعود متأخراً",
+          "scores": {"self_discipline": 1, "practical_thinking": 1}
+        },
+        {
+          "text_en": "Stay home and finish the project, then celebrate after submission",
+          "text_ar": "ابقَ في المنزل وأنهِ المشروع، ثم احتفل بعد التسليم",
+          "scores": {"self_discipline": 4, "practical_thinking": 4}
+        },
+        {
+          "text_en": "Go for one hour, set a strict timer, then come back to work",
+          "text_ar": "اذهب لساعة واحدة، ضع مؤقتاً صارماً، ثم عد للعمل",
+          "scores": {"self_discipline": 2, "practical_thinking": 2}
+        },
+        {
+          "text_en": "Ask for a deadline extension so you can do both",
+          "text_ar": "اطلب تمديد الموعد النهائي لتتمكن من فعل الاثنين",
+          "scores": {"self_discipline": 1, "practical_thinking": 3}
+        }
+      ],
+      "explanation_en": "Prioritizing the deadline shows strong discipline. The 'one hour' compromise rarely works — social events are hard to leave. Planning a celebration AFTER the deadline uses anticipated reward as motivation, which is a proven self-regulation strategy.",
+      "explanation_ar": "تحديد أولوية الموعد النهائي يُظهر انضباطاً قوياً. حل 'ساعة واحدة' نادراً ما ينجح — الأحداث الاجتماعية يصعب مغادرتها. التخطيط للاحتفال بعد الموعد النهائي يستخدم المكافأة المتوقعة كتحفيز."
+    }
+  },
+  {
+    "slug": "dc-mcq-3",
+    "challenge_type": "multiple_choice",
+    "title_en": "The Pomodoro Method",
+    "title_ar": "طريقة بومودورو",
+    "description_en": "Know the popular time management technique.",
+    "difficulty": 2,
+    "primary_trait": "self_discipline",
+    "base_xp": 15,
+    "bonus_xp": 8,
+    "time_limit_secs": 30,
+    "content": {
+      "question_en": "The Pomodoro Technique is a popular time management method. What is the standard work interval length?",
+      "question_ar": "تقنية بومودورو هي طريقة شائعة لإدارة الوقت. ما هي مدة فترة العمل القياسية؟",
+      "options_en": ["15 minutes", "25 minutes", "45 minutes", "60 minutes"],
+      "options_ar": ["15 دقيقة", "25 دقيقة", "45 دقيقة", "60 دقيقة"],
+      "correct_index": 1,
+      "explanation_en": "The Pomodoro Technique uses 25-minute focused work sessions followed by 5-minute breaks. After four sessions, you take a longer 15-30 minute break. It works because it makes large tasks feel manageable by breaking them into small chunks.",
+      "explanation_ar": "تقنية بومودورو تستخدم جلسات عمل مركزة مدتها 25 دقيقة يتبعها استراحة 5 دقائق. بعد أربع جلسات، تأخذ استراحة أطول 15-30 دقيقة. تنجح لأنها تجعل المهام الكبيرة تبدو قابلة للإدارة."
+    }
+  },
+  {
+    "slug": "dc-scenario-4",
+    "challenge_type": "scenario_choice",
+    "title_en": "Starting Strong",
+    "title_ar": "البداية القوية",
+    "description_en": "Choose the best approach to building a new exercise habit.",
+    "difficulty": 3,
+    "primary_trait": "self_discipline",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": null,
+    "content": {
+      "question_en": "You've decided to start exercising regularly. You haven't worked out in months. Which approach gives you the best chance of sticking with it?",
+      "question_ar": "قررت البدء بالتمرين بانتظام. لم تتمرن منذ أشهر. أي نهج يمنحك أفضل فرصة للالتزام؟",
+      "choices": [
+        {
+          "text_en": "Go all in — 2 hours at the gym every day starting tomorrow",
+          "text_ar": "انطلق بكل قوة — ساعتان في الصالة كل يوم بدءاً من الغد",
+          "scores": {"self_discipline": 1, "practical_thinking": 0}
+        },
+        {
+          "text_en": "Start with 10 minutes of walking daily, gradually increase over weeks",
+          "text_ar": "ابدأ بـ 10 دقائق مشي يومياً، وزد تدريجياً على مدار أسابيع",
+          "scores": {"self_discipline": 4, "practical_thinking": 4}
+        },
+        {
+          "text_en": "Only exercise when you feel motivated",
+          "text_ar": "تمرّن فقط عندما تشعر بالتحفيز",
+          "scores": {"self_discipline": 0, "practical_thinking": 1}
+        },
+        {
+          "text_en": "Buy expensive gym equipment first — that'll commit you",
+          "text_ar": "اشترِ معدات رياضية غالية أولاً — ذلك سيلزمك",
+          "scores": {"self_discipline": 1, "practical_thinking": 1}
+        }
+      ],
+      "explanation_en": "Starting small is the key to habit formation. BJ Fogg's 'Tiny Habits' research shows that making a habit ridiculously small at first (2-minute rule) builds the neural pathways of consistency. Going too hard leads to burnout and quitting within days.",
+      "explanation_ar": "البدء صغيراً هو مفتاح تكوين العادات. يُظهر بحث بي جي فوغ 'العادات الصغيرة' أن جعل العادة صغيرة جداً في البداية (قاعدة الدقيقتين) يبني مسارات الاتساق العصبية. الإفراط يؤدي للإرهاق والاستسلام خلال أيام."
+    }
+  },
+  {
+    "slug": "dc-creative-2",
+    "challenge_type": "creative_prompt",
+    "title_en": "Letter to Future Me",
+    "title_ar": "رسالة لنفسي المستقبلية",
+    "description_en": "Write a letter to your future self about a goal.",
+    "difficulty": 3,
+    "primary_trait": "self_discipline",
+    "base_xp": 20,
+    "bonus_xp": 10,
+    "time_limit_secs": 120,
+    "content": {
+      "prompt_en": "Write a short letter to yourself 6 months from now. Pick one specific goal you want to achieve. Describe: (1) Why this goal matters to you, (2) What you're willing to sacrifice for it, (3) What your future self will feel when they achieve it.",
+      "prompt_ar": "اكتب رسالة قصيرة لنفسك بعد 6 أشهر من الآن. اختر هدفاً واحداً محدداً تريد تحقيقه. اوصف: (1) لماذا هذا الهدف مهم لك، (2) ما الذي أنت مستعد للتضحية من أجله، (3) ما الذي ستشعر به نفسك المستقبلية عند تحقيقه.",
+      "explanation_en": "Writing to your future self creates psychological accountability. Research shows that people who feel connected to their future selves make better long-term decisions. This exercise strengthens the bridge between present action and future reward.",
+      "explanation_ar": "الكتابة لنفسك المستقبلية تخلق مسؤولية نفسية. تُظهر الأبحاث أن الأشخاص الذين يشعرون بالارتباط بأنفسهم المستقبلية يتخذون قرارات أفضل على المدى الطويل."
+    }
+  },
+  {
+    "slug": "dc-mcq-4",
+    "challenge_type": "multiple_choice",
+    "title_en": "Willpower Science",
+    "title_ar": "علم قوة الإرادة",
+    "description_en": "Understand what builds lasting willpower.",
+    "difficulty": 4,
+    "primary_trait": "self_discipline",
+    "base_xp": 25,
+    "bonus_xp": 12,
+    "time_limit_secs": 35,
+    "content": {
+      "question_en": "According to modern psychology research, which strategy is MOST effective for building lasting self-control?",
+      "question_ar": "وفقاً لأبحاث علم النفس الحديث، أي استراتيجية هي الأكثر فعالية لبناء ضبط نفس دائم؟",
+      "options_en": [
+        "Relying on pure willpower in the moment",
+        "Changing your environment to reduce temptation",
+        "Punishing yourself when you fail",
+        "Only attempting easy goals"
+      ],
+      "options_ar": [
+        "الاعتماد على قوة الإرادة الخالصة في اللحظة",
+        "تغيير بيئتك لتقليل الإغراء",
+        "معاقبة نفسك عند الفشل",
+        "محاولة الأهداف السهلة فقط"
+      ],
+      "correct_index": 1,
+      "explanation_en": "Research by Wendy Wood shows that people with the best self-control don't actually use more willpower — they structure their environment to avoid temptation. Willpower is like a muscle that gets tired. Smart environment design is the most sustainable strategy.",
+      "explanation_ar": "يُظهر بحث ويندي وود أن الأشخاص الأفضل في ضبط النفس لا يستخدمون قوة إرادة أكثر — بل يصممون بيئتهم لتجنب الإغراء. قوة الإرادة كالعضلة تتعب. تصميم البيئة الذكي هو الاستراتيجية الأكثر استدامة."
+    }
+  }
+]
