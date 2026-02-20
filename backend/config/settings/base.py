@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'apps.companion',
     'apps.feed',
     'apps.arena',
+    'apps.notifications',
 ]
 
 # =============================================================================

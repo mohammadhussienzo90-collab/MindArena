@@ -438,11 +438,348 @@ class LeaderboardTests(APITestBase):
 
 
 class ArenaTests(APITestBase):
-    """Arena status test."""
+    """Arena matchmaking and gameplay tests."""
 
-    def test_arena_coming_soon(self):
+    def setUp(self):
+        super().setUp()
+        # Add correct_answer field to challenge content for arena scoring
+        self.challenge.content['correct_answer'] = 1
+        self.challenge.save()
+        # Create additional challenges for arena rounds
+        for i in range(2, 6):
+            Challenge.objects.create(
+                quest=self.quest, slug=f'lf-test-{i}',
+                challenge_type='multiple_choice',
+                title_en=f'Arena Challenge {i}',
+                content={
+                    'question_en': f'What is {i}+{i}?',
+                    'options_en': [str(i*2-1), str(i*2), str(i*2+1)],
+                    'correct_index': 1,
+                    'correct_answer': 1,
+                    'explanation_en': 'Math.',
+                },
+                difficulty=1, primary_trait='analytical_thinking',
+                base_xp=10, bonus_xp=5, time_limit_secs=30,
+            )
+
+    def test_arena_status(self):
         token, _ = self._register()
         resp = self._get('/api/v1/arena/status/', token)
         self.assertEqual(resp.status_code, 200)
         data = json.loads(resp.content)
-        self.assertEqual(data['status'], 'coming_soon')
+        self.assertEqual(data['status'], 'active')
+        self.assertIn('match_types', data)
+
+    def test_create_match(self):
+        token, _ = self._register()
+        resp = self._post('/api/v1/arena/matches/create/', {
+            'match_type': 'speed',
+            'realm_slug': 'logic_fortress',
+            'total_rounds': 3,
+        }, token)
+        self.assertEqual(resp.status_code, 201)
+        data = json.loads(resp.content)
+        self.assertEqual(data['match_type'], 'speed')
+        self.assertEqual(data['status'], 'waiting')
+        self.assertEqual(data['total_rounds'], 3)
+        self.assertEqual(len(data['participants']), 1)
+
+    def test_join_match_starts_game(self):
+        token1, _ = self._register('player1', 'testpass123')
+        token2, _ = self._register('player2', 'testpass123')
+        # Player 1 creates match
+        resp = self._post('/api/v1/arena/matches/create/', {
+            'match_type': 'speed',
+            'realm_slug': 'logic_fortress',
+            'total_rounds': 3,
+        }, token1)
+        match_id = json.loads(resp.content)['id']
+        # Player 2 joins
+        resp = self._post(f'/api/v1/arena/matches/{match_id}/join/', {}, token2)
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.content)
+        self.assertEqual(data['status'], 'in_progress')
+        self.assertEqual(len(data['participants']), 2)
+        self.assertEqual(data['current_round'], 1)
+
+    def test_find_match(self):
+        token1, _ = self._register('creator', 'testpass123')
+        token2, _ = self._register('seeker', 'testpass123')
+        # Create a match
+        self._post('/api/v1/arena/matches/create/', {
+            'match_type': 'speed',
+            'realm_slug': 'logic_fortress',
+            'total_rounds': 3,
+        }, token1)
+        # Seeker finds it
+        resp = self._get('/api/v1/arena/matches/find/?realm_slug=logic_fortress', token2)
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.content)
+        self.assertIsNotNone(data['match'])
+
+    def test_match_list(self):
+        token, _ = self._register()
+        self._post('/api/v1/arena/matches/create/', {
+            'match_type': 'speed',
+            'realm_slug': 'logic_fortress',
+            'total_rounds': 3,
+        }, token)
+        resp = self._get('/api/v1/arena/matches/?status=waiting', token)
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.content)
+        self.assertTrue(len(data) >= 1)
+
+    def test_arena_stats(self):
+        token, _ = self._register()
+        resp = self._get('/api/v1/arena/stats/', token)
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.content)
+        self.assertEqual(data['elo_rating'], 1000)
+        self.assertEqual(data['matches_played'], 0)
+
+    def test_arena_leaderboard(self):
+        token, _ = self._register()
+        resp = self._get('/api/v1/arena/leaderboard/', token)
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.content)
+        self.assertIn('leaderboard', data)
+        self.assertIn('player_stats', data)
+
+    def test_full_match_flow(self):
+        """Test a complete match: create, join, play rounds, finish."""
+        token1, _ = self._register('arena_p1', 'testpass123')
+        token2, _ = self._register('arena_p2', 'testpass123')
+
+        # Create match with 2 rounds
+        resp = self._post('/api/v1/arena/matches/create/', {
+            'match_type': 'speed',
+            'realm_slug': 'logic_fortress',
+            'total_rounds': 2,
+        }, token1)
+        match_data = json.loads(resp.content)
+        match_id = match_data['id']
+        challenge_pool = match_data['challenge_pool']
+
+        # Player 2 joins -> match starts
+        resp = self._post(f'/api/v1/arena/matches/{match_id}/join/', {}, token2)
+        data = json.loads(resp.content)
+        self.assertEqual(data['status'], 'in_progress')
+
+        # Get current challenge
+        resp = self._get(f'/api/v1/arena/matches/{match_id}/challenge/', token1)
+        self.assertEqual(resp.status_code, 200)
+        challenge_data = json.loads(resp.content)
+        self.assertEqual(challenge_data['round_number'], 1)
+
+        # Both players submit round 1
+        resp = self._post('/api/v1/arena/submit/', {
+            'match_id': match_id,
+            'round_number': 1,
+            'challenge_id': challenge_pool[0],
+            'answer': 1,  # correct answer
+            'time_taken_secs': 5.0,
+        }, token1)
+        self.assertEqual(resp.status_code, 200)
+        r1 = json.loads(resp.content)
+        self.assertTrue(r1['result']['is_correct'])
+
+        resp = self._post('/api/v1/arena/submit/', {
+            'match_id': match_id,
+            'round_number': 1,
+            'challenge_id': challenge_pool[0],
+            'answer': 0,  # wrong answer
+            'time_taken_secs': 8.0,
+        }, token2)
+        self.assertEqual(resp.status_code, 200)
+
+        # Both submit round 2
+        resp = self._post('/api/v1/arena/submit/', {
+            'match_id': match_id,
+            'round_number': 2,
+            'challenge_id': challenge_pool[1],
+            'answer': 1,
+            'time_taken_secs': 3.0,
+        }, token1)
+        self.assertEqual(resp.status_code, 200)
+
+        resp = self._post('/api/v1/arena/submit/', {
+            'match_id': match_id,
+            'round_number': 2,
+            'challenge_id': challenge_pool[1],
+            'answer': 1,
+            'time_taken_secs': 10.0,
+        }, token2)
+        self.assertEqual(resp.status_code, 200)
+        final = json.loads(resp.content)
+
+        # Match should be completed
+        self.assertEqual(final['match']['status'], 'completed')
+        # Player 1 won (more correct answers + faster)
+        self.assertIsNotNone(final['match']['winner_name'])
+
+        # Check arena stats were updated
+        resp = self._get('/api/v1/arena/stats/', token1)
+        stats = json.loads(resp.content)
+        self.assertEqual(stats['matches_played'], 1)
+        self.assertEqual(stats['matches_won'], 1)
+        self.assertGreater(stats['elo_rating'], 1000)
+
+
+class NotificationTests(APITestBase):
+    """Notification system tests."""
+
+    def test_notification_list_empty(self):
+        token, _ = self._register()
+        resp = self._get('/api/v1/notifications/', token)
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.content)
+        self.assertEqual(data['unread_count'], 0)
+        self.assertEqual(len(data['results']), 0)
+
+    def test_notification_create_and_list(self):
+        token, _ = self._register()
+        from apps.notifications.services import NotificationService
+        player = Player.objects.get(user__username='testplayer')
+        NotificationService.send(
+            recipient=player,
+            notification_type='system',
+            title_en='Welcome!',
+            message_en='Welcome to MindArena.',
+        )
+        resp = self._get('/api/v1/notifications/', token)
+        data = json.loads(resp.content)
+        self.assertEqual(data['unread_count'], 1)
+        self.assertEqual(len(data['results']), 1)
+        self.assertEqual(data['results'][0]['title_en'], 'Welcome!')
+
+    def test_mark_read(self):
+        token, _ = self._register()
+        from apps.notifications.services import NotificationService
+        player = Player.objects.get(user__username='testplayer')
+        n = NotificationService.send(
+            recipient=player,
+            notification_type='system',
+            title_en='Test',
+        )
+        resp = self._post('/api/v1/notifications/mark-read/', {
+            'notification_ids': [n.id],
+        }, token)
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.content)
+        self.assertEqual(data['updated'], 1)
+
+    def test_mark_all_read(self):
+        token, _ = self._register()
+        from apps.notifications.services import NotificationService
+        player = Player.objects.get(user__username='testplayer')
+        NotificationService.send(recipient=player, notification_type='system', title_en='A')
+        NotificationService.send(recipient=player, notification_type='system', title_en='B')
+        resp = self._post('/api/v1/notifications/mark-read/', {
+            'mark_all': True,
+        }, token)
+        data = json.loads(resp.content)
+        self.assertEqual(data['updated'], 2)
+
+    def test_delete_notification(self):
+        token, _ = self._register()
+        from apps.notifications.services import NotificationService
+        player = Player.objects.get(user__username='testplayer')
+        n = NotificationService.send(
+            recipient=player,
+            notification_type='system',
+            title_en='Delete me',
+        )
+        resp = self.client.delete(
+            f'/api/v1/notifications/{n.id}/',
+            **self._auth_header(token),
+        )
+        self.assertEqual(resp.status_code, 204)
+
+
+class FriendTests(APITestBase):
+    """Friend system tests."""
+
+    def test_friend_list_empty(self):
+        token, _ = self._register()
+        resp = self._get('/api/v1/friends/', token)
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.content)
+        self.assertEqual(len(data['friends']), 0)
+
+    def test_send_friend_request(self):
+        token1, _ = self._register('sender', 'testpass123')
+        token2, _ = self._register('receiver', 'testpass123')
+        receiver = Player.objects.get(user__username='receiver')
+        resp = self._post('/api/v1/friends/request/', {
+            'player_id': receiver.id,
+        }, token1)
+        self.assertEqual(resp.status_code, 201)
+        data = json.loads(resp.content)
+        self.assertEqual(data['status'], 'pending')
+
+    def test_friend_request_list(self):
+        token1, _ = self._register('sender2', 'testpass123')
+        token2, _ = self._register('receiver2', 'testpass123')
+        receiver = Player.objects.get(user__username='receiver2')
+        self._post('/api/v1/friends/request/', {
+            'player_id': receiver.id,
+        }, token1)
+        resp = self._get('/api/v1/friends/requests/', token2)
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.content)
+        self.assertEqual(len(data['requests']), 1)
+
+    def test_accept_friend_request(self):
+        token1, _ = self._register('acceptor1', 'testpass123')
+        token2, _ = self._register('acceptor2', 'testpass123')
+        receiver = Player.objects.get(user__username='acceptor2')
+        self._post('/api/v1/friends/request/', {
+            'player_id': receiver.id,
+        }, token1)
+        # Get the request ID
+        resp = self._get('/api/v1/friends/requests/', token2)
+        request_id = json.loads(resp.content)['requests'][0]['id']
+        # Accept
+        resp = self._post('/api/v1/friends/respond/', {
+            'request_id': request_id,
+            'action': 'accept',
+        }, token2)
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.content)
+        self.assertEqual(data['status'], 'accepted')
+        # Verify friends list
+        resp = self._get('/api/v1/friends/', token1)
+        friends = json.loads(resp.content)['friends']
+        self.assertEqual(len(friends), 1)
+        self.assertEqual(friends[0]['display_name'], 'Acceptor2')
+
+    def test_remove_friend(self):
+        token1, _ = self._register('remove1', 'testpass123')
+        token2, _ = self._register('remove2', 'testpass123')
+        receiver = Player.objects.get(user__username='remove2')
+        self._post('/api/v1/friends/request/', {
+            'player_id': receiver.id,
+        }, token1)
+        resp = self._get('/api/v1/friends/requests/', token2)
+        request_id = json.loads(resp.content)['requests'][0]['id']
+        self._post('/api/v1/friends/respond/', {
+            'request_id': request_id,
+            'action': 'accept',
+        }, token2)
+        # Remove
+        resp = self.client.delete(
+            f'/api/v1/friends/{receiver.id}/',
+            **self._auth_header(token1),
+        )
+        self.assertEqual(resp.status_code, 200)
+        # Verify empty
+        resp = self._get('/api/v1/friends/', token1)
+        self.assertEqual(len(json.loads(resp.content)['friends']), 0)
+
+    def test_cant_friend_self(self):
+        token, _ = self._register('lonely', 'testpass123')
+        player = Player.objects.get(user__username='lonely')
+        resp = self._post('/api/v1/friends/request/', {
+            'player_id': player.id,
+        }, token)
+        self.assertEqual(resp.status_code, 400)

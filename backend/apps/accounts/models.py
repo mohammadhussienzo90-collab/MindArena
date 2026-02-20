@@ -46,3 +46,7 @@ class CompanionProfile(models.Model):
 
     def __str__(self):
         return f"Companion for {self.player.display_name}"
+
+
+# Import friend models so they are registered with Django
+from .friends_models import FriendRequest, Friendship  # noqa: E402, F401
