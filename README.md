@@ -156,6 +156,39 @@ docker-compose up -d
 - Streak bonuses for daily activity
 - 30+ achievements across categories
 
+## Testing
+
+```bash
+cd backend
+python manage.py test tests --verbosity=2
+```
+
+27 integration tests covering: auth, registration, profiles, realms, challenges, assessment, feed, quests, progression, and achievements.
+
+## Challenge Types
+
+| Type | Realms | Format |
+|------|--------|--------|
+| Multiple Choice | All | Question + 4 options |
+| Pattern Match | Logic | Find the pattern, select answer |
+| Sequence | Logic | Complete the sequence |
+| Math Logic | Logic | Solve the problem |
+| Timed Response | Logic | Speed-based answers |
+| Scenario Choice | Emotion, Social, Discipline | Real-world scenarios |
+| Creative Prompt | Creativity | Free-text creative response |
+| Emotional Scenario | Emotion, Wellness | Empathy and regulation |
+| Financial Decision | Wealth | Money management scenarios |
+
+## Key Features
+
+- **Personality-driven progression**: Assessment maps to 8 realm affinities
+- **Visual world transformation**: Portals grow and glow as you level up (6 stages)
+- **Achievement system**: 21+ achievements with automatic detection and XP rewards
+- **AI Companion (Noor)**: Powered by Claude, adapts to your personality
+- **Personalized feed**: Prioritizes content for your weakest realms
+- **JWT auth with auto-refresh**: Token rotation with blacklisting
+- **Quest tracking**: Automatic progress and completion
+
 ## Environment Variables
 
 See `backend/.env.example` for the full list. Key variables:
@@ -164,3 +197,4 @@ See `backend/.env.example` for the full list. Key variables:
 - `DATABASE_URL` — PostgreSQL connection string
 - `REDIS_URL` — Redis connection string
 - `ANTHROPIC_API_KEY` — Claude API key for AI companion
+- `DJANGO_ENV` — `development` (SQLite) or `production` (PostgreSQL)
