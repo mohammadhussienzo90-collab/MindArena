@@ -28,6 +28,15 @@ class CompanionChatView(views.APIView):
             message=serializer.validated_data['message'],
             conversation=conversation,
         )
+
+        # Check for companion-related achievements
+        from apps.progression.achievement_checker import AchievementChecker
+        new_achievements = AchievementChecker.check_specific(
+            request.user.player, 'companion_chat',
+        )
+        if new_achievements:
+            result['new_achievements'] = new_achievements
+
         return Response(result)
 
 

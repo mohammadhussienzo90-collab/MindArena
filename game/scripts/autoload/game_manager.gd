@@ -7,12 +7,15 @@ signal challenge_started(challenge_data: Dictionary)
 signal challenge_completed(result: Dictionary)
 signal xp_earned(amount: int, total: int)
 signal level_up(new_level: int)
+signal achievement_earned(achievement: Dictionary)
+signal quest_completed(quest_data: Dictionary)
 
 enum GameState { LOADING, MENU, WORLD, CHALLENGE, ASSESSMENT, FEED, CHAT, PAUSED }
 
 var current_state: GameState = GameState.LOADING
 var current_realm: String = ""
 var is_initialized := false
+var _notification_queue: Array = []
 
 
 func _ready() -> void:
@@ -51,6 +54,11 @@ func complete_challenge(result: Dictionary) -> void:
 		if new_level > PlayerData.overall_level:
 			PlayerData.overall_level = new_level
 			level_up.emit(new_level)
+
+	# Check for newly earned achievements from server response
+	var new_achievements = result.get("new_achievements", [])
+	for ach in new_achievements:
+		achievement_earned.emit(ach)
 
 	PlayerData.data_updated.emit()
 

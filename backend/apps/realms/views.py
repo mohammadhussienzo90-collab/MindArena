@@ -133,4 +133,12 @@ class ChallengeViewSet(viewsets.ReadOnlyModelViewSet):
                     quest_progress.completed_at = timezone.now()
                 quest_progress.save()
 
+        # Check for newly earned achievements
+        from apps.progression.achievement_checker import AchievementChecker
+        new_achievements = AchievementChecker.check_specific(
+            request.user.player, 'challenge_completed',
+        )
+        if new_achievements:
+            result['new_achievements'] = new_achievements
+
         return Response(result)

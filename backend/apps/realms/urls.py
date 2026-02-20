@@ -17,18 +17,20 @@ quest_detail = views.QuestViewSet.as_view({'get': 'retrieve'})
 quest_start = views.QuestViewSet.as_view({'post': 'start'})
 
 urlpatterns = [
-    # Realms
+    # Realms (list first, slug-based detail LAST to avoid catching "challenges"/"quests")
     path('', realm_list, name='realm-list'),
-    path('<slug:slug>/', realm_detail, name='realm-detail'),
-    path('<slug:slug>/challenges/', realm_challenges, name='realm-challenges'),
 
-    # Challenges
+    # Challenges (before slug catch-all)
     path('challenges/', challenge_list, name='challenge-list'),
     path('challenges/<int:pk>/', challenge_detail, name='challenge-detail'),
     path('challenges/<int:pk>/submit/', challenge_submit, name='challenge-submit'),
 
-    # Quests
+    # Quests (before slug catch-all)
     path('quests/', quest_list, name='quest-list'),
     path('quests/<int:pk>/', quest_detail, name='quest-detail'),
     path('quests/<int:pk>/start/', quest_start, name='quest-start'),
+
+    # Realm detail + sub-routes (slug catch-all must be last)
+    path('<slug:slug>/challenges/', realm_challenges, name='realm-challenges'),
+    path('<slug:slug>/', realm_detail, name='realm-detail'),
 ]
