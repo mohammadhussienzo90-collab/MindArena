@@ -218,9 +218,12 @@ class ArenaService:
                 f"Expected round {match.current_round}, got {round_number}."
             )
 
-        participant = ArenaMatchParticipant.objects.get(
-            match=match, player=player,
-        )
+        try:
+            participant = ArenaMatchParticipant.objects.get(
+                match=match, player=player,
+            )
+        except ArenaMatchParticipant.DoesNotExist:
+            raise ValueError("You are not a participant in this match.")
 
         # Prevent double submission for same round
         already_submitted = ArenaRoundResult.objects.filter(

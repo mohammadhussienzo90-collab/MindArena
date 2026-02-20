@@ -26,15 +26,19 @@ func setup(challenge_data: Dictionary) -> void:
 	_challenge_data = challenge_data
 	var content = challenge_data.get("content", {})
 
-	question_label.text = content.get("question_en", "")
+	question_label.text = PlayerData.localized(content, "question")
 
 	# Clear old options
 	for child in options_container.get_children():
 		child.queue_free()
 	_option_buttons.clear()
 
-	# Create option buttons
-	var options = content.get("options_en", [])
+	# Create option buttons — use preferred language with English fallback
+	var lang = PlayerData.preferred_lang if PlayerData.preferred_lang != "" else "en"
+	var options_key = "options_" + lang
+	var options = content.get(options_key, [])
+	if options.size() == 0 and lang != "en":
+		options = content.get("options_en", [])
 	for i in range(options.size()):
 		var btn = Button.new()
 		btn.text = options[i]

@@ -65,6 +65,15 @@ func _submit_assessment() -> void:
 
 	var result = await ApiClient.post("/assessment/submit/", {"answers": _answers})
 	if result.status == 200 and result.data:
+		# Store Big Five personality trait scores in PlayerData
+		var traits := {}
+		for trait_key in ["openness", "conscientiousness", "extraversion", "agreeableness", "neuroticism"]:
+			if result.data.has(trait_key):
+				traits[trait_key] = result.data[trait_key]
+		if traits.size() > 0:
+			PlayerData.personality_traits = traits
+			PlayerData.data_updated.emit()
+
 		assessment_completed.emit(result.data)
 		PlayerData.onboarding_done = true
 		question_label.text = "Assessment complete! Your mind world is taking shape..."

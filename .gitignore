@@ -28,6 +28,7 @@ __pycache__/
 db.sqlite3
 staticfiles/
 media/
+logs/
 
 # Godot
 .godot/
