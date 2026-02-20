@@ -23,6 +23,7 @@ func _ready() -> void:
 	GameManager.level_up.connect(_on_level_up)
 	GameManager.realm_entered.connect(_on_realm_entered)
 	GameManager.achievement_earned.connect(_on_achievement_earned)
+	ApiClient.connection_status_changed.connect(_on_connection_changed)
 
 	profile_button.pressed.connect(func(): SceneManager.goto_scene("profile"))
 	feed_button.pressed.connect(func(): SceneManager.goto_scene("feed"))
@@ -66,17 +67,20 @@ func _on_realm_entered(realm_slug: String) -> void:
 
 
 func _on_achievement_earned(achievement: Dictionary) -> void:
-	var title = achievement.get("title_en", "Achievement")
+	var title = PlayerData.localized(achievement, "title", "Achievement")
 	var xp = achievement.get("xp_reward", 0)
 	queue_notification("Achievement: %s (+%d XP)" % [title, xp])
 
 
 func _on_settings() -> void:
-	# Toggle mouse capture for settings access
-	if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	SceneManager.goto_scene("settings")
+
+
+func _on_connection_changed(connected: bool) -> void:
+	if connected:
+		queue_notification("Connection restored")
 	else:
-		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		queue_notification("Connection lost — retrying...")
 
 
 func queue_notification(text: String) -> void:

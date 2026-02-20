@@ -27,7 +27,7 @@ func load_profile() -> void:
 
 
 func load_realm_stats() -> void:
-	var result = await ApiClient.get("/progression/progression/stats/")
+	var result = await ApiClient.get("/progression/stats/")
 	if result.status == 200 and result.data:
 		for stat in result.data.get("realm_stats", []):
 			realm_stats[stat.get("realm_slug", "")] = {
@@ -59,3 +59,14 @@ func xp_progress_percent() -> float:
 	if range_xp <= 0:
 		return 1.0
 	return float(total_xp - current_level_xp) / float(range_xp)
+
+
+func localized(data: Dictionary, field_base: String, fallback: String = "") -> String:
+	## Get localized text from a dict with _en/_ar suffixed fields.
+	var lang = preferred_lang if preferred_lang != "" else "en"
+	var key = field_base + "_" + lang
+	var value = data.get(key, "")
+	if value == "" or value == null:
+		# Fall back to English
+		value = data.get(field_base + "_en", fallback)
+	return value if value != null else fallback

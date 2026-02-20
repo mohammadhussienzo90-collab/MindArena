@@ -16,6 +16,7 @@ const SCENES := {
 	"feed": "res://scenes/feed.tscn",
 	"chat": "res://scenes/chat.tscn",
 	"profile": "res://scenes/profile.tscn",
+	"settings": "res://scenes/settings.tscn",
 }
 
 

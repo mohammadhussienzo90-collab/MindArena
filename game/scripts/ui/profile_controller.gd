@@ -25,10 +25,16 @@ func _load_profile() -> void:
 	xp_bar.max_value = 100.0
 	xp_bar.value = PlayerData.xp_progress_percent() * 100.0
 
+	streak_label.text = "Loading stats..."
+
 	# Load stats from API
-	var result = await ApiClient.get("/progression/progression/stats/")
+	var result = await ApiClient.get("/progression/stats/")
 	if result.status == 200 and result.data:
 		_populate_stats(result.data)
+	elif result.status == 0:
+		streak_label.text = "Could not load stats (offline)"
+	else:
+		streak_label.text = ""
 
 	# Load achievements
 	var ach_result = await ApiClient.get("/progression/achievements/earned/")
@@ -77,6 +83,6 @@ func _populate_achievements(data: Array) -> void:
 	for ach in data:
 		var ach_data = ach.get("achievement", {})
 		var label = Label.new()
-		label.text = ach_data.get("title_en", "?")
+		label.text = PlayerData.localized(ach_data, "title", "?")
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		achievements_grid.add_child(label)

@@ -137,7 +137,9 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'anon': '30/minute',
         'user': '120/minute',
+        'auth': '5/minute',    # Login/register attempts
     },
+    'EXCEPTION_HANDLER': 'apps.core.exceptions.custom_exception_handler',
 }
 
 # =============================================================================
@@ -167,6 +169,20 @@ CORS_ALLOWED_ORIGINS = os.environ.get(
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r'^https://.*\.railway\.app$',
 ]
+
+CORS_ALLOW_HEADERS = [
+    'accept', 'accept-encoding', 'authorization',
+    'content-type', 'origin', 'user-agent', 'x-csrftoken',
+    'x-requested-with',
+]
+
+# =============================================================================
+# SECURITY HEADERS
+# =============================================================================
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+X_FRAME_OPTIONS = 'DENY'
 
 # =============================================================================
 # CELERY

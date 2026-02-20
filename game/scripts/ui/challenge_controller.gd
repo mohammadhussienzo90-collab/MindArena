@@ -44,6 +44,9 @@ func _load_realm_challenges() -> void:
 		title_label.text = "No realm selected"
 		return
 
+	title_label.text = "Loading..."
+	question_label.text = "Preparing challenges..."
+
 	var result = await ApiClient.get("/realms/%s/challenges/" % realm)
 	if result.status == 200 and result.data:
 		_challenge_queue = result.data
@@ -51,16 +54,43 @@ func _load_realm_challenges() -> void:
 			_current_queue_index = 0
 			_challenge_manager.load_challenge(_challenge_queue[0].get("id", 0))
 		else:
+			title_label.text = "Empty Realm"
 			question_label.text = "No challenges available in this realm yet."
+	elif result.status == 0:
+		title_label.text = "Connection Error"
+		question_label.text = "Server unreachable. Please check your connection and try again."
 	else:
-		question_label.text = "Could not load challenges. Check your connection."
+		title_label.text = "Error"
+		question_label.text = "Could not load challenges (Error %d)." % result.get("status", 0)
+
+
+func _lang_key(base: String) -> String:
+	## Return language-suffixed key (e.g. "question_ar" or "question_en").
+	var lang = PlayerData.preferred_lang if PlayerData.preferred_lang != "" else "en"
+	return base + "_" + lang
+
+
+func _localized_content(content: Dictionary, base: String, fallback: String = "") -> String:
+	## Get localized text from content dict, falling back to English.
+	var value = content.get(_lang_key(base), "")
+	if value == "" or value == null:
+		value = content.get(base + "_en", fallback)
+	return value if value != null else fallback
+
+
+func _localized_array(content: Dictionary, base: String) -> Array:
+	## Get localized array from content dict, falling back to English.
+	var value = content.get(_lang_key(base), [])
+	if value == null or (value is Array and value.size() == 0):
+		value = content.get(base + "_en", [])
+	return value if value != null else []
 
 
 func _on_challenge_loaded(data: Dictionary) -> void:
 	var content = data.get("content", {})
 	var challenge_type = data.get("challenge_type", "multiple_choice")
 
-	title_label.text = data.get("title_en", "Challenge")
+	title_label.text = PlayerData.localized(data, "title", "Challenge")
 	difficulty_label.text = "Difficulty: %d / 10" % data.get("difficulty", 1)
 	xp_label.text = "+%d XP" % data.get("base_xp", 10)
 
@@ -81,8 +111,8 @@ func _on_challenge_loaded(data: Dictionary) -> void:
 	_option_buttons.clear()
 
 	if challenge_type == "multiple_choice":
-		question_label.text = content.get("question_en", "")
-		var options = content.get("options_en", [])
+		question_label.text = _localized_content(content, "question")
+		var options = _localized_array(content, "options")
 		for i in range(options.size()):
 			var btn = Button.new()
 			btn.text = options[i]
@@ -93,8 +123,8 @@ func _on_challenge_loaded(data: Dictionary) -> void:
 			_option_buttons.append(btn)
 
 	elif challenge_type == "scenario_choice":
-		question_label.text = content.get("scenario_en", "")
-		var choices = content.get("choices_en", [])
+		question_label.text = _localized_content(content, "scenario")
+		var choices = _localized_array(content, "choices")
 		for i in range(choices.size()):
 			var btn = Button.new()
 			btn.text = choices[i]
@@ -105,7 +135,7 @@ func _on_challenge_loaded(data: Dictionary) -> void:
 			_option_buttons.append(btn)
 
 	elif challenge_type == "creative_prompt":
-		question_label.text = content.get("prompt_en", "")
+		question_label.text = _localized_content(content, "prompt")
 		var input = LineEdit.new()
 		input.placeholder_text = "Type your response..."
 		input.custom_minimum_size.y = 40
@@ -119,10 +149,9 @@ func _on_challenge_loaded(data: Dictionary) -> void:
 
 	else:
 		# Fallback for pattern_match, sequence, math_logic, timed_response, etc.
-		# Render as multiple choice if options exist, otherwise as text prompt
-		var options = content.get("options_en", [])
+		var options = _localized_array(content, "options")
 		if options.size() > 0:
-			question_label.text = content.get("question_en", content.get("prompt_en", ""))
+			question_label.text = _localized_content(content, "question", _localized_content(content, "prompt"))
 			for i in range(options.size()):
 				var btn = Button.new()
 				btn.text = options[i]
@@ -132,7 +161,7 @@ func _on_challenge_loaded(data: Dictionary) -> void:
 				options_container.add_child(btn)
 				_option_buttons.append(btn)
 		else:
-			question_label.text = content.get("question_en", content.get("prompt_en", "Challenge"))
+			question_label.text = _localized_content(content, "question", _localized_content(content, "prompt", "Challenge"))
 			var input = LineEdit.new()
 			input.placeholder_text = "Enter your answer..."
 			input.custom_minimum_size.y = 40
@@ -159,7 +188,7 @@ func _on_result_received(result: Dictionary) -> void:
 	else:
 		var correct = result.get("is_correct", false)
 		var xp = result.get("base_xp", 0) + result.get("bonus_xp", 0)
-		var explanation = result.get("explanation", "")
+		var explanation = _localized_content(result, "explanation", result.get("explanation", ""))
 
 		# Highlight correct/wrong
 		if _selected_index >= 0 and _selected_index < _option_buttons.size():

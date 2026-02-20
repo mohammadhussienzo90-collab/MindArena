@@ -1,5 +1,6 @@
 """MindArena API integration tests."""
 import json
+from django.core.cache import cache
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from apps.accounts.models import Player, CompanionProfile
@@ -15,6 +16,8 @@ class APITestBase(TestCase):
     """Base class with auth helpers and test data setup."""
 
     def setUp(self):
+        # Clear throttle cache between tests so rate limits don't bleed over
+        cache.clear()
         self.client = Client()
 
         # Create realm
@@ -308,7 +311,7 @@ class ProgressionTests(APITestBase):
 
     def test_get_stats(self):
         token, _ = self._register()
-        resp = self._get('/api/v1/progression/progression/stats/', token)
+        resp = self._get('/api/v1/progression/stats/', token)
         self.assertEqual(resp.status_code, 200)
         data = json.loads(resp.content)
         self.assertIn('overall_level', data)
@@ -346,6 +349,35 @@ class QuestTests(APITestBase):
         token, _ = self._register()
         resp = self._get('/api/v1/realms/quests/', token)
         self.assertEqual(resp.status_code, 200)
+
+
+class LeaderboardTests(APITestBase):
+    """Leaderboard and daily challenge tests."""
+
+    def test_global_leaderboard(self):
+        token, _ = self._register()
+        resp = self._get('/api/v1/progression/leaderboard/', token)
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.content)
+        self.assertIn('leaderboard', data)
+        self.assertIn('my_rank', data)
+        self.assertEqual(data['my_rank'], 1)  # Only player
+
+    def test_realm_leaderboard(self):
+        token, _ = self._register()
+        resp = self._get('/api/v1/progression/leaderboard/?realm=logic_fortress', token)
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.content)
+        self.assertIn('leaderboard', data)
+
+    def test_daily_challenge(self):
+        token, _ = self._register()
+        resp = self._get('/api/v1/progression/daily-challenge/', token)
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.content)
+        self.assertIn('date', data)
+        self.assertIn('challenges', data)
+        self.assertTrue(len(data['challenges']) >= 1)
 
 
 class ArenaTests(APITestBase):

@@ -33,19 +33,30 @@ func _send_message() -> void:
 	_add_message_bubble(text, true)
 	input_field.text = ""
 	_waiting_for_reply = true
+	send_button.disabled = true
 
 	var payload = {"message": text}
 	if _conversation_id > 0:
 		payload["conversation_id"] = _conversation_id
 
+	_add_message_bubble("[color=#888888]Noor is thinking...[/color]", false)
+	var thinking_node = messages_container.get_child(messages_container.get_child_count() - 1)
+
 	var result = await ApiClient.post("/companion/chat/", payload)
 
+	# Remove "thinking" indicator
+	if is_instance_valid(thinking_node):
+		thinking_node.queue_free()
+
 	_waiting_for_reply = false
+	send_button.disabled = false
 	if result.status == 200 and result.data:
 		_conversation_id = result.data.get("conversation_id", -1)
 		_add_message_bubble(result.data.get("reply", "..."), false)
+	elif result.status == 0:
+		_add_message_bubble("(Server unreachable. Check your connection.)", false)
 	else:
-		_add_message_bubble("(Connection error. Try again.)", false)
+		_add_message_bubble("(Something went wrong. Try again.)", false)
 
 
 func _add_message_bubble(text: String, is_player: bool) -> void:

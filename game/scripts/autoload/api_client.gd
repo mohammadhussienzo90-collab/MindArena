@@ -3,11 +3,16 @@ extends Node
 
 signal request_completed(response: Dictionary)
 signal request_failed(error: String)
+signal connection_status_changed(is_connected: bool)
 
 var base_url: String = "http://localhost:8000/api/v1"
+var is_connected: bool = true
 var _http: HTTPRequest
+var _consecutive_failures: int = 0
 
 const CONFIG_PATH := "user://server_config.cfg"
+const MAX_RETRIES := 2
+const RETRY_DELAY_SECS := 1.0
 
 
 func _ready() -> void:
@@ -86,11 +91,12 @@ func delete(endpoint: String, _allow_retry: bool = true) -> Dictionary:
 	return result
 
 
-func _do_request(method: int, endpoint: String, body: String) -> Dictionary:
+func _do_request(method: int, endpoint: String, body: String, _retry_count: int = 0) -> Dictionary:
 	var url = base_url + endpoint
 	var headers = _get_headers()
 
 	var http = HTTPRequest.new()
+	http.timeout = 15.0
 	add_child(http)
 
 	var error: int
@@ -101,6 +107,10 @@ func _do_request(method: int, endpoint: String, body: String) -> Dictionary:
 
 	if error != OK:
 		http.queue_free()
+		_on_request_failed()
+		if _retry_count < MAX_RETRIES:
+			await get_tree().create_timer(RETRY_DELAY_SECS).timeout
+			return await _do_request(method, endpoint, body, _retry_count + 1)
 		return {"error": "Request failed", "status": 0}
 
 	var result = await http.request_completed
@@ -108,7 +118,38 @@ func _do_request(method: int, endpoint: String, body: String) -> Dictionary:
 
 	var status_code = result[1]
 	var response_body = result[3].get_string_from_utf8()
+
+	# Handle network-level failures (status 0 = no response)
+	if status_code == 0:
+		_on_request_failed()
+		if _retry_count < MAX_RETRIES:
+			await get_tree().create_timer(RETRY_DELAY_SECS).timeout
+			return await _do_request(method, endpoint, body, _retry_count + 1)
+		return {"error": "Server unreachable", "status": 0}
+
+	# Success — reset connection status
+	_on_request_succeeded()
+
 	var json = JSON.new()
-	json.parse(response_body)
+	var parse_err = json.parse(response_body)
+	if parse_err != OK:
+		return {"status": status_code, "data": null}
 
 	return {"status": status_code, "data": json.data}
+
+
+func _on_request_failed() -> void:
+	_consecutive_failures += 1
+	if is_connected and _consecutive_failures >= 2:
+		is_connected = false
+		connection_status_changed.emit(false)
+		request_failed.emit("Connection lost")
+		print("[ApiClient] Connection lost after %d consecutive failures" % _consecutive_failures)
+
+
+func _on_request_succeeded() -> void:
+	_consecutive_failures = 0
+	if not is_connected:
+		is_connected = true
+		connection_status_changed.emit(true)
+		print("[ApiClient] Connection restored")

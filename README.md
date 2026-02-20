@@ -144,7 +144,9 @@ docker-compose up -d
 | `api/v1/realms/` | GET | List all realms |
 | `api/v1/realms/{slug}/challenges/` | GET | Realm challenges |
 | `api/v1/realms/challenges/{id}/submit/` | POST | Submit answer |
-| `api/v1/progression/progression/stats/` | GET | Player stats |
+| `api/v1/progression/stats/` | GET | Player stats |
+| `api/v1/progression/leaderboard/` | GET | Global/realm leaderboard |
+| `api/v1/progression/daily-challenge/` | GET | Daily challenge per realm |
 | `api/v1/progression/achievements/earned/` | GET | Earned achievements |
 | `api/v1/companion/chat/` | POST | Chat with AI companion |
 | `api/v1/feed/` | GET | Personalized feed |

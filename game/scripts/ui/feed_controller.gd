@@ -23,6 +23,9 @@ func _ready() -> void:
 
 
 func _load_feed() -> void:
+	title_label.text = "Loading..."
+	body_label.text = "Fetching your personalized feed..."
+
 	var result = await ApiClient.get("/feed/")
 	if result.status == 200 and result.data:
 		_feed_items = result.data
@@ -31,6 +34,12 @@ func _load_feed() -> void:
 		else:
 			title_label.text = "No new content"
 			body_label.text = "Check back later for fresh insights!"
+	elif result.status == 0:
+		title_label.text = "Connection Error"
+		body_label.text = "Could not reach the server. Check your connection."
+	else:
+		title_label.text = "Error"
+		body_label.text = "Failed to load feed."
 
 
 func _show_item(index: int) -> void:
@@ -41,8 +50,8 @@ func _show_item(index: int) -> void:
 
 	_current_index = index
 	var item = _feed_items[index]
-	title_label.text = item.get("title_en", "")
-	body_label.text = item.get("body_en", "")
+	title_label.text = PlayerData.localized(item, "title")
+	body_label.text = PlayerData.localized(item, "body")
 	type_label.text = item.get("content_type", "").to_upper()
 	xp_label.text = "+%d XP" % item.get("xp_value", 0)
 
