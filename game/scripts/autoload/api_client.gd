@@ -44,6 +44,35 @@ func post(endpoint: String, data: Dictionary = {}, _allow_retry: bool = true) ->
 	return result
 
 
+func patch(endpoint: String, data: Dictionary = {}, _allow_retry: bool = true) -> Dictionary:
+	var body = JSON.stringify(data)
+	var result = await _do_request(HTTPClient.METHOD_PATCH, endpoint, body)
+	if result.status == 401 and _allow_retry:
+		var refreshed = await AuthManager.refresh_token()
+		if refreshed:
+			return await patch(endpoint, data, false)
+	return result
+
+
+func put(endpoint: String, data: Dictionary = {}, _allow_retry: bool = true) -> Dictionary:
+	var body = JSON.stringify(data)
+	var result = await _do_request(HTTPClient.METHOD_PUT, endpoint, body)
+	if result.status == 401 and _allow_retry:
+		var refreshed = await AuthManager.refresh_token()
+		if refreshed:
+			return await put(endpoint, data, false)
+	return result
+
+
+func delete(endpoint: String, _allow_retry: bool = true) -> Dictionary:
+	var result = await _do_request(HTTPClient.METHOD_DELETE, endpoint, "")
+	if result.status == 401 and _allow_retry:
+		var refreshed = await AuthManager.refresh_token()
+		if refreshed:
+			return await delete(endpoint, false)
+	return result
+
+
 func _do_request(method: int, endpoint: String, body: String) -> Dictionary:
 	var url = base_url + endpoint
 	var headers = _get_headers()

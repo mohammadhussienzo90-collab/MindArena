@@ -16,7 +16,9 @@ func _ready() -> void:
 
 	# Skip to hub if already logged in
 	if AuthManager.is_authenticated:
-		SceneManager.goto_scene("world_hub")
+		await PlayerData.load_profile()
+		await PlayerData.load_realm_stats()
+		_go_to_next_scene()
 
 
 func _on_login() -> void:

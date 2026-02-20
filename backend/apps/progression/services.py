@@ -1,5 +1,6 @@
 """XP, leveling, streaks, and visual stage progression."""
 import math
+from datetime import timedelta
 from django.utils import timezone
 from django.conf import settings
 
@@ -87,7 +88,7 @@ class XPService:
         if streak.last_active_date == today:
             return streak
 
-        if streak.last_active_date == today - timezone.timedelta(days=1):
+        if streak.last_active_date == today - timedelta(days=1):
             streak.current_streak += 1
         else:
             streak.current_streak = 1

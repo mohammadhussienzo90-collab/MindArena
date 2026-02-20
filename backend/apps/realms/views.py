@@ -1,3 +1,4 @@
+from django.utils import timezone
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -95,7 +96,7 @@ class ChallengeViewSet(viewsets.ReadOnlyModelViewSet):
         )
 
         # Record result
-        from apps.progression.models import PlayerChallengeResult
+        from apps.progression.models import PlayerChallengeResult, PlayerRealmStat, PlayerQuestProgress
         PlayerChallengeResult.objects.create(
             player=request.user.player,
             challenge=challenge,
@@ -105,5 +106,31 @@ class ChallengeViewSet(viewsets.ReadOnlyModelViewSet):
             answer_data=serializer.validated_data['answer_data'],
             xp_earned=xp_earned,
         )
+
+        # Update realm stat counters
+        if result['is_correct']:
+            realm_stat, _ = PlayerRealmStat.objects.get_or_create(
+                player=request.user.player,
+                realm=challenge.quest.realm,
+            )
+            realm_stat.challenges_completed += 1
+            update_fields = ['challenges_completed']
+            if result['score'] == 100:
+                realm_stat.challenges_perfect += 1
+                update_fields.append('challenges_perfect')
+            realm_stat.save(update_fields=update_fields)
+
+            # Update quest progress
+            quest_progress = PlayerQuestProgress.objects.filter(
+                player=request.user.player,
+                quest=challenge.quest,
+                status='in_progress',
+            ).first()
+            if quest_progress:
+                quest_progress.challenges_completed += 1
+                if quest_progress.challenges_completed >= quest_progress.challenges_total:
+                    quest_progress.status = 'completed'
+                    quest_progress.completed_at = timezone.now()
+                quest_progress.save()
 
         return Response(result)

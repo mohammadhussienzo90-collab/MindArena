@@ -30,7 +30,7 @@ func _ready() -> void:
 
 func _update_visual_stage() -> void:
 	var stage = PlayerData.get_realm_visual_stage(realm_slug)
-	var base_scale = 1.0 + (stage * 0.2)
+	var base_scale = 1.0 + (stage * 0.15)
 	scale = Vector3(base_scale, base_scale, base_scale)
 
 

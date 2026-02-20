@@ -117,6 +117,33 @@ func _on_challenge_loaded(data: Dictionary) -> void:
 		)
 		options_container.add_child(submit_btn)
 
+	else:
+		# Fallback for pattern_match, sequence, math_logic, timed_response, etc.
+		# Render as multiple choice if options exist, otherwise as text prompt
+		var options = content.get("options_en", [])
+		if options.size() > 0:
+			question_label.text = content.get("question_en", content.get("prompt_en", ""))
+			for i in range(options.size()):
+				var btn = Button.new()
+				btn.text = options[i]
+				btn.toggle_mode = true
+				btn.pressed.connect(_on_option_pressed.bind(i))
+				btn.add_theme_font_size_override("font_size", 16)
+				options_container.add_child(btn)
+				_option_buttons.append(btn)
+		else:
+			question_label.text = content.get("question_en", content.get("prompt_en", "Challenge"))
+			var input = LineEdit.new()
+			input.placeholder_text = "Enter your answer..."
+			input.custom_minimum_size.y = 40
+			options_container.add_child(input)
+			var submit_btn = Button.new()
+			submit_btn.text = "Submit"
+			submit_btn.pressed.connect(func():
+				_challenge_manager.submit_answer({"text_response": input.text})
+			)
+			options_container.add_child(submit_btn)
+
 
 func _on_option_pressed(index: int) -> void:
 	_selected_index = index
@@ -162,5 +189,6 @@ func _on_next() -> void:
 	if _current_queue_index < _challenge_queue.size():
 		_challenge_manager.load_challenge(_challenge_queue[_current_queue_index].get("id", 0))
 	else:
-		# All challenges done, return to world hub
+		# All challenges done — refresh stats so world reflects progress
+		await PlayerData.load_realm_stats()
 		SceneManager.goto_scene("world_hub")

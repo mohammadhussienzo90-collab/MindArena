@@ -50,13 +50,13 @@ func _show_item(index: int) -> void:
 func _on_like() -> void:
 	if _current_index < _feed_items.size():
 		var item_id = _feed_items[_current_index].get("id", 0)
-		ApiClient.post("/feed/%d/interact/" % item_id, {"liked": true})
+		await ApiClient.post("/feed/%d/interact/" % item_id, {"liked": true})
 
 
 func _on_complete() -> void:
 	if _current_index < _feed_items.size():
 		var item_id = _feed_items[_current_index].get("id", 0)
-		ApiClient.post("/feed/%d/interact/" % item_id, {"completed": true})
+		await ApiClient.post("/feed/%d/interact/" % item_id, {"completed": true})
 		_on_next()
 
 
