@@ -29,6 +29,8 @@ func change_state(new_state: GameState) -> void:
 func enter_realm(realm_slug: String) -> void:
 	current_realm = realm_slug
 	realm_entered.emit(realm_slug)
+	change_state(GameState.CHALLENGE)
+	SceneManager.goto_scene("challenge")
 	print("[GameManager] Entered realm: %s" % realm_slug)
 
 
@@ -39,9 +41,23 @@ func start_challenge(challenge_data: Dictionary) -> void:
 
 func complete_challenge(result: Dictionary) -> void:
 	challenge_completed.emit(result)
-	if result.get("xp_earned", 0) > 0:
-		xp_earned.emit(result.xp_earned, PlayerData.total_xp)
+	var xp = result.get("base_xp", 0) + result.get("bonus_xp", 0)
+	if xp > 0:
+		PlayerData.total_xp += xp
+		xp_earned.emit(xp, PlayerData.total_xp)
+
+		# Check for level up
+		var new_level = _calculate_level(PlayerData.total_xp)
+		if new_level > PlayerData.overall_level:
+			PlayerData.overall_level = new_level
+			level_up.emit(new_level)
+
+	PlayerData.data_updated.emit()
+
+
+func return_to_world() -> void:
 	change_state(GameState.WORLD)
+	SceneManager.goto_scene("world_hub")
 
 
 func initialize_game() -> void:
@@ -50,3 +66,10 @@ func initialize_game() -> void:
 	print("[GameManager] Game initialized")
 	is_initialized = true
 	change_state(GameState.MENU)
+
+
+func _calculate_level(total_xp: int) -> int:
+	var level = 1
+	while PlayerData.xp_for_level(level + 1) <= total_xp:
+		level += 1
+	return level
