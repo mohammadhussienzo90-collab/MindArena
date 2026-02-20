@@ -12,9 +12,14 @@ extends CanvasLayer
 @onready var feed_button: Button = $NavBar/FeedButton
 @onready var chat_button: Button = $NavBar/ChatButton
 @onready var settings_button: Button = $NavBar/SettingsButton
+@onready var arena_button: Button = $NavBar/ArenaButton if has_node("NavBar/ArenaButton") else null
+@onready var friends_button: Button = $NavBar/FriendsButton if has_node("NavBar/FriendsButton") else null
+@onready var notif_badge: Label = $NavBar/NotifBadge if has_node("NavBar/NotifBadge") else null
 
 var _notification_timer := 0.0
 var _notification_queue: Array[String] = []
+var _notif_poll_timer := 0.0
+const NOTIF_POLL_INTERVAL := 30.0
 
 
 func _ready() -> void:
@@ -29,9 +34,14 @@ func _ready() -> void:
 	feed_button.pressed.connect(func(): SceneManager.goto_scene("feed"))
 	chat_button.pressed.connect(func(): SceneManager.goto_scene("chat"))
 	settings_button.pressed.connect(_on_settings)
+	if arena_button:
+		arena_button.pressed.connect(func(): SceneManager.goto_scene("arena"))
+	if friends_button:
+		friends_button.pressed.connect(func(): SceneManager.goto_scene("friends"))
 
 	notification_panel.visible = false
 	_update_display()
+	_poll_notifications()
 
 
 func _process(delta: float) -> void:
@@ -43,6 +53,12 @@ func _process(delta: float) -> void:
 			if _notification_queue.size() > 0:
 				var next = _notification_queue.pop_front()
 				_show_notification(next)
+
+	# Poll for server notifications periodically
+	_notif_poll_timer += delta
+	if _notif_poll_timer >= NOTIF_POLL_INTERVAL:
+		_notif_poll_timer = 0.0
+		_poll_notifications()
 
 
 func _update_display() -> void:
@@ -94,3 +110,18 @@ func _show_notification(text: String) -> void:
 	notification_label.text = text
 	notification_panel.visible = true
 	_notification_timer = 3.0
+
+
+func _poll_notifications() -> void:
+	var result = await ApiClient.get("/notifications/?unread_only=true")
+	if result.status == 200 and result.data != null:
+		var unread_count = result.data.get("unread_count", 0)
+		if notif_badge:
+			notif_badge.visible = unread_count > 0
+			notif_badge.text = str(unread_count) if unread_count <= 99 else "99+"
+		# Show new notifications as toast messages
+		var results = result.data.get("results", [])
+		for notif in results:
+			var title = PlayerData.localized(notif, "title", "")
+			if title != "":
+				queue_notification(title)
