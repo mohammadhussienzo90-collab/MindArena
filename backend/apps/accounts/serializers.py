@@ -5,7 +5,7 @@ from .models import Player, CompanionProfile
 
 class RegisterSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150)
-    email = serializers.EmailField()
+    email = serializers.EmailField(required=False, allow_blank=True, default='')
     password = serializers.CharField(write_only=True, min_length=8)
     display_name = serializers.CharField(max_length=50)
 
@@ -17,7 +17,7 @@ class RegisterSerializer(serializers.Serializer):
     def create(self, validated_data):
         user = User.objects.create_user(
             username=validated_data['username'],
-            email=validated_data['email'],
+            email=validated_data.get('email', ''),
             password=validated_data['password'],
         )
         player = Player.objects.create(

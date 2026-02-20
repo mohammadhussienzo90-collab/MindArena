@@ -60,9 +60,9 @@ func _on_challenge_loaded(data: Dictionary) -> void:
 	var content = data.get("content", {})
 	var challenge_type = data.get("challenge_type", "multiple_choice")
 
-	title_label.text = content.get("title_en", "Challenge")
-	difficulty_label.text = "Difficulty: %s" % data.get("difficulty", "medium").capitalize()
-	xp_label.text = "+%d XP" % data.get("xp_reward", 10)
+	title_label.text = data.get("title_en", "Challenge")
+	difficulty_label.text = "Difficulty: %d / 10" % data.get("difficulty", 1)
+	xp_label.text = "+%d XP" % data.get("base_xp", 10)
 
 	# Timer
 	var time_limit = data.get("time_limit_secs", 0)
@@ -130,9 +130,9 @@ func _on_result_received(result: Dictionary) -> void:
 	if result.has("error"):
 		explanation_label.text = result.get("error", "Something went wrong.")
 	else:
-		var correct = result.get("correct", false)
-		var xp = result.get("xp_earned", 0)
-		var explanation = result.get("explanation_en", "")
+		var correct = result.get("is_correct", false)
+		var xp = result.get("base_xp", 0) + result.get("bonus_xp", 0)
+		var explanation = result.get("explanation", "")
 
 		# Highlight correct/wrong
 		if _selected_index >= 0 and _selected_index < _option_buttons.size():

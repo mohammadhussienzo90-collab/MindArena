@@ -48,8 +48,8 @@ func _on_register() -> void:
 	if username.length() < 3:
 		_show_error("Username must be at least 3 characters.")
 		return
-	if password.length() < 6:
-		_show_error("Password must be at least 6 characters.")
+	if password.length() < 8:
+		_show_error("Password must be at least 8 characters.")
 		return
 
 	_set_loading(true)

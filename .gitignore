@@ -1,0 +1,22 @@
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Docker volumes
+pgdata/
+postgres_data/
+
+# Environment
+.env
+*.env
+
+# Python
+__pycache__/
+*.pyc

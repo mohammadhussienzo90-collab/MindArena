@@ -67,7 +67,7 @@ Personality Traits:
             import anthropic
             client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
             response = client.messages.create(
-                model=getattr(settings, 'COMPANION_MODEL', 'claude-sonnet-4-20250514'),
+                model=getattr(settings, 'ANTHROPIC_MODEL', 'claude-sonnet-4-20250514'),
                 max_tokens=500,
                 system=cls.get_system_prompt(player),
                 messages=messages,
