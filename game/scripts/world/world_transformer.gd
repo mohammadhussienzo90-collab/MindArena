@@ -4,19 +4,23 @@ extends Node3D
 
 @export var base_environment: Environment
 
-var _realm_nodes: Dictionary = {}
+var _portal_nodes: Array = []
 
 
 func _ready() -> void:
 	PlayerData.data_updated.connect(_on_data_updated)
-	_find_realm_nodes()
+	# Defer finding portals to ensure scene tree is fully loaded
+	call_deferred("_find_portals")
+
+
+func _find_portals() -> void:
+	# Search the entire scene tree for portal nodes with realm_slug
+	var portals_parent = get_parent().get_node_or_null("Portals")
+	if portals_parent:
+		for child in portals_parent.get_children():
+			if "realm_slug" in child and child.realm_slug != "":
+				_portal_nodes.append(child)
 	_apply_transformations()
-
-
-func _find_realm_nodes() -> void:
-	for child in get_children():
-		if child.has_meta("realm_slug"):
-			_realm_nodes[child.get_meta("realm_slug")] = child
 
 
 func _on_data_updated() -> void:
@@ -29,13 +33,13 @@ func _apply_transformations() -> void:
 		var level_factor = clamp(float(PlayerData.overall_level) / 50.0, 0.0, 1.0)
 		base_environment.ambient_light_energy = 0.3 + (level_factor * 0.7)
 
-	# Update each realm area
-	for slug in _realm_nodes:
-		var stage = PlayerData.get_realm_visual_stage(slug)
-		_apply_realm_stage(_realm_nodes[slug], slug, stage)
+	# Update each portal based on realm progress
+	for portal in _portal_nodes:
+		var stage = PlayerData.get_realm_visual_stage(portal.realm_slug)
+		_apply_realm_stage(portal, stage)
 
 
-func _apply_realm_stage(node: Node3D, _realm_slug: String, stage: int) -> void:
+func _apply_realm_stage(node: Node3D, stage: int) -> void:
 	# Stage 0: Dim, barren
 	# Stage 1: Some color appears
 	# Stage 2: Flora/details grow
@@ -45,7 +49,11 @@ func _apply_realm_stage(node: Node3D, _realm_slug: String, stage: int) -> void:
 
 	var intensity = float(stage) / 5.0
 
-	# Scale environmental details
+	# Scale portal based on progression
+	var base_scale = 1.0 + (stage * 0.15)
+	node.scale = Vector3(base_scale, base_scale, base_scale)
+
+	# Show/hide detail nodes based on growth stage
 	for child in node.get_children():
 		if child.has_meta("growth_stage"):
 			var required = child.get_meta("growth_stage")

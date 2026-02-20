@@ -19,9 +19,10 @@ func _ready() -> void:
 	if label:
 		label.text = realm_display_name
 
-	if mesh and mesh.get_surface_override_material(0):
-		var mat = mesh.get_surface_override_material(0).duplicate()
+	if mesh:
+		var mat = StandardMaterial3D.new()
 		mat.albedo_color = portal_color
+		mat.emission_enabled = true
 		mat.emission = portal_color
 		mat.emission_energy_multiplier = 2.0
 		mesh.set_surface_override_material(0, mat)
