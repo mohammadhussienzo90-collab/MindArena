@@ -49,7 +49,7 @@ func _physics_process(delta: float) -> void:
 	_is_sprinting = Input.is_action_pressed("sprint")
 
 	# Movement
-	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
+	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	var direction := (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 
 	var current_speed = speed * (sprint_multiplier if _is_sprinting else 1.0)

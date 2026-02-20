@@ -1,10 +1,11 @@
 extends Control
 ## AI Companion chat UI controller.
 
-@onready var messages_container: VBoxContainer = $Panel/VBoxContainer/ScrollContainer/MessagesContainer
-@onready var input_field: LineEdit = $Panel/VBoxContainer/HBoxContainer/InputField
-@onready var send_button: Button = $Panel/VBoxContainer/HBoxContainer/SendButton
-@onready var scroll_container: ScrollContainer = $Panel/VBoxContainer/ScrollContainer
+@onready var messages_container: VBoxContainer = $VBoxContainer/ScrollContainer/MessagesContainer
+@onready var input_field: LineEdit = $VBoxContainer/InputHBox/MessageInput
+@onready var send_button: Button = $VBoxContainer/InputHBox/SendButton
+@onready var scroll_container: ScrollContainer = $VBoxContainer/ScrollContainer
+@onready var close_button: Button = $VBoxContainer/HeaderHBox/CloseButton
 
 var _conversation_id: int = -1
 var _waiting_for_reply := false
@@ -13,6 +14,7 @@ var _waiting_for_reply := false
 func _ready() -> void:
 	send_button.pressed.connect(_on_send)
 	input_field.text_submitted.connect(_on_text_submitted)
+	close_button.pressed.connect(func(): SceneManager.goto_scene("world_hub"))
 
 
 func _on_send() -> void:

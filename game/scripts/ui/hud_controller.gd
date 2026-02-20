@@ -1,5 +1,5 @@
 extends CanvasLayer
-## In-game HUD: XP bar, level, realm info, streak, quick actions.
+## In-game HUD: XP bar, level, realm info, streak, nav buttons, notifications.
 
 @onready var level_label: Label = $TopBar/LevelLabel
 @onready var xp_bar: ProgressBar = $TopBar/XPBar
@@ -7,6 +7,11 @@ extends CanvasLayer
 @onready var streak_label: Label = $TopBar/StreakLabel
 @onready var notification_panel: PanelContainer = $NotificationPanel
 @onready var notification_label: Label = $NotificationPanel/Label
+
+@onready var profile_button: Button = $NavBar/ProfileButton
+@onready var feed_button: Button = $NavBar/FeedButton
+@onready var chat_button: Button = $NavBar/ChatButton
+@onready var settings_button: Button = $NavBar/SettingsButton
 
 var _notification_timer := 0.0
 
@@ -16,6 +21,11 @@ func _ready() -> void:
 	GameManager.xp_earned.connect(_on_xp_earned)
 	GameManager.level_up.connect(_on_level_up)
 	GameManager.realm_entered.connect(_on_realm_entered)
+
+	profile_button.pressed.connect(func(): SceneManager.goto_scene("profile"))
+	feed_button.pressed.connect(func(): SceneManager.goto_scene("feed"))
+	chat_button.pressed.connect(func(): SceneManager.goto_scene("chat"))
+	settings_button.pressed.connect(_on_settings)
 
 	notification_panel.visible = false
 	_update_display()
@@ -47,6 +57,14 @@ func _on_level_up(new_level: int) -> void:
 func _on_realm_entered(realm_slug: String) -> void:
 	var realm_name = realm_slug.replace("_", " ").capitalize()
 	realm_label.text = realm_name
+
+
+func _on_settings() -> void:
+	# Toggle mouse capture for settings access
+	if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	else:
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
 func _show_notification(text: String) -> void:

@@ -3,10 +3,10 @@ extends Control
 
 signal assessment_completed(result: Dictionary)
 
-@onready var question_label: RichTextLabel = $Panel/VBoxContainer/QuestionLabel
-@onready var options_container: VBoxContainer = $Panel/VBoxContainer/OptionsContainer
-@onready var progress_bar: ProgressBar = $Panel/VBoxContainer/ProgressBar
-@onready var progress_label: Label = $Panel/VBoxContainer/ProgressLabel
+@onready var question_label: RichTextLabel = $VBoxContainer/QuestionLabel
+@onready var options_container: VBoxContainer = $VBoxContainer/OptionsContainer
+@onready var progress_bar: ProgressBar = $VBoxContainer/ProgressBar
+@onready var progress_label: Label = $VBoxContainer/ProgressLabel
 
 var _questions: Array = []
 var _current_index: int = 0

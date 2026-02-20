@@ -8,6 +8,7 @@ extends Control
 @onready var like_button: Button = $VBoxContainer/HBoxContainer/LikeButton
 @onready var complete_button: Button = $VBoxContainer/HBoxContainer/CompleteButton
 @onready var next_button: Button = $VBoxContainer/HBoxContainer/NextButton
+@onready var back_button: Button = $BackButton
 
 var _feed_items: Array = []
 var _current_index: int = 0
@@ -17,6 +18,7 @@ func _ready() -> void:
 	like_button.pressed.connect(_on_like)
 	complete_button.pressed.connect(_on_complete)
 	next_button.pressed.connect(_on_next)
+	back_button.pressed.connect(func(): SceneManager.goto_scene("world_hub"))
 	_load_feed()
 
 

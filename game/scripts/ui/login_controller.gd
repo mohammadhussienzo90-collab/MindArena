@@ -15,7 +15,7 @@ func _ready() -> void:
 	status_label.text = ""
 
 	# Skip to hub if already logged in
-	if AuthManager.is_logged_in():
+	if AuthManager.is_authenticated:
 		SceneManager.goto_scene("world_hub")
 
 
@@ -30,13 +30,14 @@ func _on_login() -> void:
 	_set_loading(true)
 	var result = await AuthManager.login(username, password)
 
-	if result.success:
+	if result.get("success", false):
+		await PlayerData.load_profile()
 		status_label.add_theme_color_override("font_color", Color(0.4, 1, 0.4, 1))
 		status_label.text = "Welcome back!"
 		await get_tree().create_timer(0.5).timeout
 		_go_to_next_scene()
 	else:
-		_show_error(result.get("message", "Login failed."))
+		_show_error(result.get("error", "Login failed."))
 		_set_loading(false)
 
 
@@ -52,21 +53,22 @@ func _on_register() -> void:
 		return
 
 	_set_loading(true)
-	var result = await AuthManager.register(username, password)
+	var result = await AuthManager.register(username, "", password, username)
 
-	if result.success:
+	if result.get("success", false):
+		await PlayerData.load_profile()
 		status_label.add_theme_color_override("font_color", Color(0.4, 1, 0.4, 1))
 		status_label.text = "Account created!"
 		await get_tree().create_timer(0.5).timeout
 		_go_to_next_scene()
 	else:
-		_show_error(result.get("message", "Registration failed."))
+		_show_error(result.get("error", "Registration failed."))
 		_set_loading(false)
 
 
 func _go_to_next_scene() -> void:
 	# New users go to assessment, returning users go to hub
-	if PlayerData.player_info.get("onboarding_done", false):
+	if PlayerData.onboarding_done:
 		SceneManager.goto_scene("world_hub")
 	else:
 		SceneManager.goto_scene("assessment")
