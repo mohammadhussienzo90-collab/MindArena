@@ -53,19 +53,22 @@ MindArena/
 │
 ├── game/                       # Godot 4.3 game client
 │   ├── project.godot
-│   ├── scenes/                 # 9 .tscn scene files
+│   ├── scenes/                 # 12 .tscn scene files
 │   │   ├── main.tscn           # Entry point
 │   │   ├── login.tscn          # Auth screen
 │   │   ├── assessment.tscn     # Personality quiz
-│   │   ├── world_hub.tscn      # Central hub with 8 realm portals
+│   │   ├── world_hub.tscn      # Central hub with 8 realm portals + HUD
 │   │   ├── challenge.tscn      # Challenge UI
 │   │   ├── chat.tscn           # AI companion chat
 │   │   ├── feed.tscn           # Content feed
 │   │   ├── profile.tscn        # Player stats + radar chart
+│   │   ├── arena.tscn          # PvP arena matchmaking + gameplay
+│   │   ├── friends.tscn        # Friends list + search + requests
+│   │   ├── settings.tscn       # Language, logout, server info
 │   │   └── world/portal.tscn   # Reusable realm portal
-│   ├── scripts/                # 22 GDScript files
+│   ├── scripts/                # 24 GDScript files
 │   │   ├── autoload/           # 6 singletons (API, Auth, Player, Game, Scene, Audio)
-│   │   ├── ui/                 # 10 UI controllers (incl. settings)
+│   │   ├── ui/                 # 11 UI controllers (HUD, arena, friends, settings, etc.)
 │   │   ├── player/             # Player controller with portal interaction
 │   │   ├── world/              # Portal, world transformer
 │   │   └── challenges/         # Challenge manager, MCQ logic
@@ -120,6 +123,7 @@ cp .env.example .env      # Edit with your credentials
 python manage.py migrate
 python manage.py seed_game_content
 python manage.py seed_achievements
+python manage.py seed_feed_content
 python manage.py runserver
 ```
 
@@ -295,7 +299,7 @@ Background tasks managed by Celery:
 - **Personality-driven progression**: Assessment maps to 8 realm affinities
 - **Visual world transformation**: Portals grow and glow as you level up (6 stages)
 - **Achievement system**: 30+ achievements with automatic detection and XP rewards
-- **AI Companion (Noor)**: Powered by Claude, adapts to your personality and language
+- **AI Companion (Noor)**: Powered by Claude, adapts to Big Five personality traits, realm context, and language
 - **Personalized feed**: Prioritizes content for your weakest realms
 - **Arena PvP**: ELO-rated head-to-head challenges with matchmaking
 - **Friend system**: Send requests, accept/reject, view friend profiles
@@ -305,6 +309,25 @@ Background tasks managed by Celery:
 - **Rate limiting**: Auth and API throttling with exponential backoff
 - **Celery background tasks**: Async achievement checks, streak updates, periodic cleanup
 - **API resilience**: Retry logic, connection status tracking, loading states in Godot
+
+## AI Companion (Noor)
+
+Noor is a context-aware AI companion powered by Claude that adapts to each player:
+
+- **Personality adaptation**: Uses Big Five assessment scores to adjust communication style (e.g., high openness → metaphors and abstract ideas; low extraversion → reflective prompts)
+- **Realm contexts**: 8 realm-specific prompt modules guide Noor's expertise (logic coaching, emotional support, creative encouragement, etc.)
+- **Conversation contexts**: 5 modes — general chat, realm exploration, challenge help (hints not answers), post-assessment, and motivation
+- **Companion profile**: Player-customizable warmth, directness, humor, formality, and challenge level
+- **Bilingual**: Responds in Arabic or English based on player preference, mirrors dialect
+- **Safety**: Recognizes distressed players and provides supportive responses
+
+## Management Commands
+
+| Command | Purpose |
+|---------|---------|
+| `seed_game_content` | Seed 8 realms with quests and 80+ challenges |
+| `seed_achievements` | Seed 30+ achievements across categories |
+| `seed_feed_content` | Seed 40 bilingual feed items (5 per realm) |
 
 ## Environment Variables
 
