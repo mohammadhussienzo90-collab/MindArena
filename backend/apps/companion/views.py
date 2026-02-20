@@ -27,6 +27,8 @@ class CompanionChatView(views.APIView):
             player=request.user.player,
             message=serializer.validated_data['message'],
             conversation=conversation,
+            context_type=serializer.validated_data.get('context_type', 'general'),
+            realm_slug=serializer.validated_data.get('realm_slug'),
         )
 
         # Check for companion-related achievements

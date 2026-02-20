@@ -37,6 +37,7 @@ services:
       sh -c "python manage.py migrate --noinput &&
              python manage.py seed_game_content --verbosity=0 2>/dev/null;
              python manage.py seed_achievements --verbosity=0 2>/dev/null;
+             python manage.py seed_feed_content --verbosity=0 2>/dev/null;
              python manage.py runserver 0.0.0.0:8000"
 
   celery:

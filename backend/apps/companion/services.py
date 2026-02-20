@@ -1,53 +1,33 @@
 """AI Companion service using Claude API."""
 from django.conf import settings
-from pathlib import Path
+
+from .prompts import build_system_prompt
 
 
 class CompanionService:
-    SYSTEM_PROMPT_PATH = Path(__file__).parent / 'system_prompt.txt'
 
     @classmethod
-    def get_system_prompt(cls, player):
-        """Build system prompt with player context."""
-        if cls.SYSTEM_PROMPT_PATH.exists():
-            base_prompt = cls.SYSTEM_PROMPT_PATH.read_text()
-        else:
-            base_prompt = (
-                "You are Noor, an AI companion in MindArena. "
-                "You guide the player through self-development challenges. "
-                "Be encouraging, insightful, and adapt to the player's personality."
-            )
-
-        player_context = f"""
-Player: {player.display_name}
-Level: {player.overall_level}
-Language: {player.preferred_lang}
-"""
-        try:
-            assessment = player.assessment
-            player_context += f"""
-Personality Traits:
-- Openness: {assessment.openness}/100
-- Conscientiousness: {assessment.conscientiousness}/100
-- Extraversion: {assessment.extraversion}/100
-- Empathy: {assessment.empathy}/100
-- Analytical: {assessment.analytical_thinking}/100
-- Creative: {assessment.creative_thinking}/100
-"""
-        except Exception:
-            player_context += "\nPersonality: Not yet assessed\n"
-
-        return f"{base_prompt}\n\n--- PLAYER CONTEXT ---\n{player_context}"
+    def get_system_prompt(cls, player, context_type='general', realm_slug=None):
+        """Build system prompt with full player context and personality adaptation."""
+        return build_system_prompt(
+            player,
+            context_type=context_type,
+            realm_slug=realm_slug,
+        )
 
     @classmethod
-    def chat(cls, player, message, conversation=None):
+    def chat(cls, player, message, conversation=None, context_type=None,
+             realm_slug=None):
         """Send a message and get companion response."""
         from .models import CompanionConversation, CompanionMessage
 
         if conversation is None:
             conversation = CompanionConversation.objects.create(
-                player=player, context_type='general',
+                player=player, context_type=context_type or 'general',
             )
+
+        # Derive context_type from the conversation if not explicitly passed
+        effective_context = context_type or conversation.context_type or 'general'
 
         CompanionMessage.objects.create(
             conversation=conversation, role='player', content=message,
@@ -69,12 +49,19 @@ Personality Traits:
             response = client.messages.create(
                 model=getattr(settings, 'ANTHROPIC_MODEL', 'claude-sonnet-4-20250514'),
                 max_tokens=500,
-                system=cls.get_system_prompt(player),
+                system=cls.get_system_prompt(
+                    player,
+                    context_type=effective_context,
+                    realm_slug=realm_slug,
+                ),
                 messages=messages,
             )
             reply = response.content[0].text
         except Exception as e:
-            reply = f"I'm having trouble connecting right now. Let's try again in a moment. ({type(e).__name__})"
+            reply = (
+                "I'm having trouble connecting right now. "
+                f"Let's try again in a moment. ({type(e).__name__})"
+            )
 
         CompanionMessage.objects.create(
             conversation=conversation, role='companion', content=reply,

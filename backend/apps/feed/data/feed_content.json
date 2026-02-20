@@ -1,0 +1,449 @@
+[
+  {
+    "slug": "lf-tip-pattern-recognition",
+    "title_en": "Spot the Pattern Faster",
+    "title_ar": "اكتشف النمط بسرعة",
+    "body_en": "When facing a number sequence, look at the differences between consecutive terms first. If those differences form their own pattern, you have found the key. For example: 2, 5, 10, 17, 26 — the differences are 3, 5, 7, 9 (odd numbers). Train yourself to calculate gaps automatically.",
+    "body_ar": "عند مواجهة تسلسل أرقام، انظر أولاً إلى الفروقات بين الأرقام المتتالية. إذا شكّلت هذه الفروقات نمطاً خاصاً بها، فقد وجدت المفتاح. مثال: 2، 5، 10، 17، 26 — الفروقات هي 3، 5، 7، 9 (أرقام فردية). درّب نفسك على حساب الفجوات تلقائياً.",
+    "content_type": "tip",
+    "realm_slug": "logic_fortress",
+    "xp_value": 5,
+    "is_premium": false
+  },
+  {
+    "slug": "lf-challenge-river-crossing",
+    "title_en": "The River Crossing Puzzle",
+    "title_ar": "لغز عبور النهر",
+    "body_en": "A farmer needs to cross a river with a fox, a chicken, and a bag of grain. The boat only holds the farmer plus one item. The fox eats the chicken if left alone, and the chicken eats the grain. How does the farmer get everything across safely? Think step by step — the trick is that you can bring something back.",
+    "body_ar": "يحتاج مزارع لعبور نهر مع ثعلب ودجاجة وكيس حبوب. القارب يتسع للمزارع وشيء واحد فقط. الثعلب يأكل الدجاجة إذا تُركا وحدهما، والدجاجة تأكل الحبوب. كيف ينقل المزارع كل شيء بأمان؟ فكّر خطوة بخطوة — الحيلة أنك تستطيع إرجاع شيء.",
+    "content_type": "challenge",
+    "realm_slug": "logic_fortress",
+    "xp_value": 10,
+    "is_premium": false
+  },
+  {
+    "slug": "lf-fact-brain-logic",
+    "title_en": "Your Brain's Logic Engine",
+    "title_ar": "محرك المنطق في دماغك",
+    "body_en": "Your prefrontal cortex — the brain region right behind your forehead — is your logic center. It does not fully mature until age 25. The good news? Like a muscle, you can strengthen it through practice. Every logic puzzle you solve literally builds new neural connections in this area.",
+    "body_ar": "القشرة الأمامية الجبهية — منطقة الدماغ خلف جبهتك مباشرة — هي مركز المنطق. لا تنضج بالكامل حتى سن 25. الخبر الجيد؟ مثل العضلة، يمكنك تقويتها بالممارسة. كل لغز منطقي تحله يبني حرفياً وصلات عصبية جديدة.",
+    "content_type": "fact",
+    "realm_slug": "logic_fortress",
+    "xp_value": 5,
+    "is_premium": false
+  },
+  {
+    "slug": "lf-lesson-deduction-101",
+    "title_en": "Deduction 101: Eliminate the Impossible",
+    "title_ar": "الاستنتاج 101: استبعد المستحيل",
+    "body_en": "Sherlock Holmes said it best: 'When you have eliminated the impossible, whatever remains, however improbable, must be the truth.' In logic problems, start by listing what CANNOT be true. Cross out contradictions systematically. Often the answer reveals itself not by finding it directly, but by removing everything else.",
+    "body_ar": "قالها شيرلوك هولمز: 'عندما تستبعد المستحيل، فإن ما يتبقى، مهما كان غير محتمل، لا بد أن يكون الحقيقة.' في المسائل المنطقية، ابدأ بسرد ما لا يمكن أن يكون صحيحاً. اشطب التناقضات بشكل منهجي.",
+    "content_type": "lesson",
+    "realm_slug": "logic_fortress",
+    "xp_value": 8,
+    "is_premium": false
+  },
+  {
+    "slug": "lf-reflection-thinking-style",
+    "title_en": "What Is Your Thinking Style?",
+    "title_ar": "ما هو أسلوبك في التفكير؟",
+    "body_en": "Reflect on how you approach problems. Do you jump straight to the answer (intuitive) or work through steps methodically (analytical)? Neither is wrong, but awareness helps. Next time you face a tough problem, try the opposite approach. If you usually guess first, try writing out the steps. If you usually plan, try trusting your gut.",
+    "body_ar": "تأمل في كيفية مقاربتك للمشكلات. هل تقفز مباشرة إلى الإجابة (حدسي) أم تعمل عبر خطوات منهجية (تحليلي)؟ لا أحد خاطئ، لكن الوعي يساعد. في المرة القادمة التي تواجه فيها مشكلة صعبة، جرّب النهج المعاكس.",
+    "content_type": "reflection",
+    "realm_slug": "logic_fortress",
+    "xp_value": 5,
+    "is_premium": false
+  },
+
+  {
+    "slug": "eo-tip-emotion-labeling",
+    "title_en": "Name It to Tame It",
+    "title_ar": "سمّها لتروّضها",
+    "body_en": "Research by UCLA neuroscientist Matthew Lieberman shows that simply labeling your emotions reduces their intensity. Instead of saying 'I feel bad,' try to be specific: 'I feel disappointed because I expected a different outcome.' The more precise your label, the more your prefrontal cortex calms your amygdala.",
+    "body_ar": "أظهرت أبحاث عالم الأعصاب ماثيو ليبرمان أن مجرد تسمية مشاعرك يقلل من حدتها. بدلاً من قول 'أشعر بالسوء'، حاول أن تكون محدداً: 'أشعر بخيبة أمل لأنني توقعت نتيجة مختلفة.' كلما كانت التسمية أدق، كلما هدأت قشرتك الأمامية لوزتك الدماغية.",
+    "content_type": "tip",
+    "realm_slug": "emotion_ocean",
+    "xp_value": 5,
+    "is_premium": false
+  },
+  {
+    "slug": "eo-challenge-empathy-swap",
+    "title_en": "The Empathy Swap Challenge",
+    "title_ar": "تحدي تبادل التعاطف",
+    "body_en": "Think of someone you recently disagreed with. Now spend 3 minutes writing (or thinking) from THEIR perspective. What are they feeling? What life experiences might have shaped their view? You do not have to agree with them — just genuinely try to understand. This builds your empathy muscle more than any book can.",
+    "body_ar": "فكّر في شخص اختلفت معه مؤخراً. الآن اقضِ 3 دقائق في الكتابة (أو التفكير) من منظورهم. ماذا يشعرون؟ ما التجارب الحياتية التي قد تكون شكّلت وجهة نظرهم؟ لست مضطراً للموافقة — فقط حاول الفهم بصدق.",
+    "content_type": "challenge",
+    "realm_slug": "emotion_ocean",
+    "xp_value": 10,
+    "is_premium": false
+  },
+  {
+    "slug": "eo-fact-emotional-vocabulary",
+    "title_en": "The Power of Emotional Vocabulary",
+    "title_ar": "قوة المفردات العاطفية",
+    "body_en": "People who can distinguish between 'irritated,' 'frustrated,' 'furious,' and 'resentful' handle their emotions better than those who just say 'angry.' Psychologists call this 'emotional granularity.' The average person uses about 12 emotion words regularly — try to expand yours to 30+.",
+    "body_ar": "الأشخاص الذين يميزون بين 'منزعج' و'محبط' و'غاضب' و'حاقد' يتعاملون مع مشاعرهم أفضل من الذين يقولون فقط 'زعلان'. يسمي علماء النفس هذا 'الدقة العاطفية'. الشخص العادي يستخدم حوالي 12 كلمة عاطفية بانتظام — حاول توسيع قاموسك إلى 30+.",
+    "content_type": "fact",
+    "realm_slug": "emotion_ocean",
+    "xp_value": 5,
+    "is_premium": false
+  },
+  {
+    "slug": "eo-lesson-emotional-triggers",
+    "title_en": "Understanding Your Emotional Triggers",
+    "title_ar": "فهم محفزاتك العاطفية",
+    "body_en": "An emotional trigger is any stimulus that provokes a strong emotional reaction beyond what the situation warrants. Common triggers include feeling ignored, being criticized, or losing control. Step 1: Notice when your reaction feels disproportionate. Step 2: Ask 'What does this remind me of?' Step 3: Respond to the present situation, not the past one.",
+    "body_ar": "المحفز العاطفي هو أي مؤثر يثير رد فعل عاطفي قوي يفوق ما يستدعيه الموقف. المحفزات الشائعة تشمل الشعور بالتجاهل أو الانتقاد أو فقدان السيطرة. الخطوة 1: لاحظ عندما يكون رد فعلك غير متناسب. الخطوة 2: اسأل 'بماذا يذكرني هذا؟' الخطوة 3: استجب للموقف الحالي، لا الماضي.",
+    "content_type": "lesson",
+    "realm_slug": "emotion_ocean",
+    "xp_value": 8,
+    "is_premium": false
+  },
+  {
+    "slug": "eo-reflection-emotional-weather",
+    "title_en": "Your Emotional Weather Report",
+    "title_ar": "تقرير طقسك العاطفي",
+    "body_en": "Right now, if your emotions were weather, what would the forecast be? Sunny and calm? Cloudy with a chance of anxiety? A storm of excitement? There is no wrong answer. Checking in with yourself like this — even for 30 seconds — builds self-awareness. Try doing this three times today.",
+    "body_ar": "الآن، لو كانت مشاعرك طقساً، ما هي التوقعات؟ مشمس وهادئ؟ غائم مع احتمال قلق؟ عاصفة من الحماس؟ لا توجد إجابة خاطئة. التحقق من نفسك هكذا — حتى لو لـ30 ثانية — يبني الوعي الذاتي. حاول فعل هذا ثلاث مرات اليوم.",
+    "content_type": "reflection",
+    "realm_slug": "emotion_ocean",
+    "xp_value": 5,
+    "is_premium": false
+  },
+
+  {
+    "slug": "cn-tip-scamper-method",
+    "title_en": "SCAMPER: Your Creativity Toolkit",
+    "title_ar": "سكامبر: مجموعة أدوات إبداعك",
+    "body_en": "Stuck on a creative problem? Use SCAMPER: Substitute (swap a component), Combine (merge two ideas), Adapt (borrow from another field), Modify (change size/shape/color), Put to other use, Eliminate (remove something), Reverse (flip it). Apply each letter to your challenge and watch ideas flow.",
+    "body_ar": "عالق في مشكلة إبداعية؟ استخدم SCAMPER: استبدل (بدّل مكوناً)، ادمج (اجمع فكرتين)، تكيّف (استعر من مجال آخر)، عدّل (غيّر الحجم/الشكل/اللون)، استخدم بطريقة أخرى، احذف (أزل شيئاً)، اعكس (اقلبه). طبّق كل حرف على تحديك وشاهد الأفكار تتدفق.",
+    "content_type": "tip",
+    "realm_slug": "creativity_nebula",
+    "xp_value": 5,
+    "is_premium": false
+  },
+  {
+    "slug": "cn-challenge-100-uses",
+    "title_en": "The 100 Uses Challenge",
+    "title_ar": "تحدي المئة استخدام",
+    "body_en": "Pick any ordinary object near you — a paperclip, a shoe, a water bottle. Now list as many alternative uses as you can in 5 minutes. A paperclip could be a bookmark, a lock pick, a tiny sculpture, a zipper pull, an earring, a phone SIM ejector. The first 10 are easy. The magic of divergent thinking starts after 20.",
+    "body_ar": "اختر أي شيء عادي بالقرب منك — مشبك ورق، حذاء، زجاجة ماء. الآن اسرد أكبر عدد من الاستخدامات البديلة في 5 دقائق. مشبك الورق يمكن أن يكون فاصلة كتاب، أداة فتح قفل، منحوتة صغيرة. أول 10 سهلة. سحر التفكير التباعدي يبدأ بعد الـ20.",
+    "content_type": "challenge",
+    "realm_slug": "creativity_nebula",
+    "xp_value": 10,
+    "is_premium": false
+  },
+  {
+    "slug": "cn-fact-default-mode-network",
+    "title_en": "Your Brain's Creativity Mode",
+    "title_ar": "وضع الإبداع في دماغك",
+    "body_en": "Your best creative ideas do not come when you are focused — they come when your mind wanders. This is your Default Mode Network (DMN) at work. It activates during showers, walks, and daydreaming. That is why 72% of people report their best ideas come in the shower. Schedule time for unfocused thinking.",
+    "body_ar": "أفضل أفكارك الإبداعية لا تأتي عندما تكون مركزاً — بل عندما يشرد ذهنك. هذه هي شبكة الوضع الافتراضي (DMN) في العمل. تنشط أثناء الاستحمام والمشي وأحلام اليقظة. لهذا يقول 72% من الناس إن أفضل أفكارهم تأتي في الحمام. خصص وقتاً للتفكير الحر.",
+    "content_type": "fact",
+    "realm_slug": "creativity_nebula",
+    "xp_value": 5,
+    "is_premium": false
+  },
+  {
+    "slug": "cn-lesson-lateral-thinking",
+    "title_en": "Lateral Thinking: Break the Rules",
+    "title_ar": "التفكير الجانبي: اكسر القواعد",
+    "body_en": "Lateral thinking, coined by Edward de Bono, means solving problems through an indirect approach. Instead of digging the same hole deeper (vertical thinking), dig a new hole somewhere else. Technique: State your problem, then deliberately assume the OPPOSITE is true. 'We need more customers' becomes 'What if we needed fewer customers?' This reframe often unlocks breakthrough ideas.",
+    "body_ar": "التفكير الجانبي، الذي ابتكره إدوارد دي بونو، يعني حل المشكلات بنهج غير مباشر. بدلاً من حفر نفس الحفرة أعمق (التفكير العمودي)، احفر حفرة جديدة في مكان آخر. التقنية: صِف مشكلتك، ثم افترض عمداً العكس. هذا التأطير الجديد يفتح أفكاراً خارقة.",
+    "content_type": "lesson",
+    "realm_slug": "creativity_nebula",
+    "xp_value": 8,
+    "is_premium": false
+  },
+  {
+    "slug": "cn-reflection-creative-blocks",
+    "title_en": "What Blocks Your Creativity?",
+    "title_ar": "ما الذي يعيق إبداعك؟",
+    "body_en": "Think about the last time you felt creatively stuck. Was it fear of judgment? Perfectionism? Lack of inspiration? Self-doubt? Identifying your specific block is the first step to overcoming it. Most creative blocks are emotional, not intellectual. Give yourself permission to create something terrible — you can always improve it later.",
+    "body_ar": "فكّر في آخر مرة شعرت فيها بجمود إبداعي. هل كان خوفاً من الحكم؟ كمالية؟ نقص إلهام؟ شك ذاتي؟ تحديد عائقك المحدد هو الخطوة الأولى لتجاوزه. معظم العوائق الإبداعية عاطفية، لا فكرية. أعطِ نفسك إذناً لإنشاء شيء سيئ — يمكنك تحسينه لاحقاً.",
+    "content_type": "reflection",
+    "realm_slug": "creativity_nebula",
+    "xp_value": 5,
+    "is_premium": false
+  },
+
+  {
+    "slug": "dc-tip-two-day-rule",
+    "title_en": "The Two-Day Rule",
+    "title_ar": "قاعدة اليومين",
+    "body_en": "Never skip a habit two days in a row. Missing once is human — missing twice starts a new pattern. Comedian Matt D'Avella calls this the Two-Day Rule. It gives you flexibility for bad days while preventing the downward spiral. If you missed your workout today, that is fine. But tomorrow is non-negotiable.",
+    "body_ar": "لا تتخطَّ عادة يومين متتاليين. الغياب مرة واحدة بشري — الغياب مرتين يبدأ نمطاً جديداً. يسمي مات دافيلا هذه قاعدة اليومين. تمنحك مرونة للأيام السيئة مع منع الانحدار. إذا فاتك تمرينك اليوم، لا بأس. لكن غداً غير قابل للتفاوض.",
+    "content_type": "tip",
+    "realm_slug": "discipline_citadel",
+    "xp_value": 5,
+    "is_premium": false
+  },
+  {
+    "slug": "dc-challenge-temptation-bundling",
+    "title_en": "Temptation Bundling Challenge",
+    "title_ar": "تحدي ربط الإغراءات",
+    "body_en": "Pair something you NEED to do with something you WANT to do. Listen to your favorite podcast only while exercising. Watch your favorite show only while folding laundry. This technique, from behavioral economist Katy Milkman, makes hard habits feel rewarding. Your challenge: create one temptation bundle this week and stick to it for 7 days.",
+    "body_ar": "اربط شيئاً تحتاج لفعله بشيء تريد فعله. استمع لبودكاستك المفضل فقط أثناء التمرين. شاهد برنامجك المفضل فقط أثناء طي الغسيل. هذه التقنية من الاقتصادية السلوكية كاتي ميلكمان تجعل العادات الصعبة مجزية. تحديك: أنشئ رابط إغراء واحد هذا الأسبوع.",
+    "content_type": "challenge",
+    "realm_slug": "discipline_citadel",
+    "xp_value": 10,
+    "is_premium": false
+  },
+  {
+    "slug": "dc-fact-willpower-science",
+    "title_en": "Willpower Is a Renewable Resource",
+    "title_ar": "قوة الإرادة مورد متجدد",
+    "body_en": "The old 'willpower is a limited tank' theory has been updated. Recent research by Carol Dweck shows that willpower only depletes if you BELIEVE it depletes. People who view willpower as unlimited perform better on back-to-back self-control tasks. Your mindset about discipline literally shapes your capacity for it.",
+    "body_ar": "نظرية 'قوة الإرادة خزان محدود' القديمة تم تحديثها. أبحاث حديثة لكارول دويك تُظهر أن قوة الإرادة تنضب فقط إذا اعتقدت أنها تنضب. الأشخاص الذين يرون قوة الإرادة غير محدودة يؤدون أفضل في مهام ضبط النفس المتتالية. عقليتك تشكل حرفياً قدرتك.",
+    "content_type": "fact",
+    "realm_slug": "discipline_citadel",
+    "xp_value": 5,
+    "is_premium": false
+  },
+  {
+    "slug": "dc-lesson-habit-stacking",
+    "title_en": "Habit Stacking: The Chain Method",
+    "title_ar": "تكديس العادات: طريقة السلسلة",
+    "body_en": "Attach new habits to existing ones using the formula: 'After I [CURRENT HABIT], I will [NEW HABIT].' Example: 'After I pour my morning coffee, I will write one sentence in my journal.' The existing habit becomes the trigger. Stack up to 3-4 habits in a chain. Start with tiny habits (under 2 minutes) and expand once the chain is solid.",
+    "body_ar": "اربط العادات الجديدة بالموجودة باستخدام الصيغة: 'بعد أن [عادة حالية]، سأفعل [عادة جديدة].' مثال: 'بعد أن أسكب قهوتي الصباحية، سأكتب جملة واحدة في مذكرتي.' العادة الحالية تصبح المحفز. كدّس حتى 3-4 عادات في سلسلة.",
+    "content_type": "lesson",
+    "realm_slug": "discipline_citadel",
+    "xp_value": 8,
+    "is_premium": false
+  },
+  {
+    "slug": "dc-quote-discipline-freedom",
+    "title_en": "Discipline Equals Freedom",
+    "title_ar": "الانضباط يساوي الحرية",
+    "body_en": "\"Discipline equals freedom.\" — Jocko Willink. This sounds paradoxical, but think about it: the discipline to save money gives you financial freedom. The discipline to exercise gives you physical freedom. The discipline to study gives you career freedom. Every constraint you choose today creates an option you will have tomorrow.",
+    "body_ar": "\"الانضباط يساوي الحرية.\" — جوكو ويلينك. يبدو هذا متناقضاً، لكن فكّر فيه: انضباط توفير المال يمنحك حرية مالية. انضباط التمرين يمنحك حرية جسدية. انضباط الدراسة يمنحك حرية مهنية. كل قيد تختاره اليوم يصنع خياراً ستملكه غداً.",
+    "content_type": "quote",
+    "realm_slug": "discipline_citadel",
+    "xp_value": 3,
+    "is_premium": false
+  },
+
+  {
+    "slug": "kp-tip-feynman-technique",
+    "title_en": "The Feynman Technique",
+    "title_ar": "تقنية فاينمان",
+    "body_en": "Nobel physicist Richard Feynman's learning method: (1) Choose a concept, (2) Explain it as if teaching a 12-year-old, (3) Identify gaps where your explanation breaks down, (4) Go back and fill those gaps, then simplify again. If you cannot explain it simply, you do not understand it well enough.",
+    "body_ar": "طريقة التعلم للفيزيائي الحائز على نوبل ريتشارد فاينمان: (1) اختر مفهوماً، (2) اشرحه كأنك تعلّم طفلاً عمره 12 سنة، (3) حدد الثغرات حيث ينهار شرحك، (4) عُد واملأ تلك الثغرات ثم بسّط مجدداً. إذا لم تستطع شرحه ببساطة، فأنت لا تفهمه كفاية.",
+    "content_type": "tip",
+    "realm_slug": "knowledge_peaks",
+    "xp_value": 5,
+    "is_premium": false
+  },
+  {
+    "slug": "kp-challenge-teach-it-back",
+    "title_en": "Teach It Back Challenge",
+    "title_ar": "تحدي أعد تعليمه",
+    "body_en": "Pick something you learned recently — from school, a video, a conversation. Now explain it in your own words in under 60 seconds (write it down or say it aloud). Did you get stuck? That is where your understanding has gaps. This active recall technique has been shown to boost retention by up to 50% compared to re-reading.",
+    "body_ar": "اختر شيئاً تعلمته مؤخراً — من المدرسة أو فيديو أو محادثة. الآن اشرحه بكلماتك في أقل من 60 ثانية (اكتبه أو قله بصوت عالٍ). هل علقت؟ هذا حيث فهمك به فجوات. تقنية الاسترجاع النشط هذه تعزز الحفظ بنسبة تصل إلى 50% مقارنة بإعادة القراءة.",
+    "content_type": "challenge",
+    "realm_slug": "knowledge_peaks",
+    "xp_value": 10,
+    "is_premium": false
+  },
+  {
+    "slug": "kp-fact-spaced-repetition",
+    "title_en": "The Spacing Effect: Learn Less, Remember More",
+    "title_ar": "تأثير التباعد: تعلّم أقل، تذكّر أكثر",
+    "body_en": "Studying for 30 minutes across three days beats studying 90 minutes in one sitting. This is the 'spacing effect,' discovered by Hermann Ebbinghaus in 1885. Your brain consolidates memories during sleep between study sessions. Apps like Anki use this principle — reviewing at optimal intervals just before you would forget.",
+    "body_ar": "الدراسة لمدة 30 دقيقة عبر ثلاثة أيام تتفوق على الدراسة 90 دقيقة في جلسة واحدة. هذا هو 'تأثير التباعد' الذي اكتشفه هيرمان إبينغهاوس عام 1885. دماغك يثبّت الذكريات أثناء النوم بين جلسات الدراسة. تطبيقات مثل Anki تستخدم هذا المبدأ.",
+    "content_type": "fact",
+    "realm_slug": "knowledge_peaks",
+    "xp_value": 5,
+    "is_premium": false
+  },
+  {
+    "slug": "kp-lesson-critical-thinking",
+    "title_en": "The CRAAP Test for Information",
+    "title_ar": "اختبار CRAAP للمعلومات",
+    "body_en": "Before believing anything online, run the CRAAP test: Currency (when was it published?), Relevance (does it relate to your question?), Authority (who wrote it and what are their credentials?), Accuracy (is it supported by evidence?), Purpose (is it trying to inform or sell?). In an age of misinformation, this 30-second check saves you from sharing falsehoods.",
+    "body_ar": "قبل تصديق أي شيء على الإنترنت، أجرِ اختبار CRAAP: الحداثة (متى نُشر؟)، الصلة (هل يتعلق بسؤالك؟)، المصدر (من كتبه وما مؤهلاته؟)، الدقة (هل مدعوم بأدلة؟)، الغرض (هل يحاول الإعلام أم البيع؟). في عصر المعلومات المضللة، هذا الفحص يحميك.",
+    "content_type": "lesson",
+    "realm_slug": "knowledge_peaks",
+    "xp_value": 8,
+    "is_premium": false
+  },
+  {
+    "slug": "kp-reflection-learning-superpower",
+    "title_en": "What Is Your Learning Superpower?",
+    "title_ar": "ما هي قوتك الخارقة في التعلم؟",
+    "body_en": "Think about the last time you learned something quickly and easily. What made it click? Was it a visual diagram, hands-on practice, a story, discussion with someone, or repetitive drilling? There is no single 'best' way to learn — but there is a best way for YOU. Identify it, lean into it, and use it as your starting point for difficult topics.",
+    "body_ar": "فكّر في آخر مرة تعلمت شيئاً بسرعة وسهولة. ما الذي جعله ينقر؟ هل كان رسماً بيانياً، ممارسة عملية، قصة، مناقشة مع شخص، أو تكرار؟ لا توجد طريقة واحدة 'أفضل' للتعلم — لكن هناك طريقة أفضل لك أنت. حددها واستخدمها كنقطة بدايتك.",
+    "content_type": "reflection",
+    "realm_slug": "knowledge_peaks",
+    "xp_value": 5,
+    "is_premium": false
+  },
+
+  {
+    "slug": "sb-tip-active-listening",
+    "title_en": "The 3-Second Pause Rule",
+    "title_ar": "قاعدة التوقف 3 ثوانٍ",
+    "body_en": "After someone finishes speaking, wait 3 seconds before responding. This tiny pause shows you are actually considering their words rather than waiting for your turn to talk. It also gives them space to add something they might have held back. Try it in your next conversation — you will be surprised how much more people share.",
+    "body_ar": "بعد أن ينتهي شخص من الكلام، انتظر 3 ثوانٍ قبل الرد. هذه الوقفة الصغيرة تُظهر أنك تفكر فعلاً في كلماته بدلاً من انتظار دورك. كما تمنحه مساحة لإضافة شيء ربما حبسه. جرّبها في محادثتك القادمة — ستندهش من كم يشارك الناس أكثر.",
+    "content_type": "tip",
+    "realm_slug": "social_bridge",
+    "xp_value": 5,
+    "is_premium": false
+  },
+  {
+    "slug": "sb-challenge-compliment-mission",
+    "title_en": "The Genuine Compliment Mission",
+    "title_ar": "مهمة المجاملة الصادقة",
+    "body_en": "Your mission today: give three genuine, specific compliments to three different people. Not 'nice shirt' — try 'I noticed how patient you were with that difficult customer, that was impressive.' Specific compliments about character and effort mean more than comments about appearance. Notice how it changes the energy of each interaction.",
+    "body_ar": "مهمتك اليوم: أعطِ ثلاث مجاملات صادقة ومحددة لثلاثة أشخاص مختلفين. ليس 'قميص جميل' — جرّب 'لاحظت كم كنت صبوراً مع ذلك العميل الصعب، كان مثيراً للإعجاب.' المجاملات المحددة عن الشخصية والجهد أكثر تأثيراً من التعليقات على المظهر.",
+    "content_type": "challenge",
+    "realm_slug": "social_bridge",
+    "xp_value": 10,
+    "is_premium": false
+  },
+  {
+    "slug": "sb-fact-communication-nonverbal",
+    "title_en": "93% of Communication Is Nonverbal",
+    "title_ar": "93% من التواصل غير لفظي",
+    "body_en": "Albert Mehrabian's research found that in emotional communication, 7% comes from words, 38% from tone, and 55% from body language. While these numbers are debated for general conversation, the core truth holds: HOW you say something matters more than WHAT you say. Your tone, posture, eye contact, and facial expressions carry the real message.",
+    "body_ar": "وجد بحث ألبرت مهرابيان أنه في التواصل العاطفي، 7% يأتي من الكلمات، 38% من النبرة، و55% من لغة الجسد. بينما هذه الأرقام قابلة للنقاش في المحادثات العامة، الحقيقة الجوهرية تظل: كيف تقول شيئاً أهم من ماذا تقول.",
+    "content_type": "fact",
+    "realm_slug": "social_bridge",
+    "xp_value": 5,
+    "is_premium": false
+  },
+  {
+    "slug": "sb-lesson-conflict-resolution",
+    "title_en": "The 'I' Statement Formula",
+    "title_ar": "صيغة جملة 'أنا'",
+    "body_en": "In conflicts, replace 'You always...' with the formula: 'I feel [emotion] when [specific behavior] because [reason]. I would like [request].' Example: 'I feel frustrated when plans change last minute because I have already rearranged my schedule. I would like more notice when possible.' This removes blame and invites collaboration.",
+    "body_ar": "في النزاعات، استبدل 'أنت دائماً...' بالصيغة: 'أشعر بـ[عاطفة] عندما [سلوك محدد] لأن [سبب]. أود [طلب].' مثال: 'أشعر بالإحباط عندما تتغير الخطط في اللحظة الأخيرة لأنني رتبت جدولي مسبقاً. أود إشعاراً أكبر عندما يكون ممكناً.'",
+    "content_type": "lesson",
+    "realm_slug": "social_bridge",
+    "xp_value": 8,
+    "is_premium": false
+  },
+  {
+    "slug": "sb-reflection-social-battery",
+    "title_en": "Check Your Social Battery",
+    "title_ar": "افحص بطاريتك الاجتماعية",
+    "body_en": "On a scale of 0-100%, where is your social battery right now? There is no right answer. Introverts recharge alone and spend energy socially; extroverts recharge socially and spend energy alone. Most people are ambiverts — somewhere in between. Understanding YOUR pattern helps you plan social events when you have energy and protect alone time when you need it.",
+    "body_ar": "على مقياس من 0-100%، أين بطاريتك الاجتماعية الآن؟ لا توجد إجابة صحيحة. الانطوائيون يشحنون وحدهم وينفقون طاقة اجتماعياً؛ الانبساطيون يشحنون اجتماعياً. معظم الناس بينهما. فهم نمطك يساعدك على التخطيط للأحداث الاجتماعية عندما تملك طاقة.",
+    "content_type": "reflection",
+    "realm_slug": "social_bridge",
+    "xp_value": 5,
+    "is_premium": false
+  },
+
+  {
+    "slug": "wg-tip-50-30-20-rule",
+    "title_en": "The 50/30/20 Budget Rule",
+    "title_ar": "قاعدة الميزانية 50/30/20",
+    "body_en": "Senator Elizabeth Warren popularized this simple budgeting framework: 50% of income goes to needs (rent, food, transport), 30% to wants (entertainment, dining out, subscriptions), and 20% to savings and debt repayment. You do not need a spreadsheet — just split your income into these three buckets after each paycheck.",
+    "body_ar": "السيناتور إليزابيث وارن نشرت هذا الإطار البسيط للميزانية: 50% من الدخل للاحتياجات (إيجار، طعام، مواصلات)، 30% للرغبات (ترفيه، مطاعم، اشتراكات)، و20% للادخار وسداد الديون. لا تحتاج جدول بيانات — فقط قسّم دخلك إلى ثلاث فئات.",
+    "content_type": "tip",
+    "realm_slug": "wealth_garden",
+    "xp_value": 5,
+    "is_premium": false
+  },
+  {
+    "slug": "wg-challenge-spending-tracker",
+    "title_en": "The 7-Day Spending Awareness Challenge",
+    "title_ar": "تحدي وعي الإنفاق لـ7 أيام",
+    "body_en": "For the next 7 days, write down every single purchase — no matter how small. Coffee, snacks, app subscriptions, everything. Do not judge, just observe. At the end of the week, categorize them as 'needed,' 'enjoyed,' or 'regretted.' Most people discover 20-30% of their spending falls in the 'regretted' category.",
+    "body_ar": "خلال الأيام السبعة القادمة، سجّل كل عملية شراء — مهما كانت صغيرة. قهوة، وجبات خفيفة، اشتراكات تطبيقات، كل شيء. لا تحكم، فقط لاحظ. في نهاية الأسبوع، صنّفها إلى 'احتجتها' أو 'استمتعت بها' أو 'ندمت عليها'. معظم الناس يكتشفون أن 20-30% من إنفاقهم في فئة 'الندم'.",
+    "content_type": "challenge",
+    "realm_slug": "wealth_garden",
+    "xp_value": 10,
+    "is_premium": false
+  },
+  {
+    "slug": "wg-fact-compound-interest",
+    "title_en": "The Eighth Wonder of the World",
+    "title_ar": "الأعجوبة الثامنة في العالم",
+    "body_en": "Albert Einstein reportedly called compound interest 'the eighth wonder of the world.' If you invest $100/month starting at age 18 with 8% annual returns, by age 60 you will have $349,101. Start at 28 instead? Only $149,036. Those 10 extra years nearly TRIPLED your money — not from investing more, but from time. Start now, no matter how small.",
+    "body_ar": "يُقال إن أينشتاين سمّى الفائدة المركبة 'الأعجوبة الثامنة في العالم.' لو استثمرت 100$/شهر بدءاً من سن 18 بعائد 8% سنوياً، بعمر 60 سيكون لديك 349,101$. ابدأ في سن 28؟ فقط 149,036$. تلك السنوات العشر الإضافية ضاعفت مالك ثلاث مرات تقريباً.",
+    "content_type": "fact",
+    "realm_slug": "wealth_garden",
+    "xp_value": 5,
+    "is_premium": false
+  },
+  {
+    "slug": "wg-lesson-needs-vs-wants",
+    "title_en": "Mastering Needs vs. Wants",
+    "title_ar": "إتقان الاحتياجات مقابل الرغبات",
+    "body_en": "Before any purchase over $20, apply the 72-hour rule: wait 3 days. If you still want it AND can answer 'yes' to these questions, buy it: (1) Would I buy this if no one ever saw it? (2) Will I use it a month from now? (3) Am I buying this for myself or to impress others? Impulse purchases drop by 60% with this simple delay.",
+    "body_ar": "قبل أي شراء فوق 20$، طبّق قاعدة الـ72 ساعة: انتظر 3 أيام. إذا كنت لا تزال تريده ويمكنك الإجابة بنعم على هذه الأسئلة، اشترِه: (1) هل سأشتريه لو لم يره أحد؟ (2) هل سأستخدمه بعد شهر؟ (3) هل أشتريه لنفسي أم لإبهار الآخرين؟ المشتريات الاندفاعية تنخفض 60%.",
+    "content_type": "lesson",
+    "realm_slug": "wealth_garden",
+    "xp_value": 8,
+    "is_premium": true
+  },
+  {
+    "slug": "wg-reflection-money-mindset",
+    "title_en": "What Did You Learn About Money Growing Up?",
+    "title_ar": "ماذا تعلمت عن المال وأنت تكبر؟",
+    "body_en": "Our financial habits are often inherited. Think about your family's relationship with money. Were finances discussed openly or was money taboo? Was spending seen as a reward or a risk? Were you taught to save, invest, or neither? Understanding your money 'script' — the unconscious beliefs you absorbed — is the first step to writing a new one.",
+    "body_ar": "عاداتنا المالية غالباً موروثة. فكّر في علاقة عائلتك بالمال. هل كانت الأمور المالية تُناقش بصراحة أم كان المال محرماً؟ هل كان الإنفاق يُرى كمكافأة أم مخاطرة؟ هل عُلّمت الادخار أو الاستثمار أو لا شيء؟ فهم 'سيناريو المال' اللاواعي هو الخطوة الأولى لكتابة واحد جديد.",
+    "content_type": "reflection",
+    "realm_slug": "wealth_garden",
+    "xp_value": 5,
+    "is_premium": false
+  },
+
+  {
+    "slug": "wv-tip-478-breathing",
+    "title_en": "4-7-8 Breathing for Instant Calm",
+    "title_ar": "تنفس 4-7-8 للهدوء الفوري",
+    "body_en": "Dr. Andrew Weil's 4-7-8 technique: Breathe in through your nose for 4 seconds, hold for 7 seconds, exhale through your mouth for 8 seconds. The long exhale activates your vagus nerve and parasympathetic nervous system. Do this 3-4 cycles before bed for better sleep, or anytime you need to quickly lower your stress level.",
+    "body_ar": "تقنية 4-7-8 للدكتور أندرو ويل: تنفس من أنفك لمدة 4 ثوانٍ، احبس لمدة 7 ثوانٍ، ازفر من فمك لمدة 8 ثوانٍ. الزفير الطويل ينشّط العصب الحائر والجهاز العصبي السمبتاوي. افعل 3-4 دورات قبل النوم لنوم أفضل، أو في أي وقت تحتاج فيه لخفض توترك.",
+    "content_type": "tip",
+    "realm_slug": "wellness_grove",
+    "xp_value": 5,
+    "is_premium": false
+  },
+  {
+    "slug": "wv-challenge-digital-sunset",
+    "title_en": "The Digital Sunset Challenge",
+    "title_ar": "تحدي الغروب الرقمي",
+    "body_en": "Tonight, put ALL screens away 60 minutes before bed. No phone, no laptop, no TV. Instead: read a physical book, stretch, journal, talk to someone face-to-face, or just sit quietly. Blue light from screens suppresses melatonin by up to 50%. One night of digital sunset can improve your sleep quality by 20%. Try it tonight.",
+    "body_ar": "الليلة، ابعد كل الشاشات قبل 60 دقيقة من النوم. لا هاتف، لا لابتوب، لا تلفزيون. بدلاً من ذلك: اقرأ كتاباً ورقياً، تمدد، اكتب يومياتك، تحدث مع شخص وجهاً لوجه. الضوء الأزرق من الشاشات يثبط الميلاتونين بنسبة 50%. ليلة واحدة تحسّن نوعية نومك 20%.",
+    "content_type": "challenge",
+    "realm_slug": "wellness_grove",
+    "xp_value": 10,
+    "is_premium": false
+  },
+  {
+    "slug": "wv-fact-gut-brain-axis",
+    "title_en": "Your Gut Is Your Second Brain",
+    "title_ar": "أمعاؤك هي دماغك الثاني",
+    "body_en": "Your gut contains 500 million neurons and produces 95% of your body's serotonin (the 'happiness hormone'). The gut-brain axis means what you eat directly affects how you feel. Processed foods, artificial sweeteners, and excessive sugar are linked to higher rates of anxiety and depression. A diverse diet with fiber feeds the good bacteria that keep your mood stable.",
+    "body_ar": "أمعاؤك تحتوي على 500 مليون خلية عصبية وتنتج 95% من السيروتونين ('هرمون السعادة'). محور الأمعاء-الدماغ يعني أن ما تأكله يؤثر مباشرة على شعورك. الأطعمة المصنّعة والمحليات الصناعية والسكر المفرط مرتبطة بمعدلات أعلى من القلق والاكتئاب.",
+    "content_type": "fact",
+    "realm_slug": "wellness_grove",
+    "xp_value": 5,
+    "is_premium": false
+  },
+  {
+    "slug": "wv-lesson-stress-reappraisal",
+    "title_en": "Stress Reappraisal: Make Stress Work for You",
+    "title_ar": "إعادة تقييم التوتر: اجعل التوتر يعمل لصالحك",
+    "body_en": "Harvard researcher Alia Crum found that people who view stress as 'enhancing' (it sharpens my focus, it means I care) perform better and are healthier than those who view it as 'debilitating.' Next time your heart races before a presentation, reframe it: 'My body is energizing me for peak performance.' This is not pretending — your physiological response IS the same as excitement.",
+    "body_ar": "وجدت الباحثة عليا كرم من هارفارد أن الأشخاص الذين يرون التوتر 'معززاً' (يشحذ تركيزي، يعني أنني مهتم) يؤدون أفضل ويكونون أصح. المرة القادمة التي يتسارع فيها قلبك قبل عرض، أعد تأطيره: 'جسمي يشحنني للأداء الأمثل.' هذا ليس تظاهراً — استجابتك الجسدية هي نفسها الحماس.",
+    "content_type": "lesson",
+    "realm_slug": "wellness_grove",
+    "xp_value": 8,
+    "is_premium": false
+  },
+  {
+    "slug": "wv-reflection-self-care-audit",
+    "title_en": "Your Self-Care Audit",
+    "title_ar": "تدقيق الرعاية الذاتية",
+    "body_en": "Rate each area from 1-10 right now: Sleep quality, nutrition, physical movement, social connection, creative expression, time in nature, and mental downtime. Which area scored lowest? That is your body telling you where it needs attention most. Pick the lowest-scoring area and commit to one small improvement this week. Self-care is not selfish — it is maintenance.",
+    "body_ar": "قيّم كل مجال من 1-10 الآن: جودة النوم، التغذية، الحركة البدنية، التواصل الاجتماعي، التعبير الإبداعي، الوقت في الطبيعة، والراحة الذهنية. أي مجال حصل على أقل درجة؟ ذلك جسمك يخبرك أين يحتاج اهتماماً أكثر. اختر المجال الأقل والتزم بتحسين صغير هذا الأسبوع.",
+    "content_type": "reflection",
+    "realm_slug": "wellness_grove",
+    "xp_value": 5,
+    "is_premium": true
+  }
+]
