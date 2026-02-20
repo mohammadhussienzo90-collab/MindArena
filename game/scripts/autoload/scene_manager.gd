@@ -8,13 +8,14 @@ var current_scene_name: String = ""
 var _transition_in_progress := false
 
 const SCENES := {
-	"main_menu": "res://scenes/ui/main_menu.tscn",
-	"world_hub": "res://scenes/world/world_hub.tscn",
-	"assessment": "res://scenes/ui/assessment.tscn",
-	"challenge": "res://scenes/challenges/challenge_scene.tscn",
-	"feed": "res://scenes/ui/feed.tscn",
-	"chat": "res://scenes/ui/chat.tscn",
-	"profile": "res://scenes/ui/profile.tscn",
+	"login": "res://scenes/login.tscn",
+	"main": "res://scenes/main.tscn",
+	"world_hub": "res://scenes/world_hub.tscn",
+	"assessment": "res://scenes/assessment.tscn",
+	"challenge": "res://scenes/challenge.tscn",
+	"feed": "res://scenes/feed.tscn",
+	"chat": "res://scenes/chat.tscn",
+	"profile": "res://scenes/profile.tscn",
 }
 
 
