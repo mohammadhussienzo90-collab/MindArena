@@ -21,6 +21,15 @@ class RealmViewSet(viewsets.ReadOnlyModelViewSet):
             return RealmDetailSerializer
         return RealmListSerializer
 
+    @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated])
+    def challenges(self, request, slug=None):
+        """List challenges for a specific realm: GET /realms/{slug}/challenges/"""
+        realm = self.get_object()
+        challenges = Challenge.objects.filter(
+            quest__realm=realm, is_active=True,
+        ).select_related('quest')
+        return Response(ChallengeSerializer(challenges, many=True).data)
+
 
 class QuestViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated]

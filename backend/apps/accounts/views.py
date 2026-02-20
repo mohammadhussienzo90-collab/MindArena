@@ -15,8 +15,10 @@ class RegisterView(APIView):
         user = serializer.save()
         refresh = RefreshToken.for_user(user)
         return Response({
-            'access': str(refresh.access_token),
-            'refresh': str(refresh),
+            'tokens': {
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+            },
             'player': PlayerSerializer(user.player).data,
         }, status=status.HTTP_201_CREATED)
 

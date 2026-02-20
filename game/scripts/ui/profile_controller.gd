@@ -17,26 +17,21 @@ func _ready() -> void:
 
 
 func _load_profile() -> void:
-	# Player info
-	var info = PlayerData.player_info
-	player_name.text = info.get("display_name", "Player")
-	var level = info.get("overall_level", 1)
-	var total_xp = info.get("total_xp", 0)
-	level_label.text = "Level %d — %d XP" % [level, total_xp]
+	# Player info from cached data
+	player_name.text = PlayerData.display_name if PlayerData.display_name != "" else "Player"
+	level_label.text = "Level %d — %d XP" % [PlayerData.overall_level, PlayerData.total_xp]
 
 	# XP progress to next level
-	var current_level_xp = int(100 * pow(level, 1.5))
-	var next_level_xp = int(100 * pow(level + 1, 1.5))
-	xp_bar.max_value = next_level_xp - current_level_xp
-	xp_bar.value = total_xp - current_level_xp
+	xp_bar.max_value = 100.0
+	xp_bar.value = PlayerData.xp_progress_percent() * 100.0
 
 	# Load stats from API
-	var result = await ApiClient.get("/progression/stats/")
+	var result = await ApiClient.get("/progression/progression/stats/")
 	if result.status == 200 and result.data:
 		_populate_stats(result.data)
 
 	# Load achievements
-	var ach_result = await ApiClient.get("/achievements/earned/")
+	var ach_result = await ApiClient.get("/progression/achievements/earned/")
 	if ach_result.status == 200 and ach_result.data:
 		_populate_achievements(ach_result.data)
 
@@ -44,7 +39,10 @@ func _load_profile() -> void:
 func _populate_stats(data: Dictionary) -> void:
 	# Streak
 	var streak = data.get("streak", {})
-	streak_label.text = "%d Day Streak" % streak.get("current_streak", 0)
+	if streak:
+		streak_label.text = "%d Day Streak" % streak.get("current_streak", 0)
+	else:
+		streak_label.text = ""
 
 	# Radar chart
 	var realm_stats = data.get("realm_stats", [])
