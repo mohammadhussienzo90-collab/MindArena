@@ -47,8 +47,12 @@ func _enter_realm() -> void:
 func _on_body_entered(body: Node3D) -> void:
 	if body.is_in_group("player"):
 		_player_nearby = true
+		if body.has_method("set_nearby_portal"):
+			body.set_nearby_portal(self)
 
 
 func _on_body_exited(body: Node3D) -> void:
 	if body.is_in_group("player"):
 		_player_nearby = false
+		if body.has_method("clear_nearby_portal"):
+			body.clear_nearby_portal(self)

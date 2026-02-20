@@ -175,6 +175,63 @@ class ProfileTests(APITestBase):
         self.assertEqual(data['display_name'], 'Updated Name')
         self.assertEqual(data['preferred_lang'], 'ar')
 
+    def test_change_password(self):
+        token, _ = self._register()
+        resp = self._post('/api/v1/accounts/change-password/', {
+            'old_password': 'testpass123',
+            'new_password': 'newpass456!',
+        }, token)
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.content)
+        self.assertIn('tokens', data)
+        # Verify old password no longer works
+        login_resp = self.client.post('/api/v1/accounts/login/', json.dumps({
+            'username': 'testplayer', 'password': 'testpass123',
+        }), content_type='application/json')
+        self.assertEqual(login_resp.status_code, 401)
+
+    def test_change_password_wrong_old(self):
+        token, _ = self._register()
+        resp = self._post('/api/v1/accounts/change-password/', {
+            'old_password': 'wrongold',
+            'new_password': 'newpass456!',
+        }, token)
+        self.assertEqual(resp.status_code, 400)
+
+    def test_delete_account(self):
+        token, _ = self._register()
+        resp = self._post('/api/v1/accounts/delete-account/', {
+            'password': 'testpass123',
+        }, token)
+        self.assertEqual(resp.status_code, 200)
+        # Verify account is gone
+        from django.contrib.auth.models import User
+        self.assertFalse(User.objects.filter(username='testplayer').exists())
+
+    def test_player_search(self):
+        token, _ = self._register('searchuser', 'testpass123')
+        self._register('alice', 'testpass123')
+        self._register('bob', 'testpass123')
+        resp = self._get('/api/v1/accounts/search/?q=ali', token)
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.content)
+        self.assertEqual(len(data['results']), 1)
+        self.assertEqual(data['results'][0]['display_name'], 'Alice')
+
+    def test_public_profile(self):
+        token, _ = self._register()
+        # Get own profile to find player ID
+        resp = self._get('/api/v1/accounts/profile/', token)
+        player_id = json.loads(resp.content)['id']
+        # Create another user to view the profile
+        token2, _ = self._register('viewer', 'testpass123')
+        resp = self._get(f'/api/v1/accounts/players/{player_id}/', token2)
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.content)
+        self.assertEqual(data['display_name'], 'Testplayer')
+        self.assertIn('realm_stats', data)
+        self.assertIn('achievements_count', data)
+
 
 class RealmTests(APITestBase):
     """Realm listing and detail tests."""
