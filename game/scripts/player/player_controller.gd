@@ -14,6 +14,7 @@ var _is_sprinting := false
 
 
 func _ready() -> void:
+	add_to_group("player")
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
