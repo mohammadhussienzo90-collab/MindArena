@@ -7,11 +7,24 @@ signal request_failed(error: String)
 var base_url: String = "http://localhost:8000/api/v1"
 var _http: HTTPRequest
 
+const CONFIG_PATH := "user://server_config.cfg"
+
 
 func _ready() -> void:
 	_http = HTTPRequest.new()
 	add_child(_http)
 	_http.timeout = 30.0
+	_load_server_config()
+
+
+func _load_server_config() -> void:
+	var config = ConfigFile.new()
+	if config.load(CONFIG_PATH) == OK:
+		base_url = config.get_value("server", "base_url", base_url)
+	# Also check command-line override: --server=https://api.mindarena.com/api/v1
+	for arg in OS.get_cmdline_args():
+		if arg.begins_with("--server="):
+			base_url = arg.substr(9)
 
 
 func _get_headers() -> PackedStringArray:

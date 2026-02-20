@@ -84,6 +84,9 @@ class Achievement(models.Model):
     xp_reward = models.IntegerField(default=50)
     is_hidden = models.BooleanField(default=False)
 
+    class Meta:
+        ordering = ['category', 'slug']
+
     def __str__(self):
         return self.title_en
 
