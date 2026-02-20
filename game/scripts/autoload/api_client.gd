@@ -25,38 +25,38 @@ func _get_headers() -> PackedStringArray:
 	return headers
 
 
-func get(endpoint: String) -> Dictionary:
-	var url = base_url + endpoint
-	var headers = _get_headers()
-
-	var http = HTTPRequest.new()
-	add_child(http)
-
-	var error = http.request(url, headers, HTTPClient.METHOD_GET)
-	if error != OK:
-		http.queue_free()
-		return {"error": "Request failed", "status": 0}
-
-	var result = await http.request_completed
-	http.queue_free()
-
-	var status_code = result[1]
-	var body = result[3].get_string_from_utf8()
-	var json = JSON.new()
-	json.parse(body)
-
-	return {"status": status_code, "data": json.data}
+func get(endpoint: String, _allow_retry: bool = true) -> Dictionary:
+	var result = await _do_request(HTTPClient.METHOD_GET, endpoint, "")
+	if result.status == 401 and _allow_retry:
+		var refreshed = await AuthManager.refresh_token()
+		if refreshed:
+			return await get(endpoint, false)
+	return result
 
 
-func post(endpoint: String, data: Dictionary = {}) -> Dictionary:
-	var url = base_url + endpoint
-	var headers = _get_headers()
+func post(endpoint: String, data: Dictionary = {}, _allow_retry: bool = true) -> Dictionary:
 	var body = JSON.stringify(data)
+	var result = await _do_request(HTTPClient.METHOD_POST, endpoint, body)
+	if result.status == 401 and _allow_retry:
+		var refreshed = await AuthManager.refresh_token()
+		if refreshed:
+			return await post(endpoint, data, false)
+	return result
+
+
+func _do_request(method: int, endpoint: String, body: String) -> Dictionary:
+	var url = base_url + endpoint
+	var headers = _get_headers()
 
 	var http = HTTPRequest.new()
 	add_child(http)
 
-	var error = http.request(url, headers, HTTPClient.METHOD_POST, body)
+	var error: int
+	if body.is_empty():
+		error = http.request(url, headers, method)
+	else:
+		error = http.request(url, headers, method, body)
+
 	if error != OK:
 		http.queue_free()
 		return {"error": "Request failed", "status": 0}

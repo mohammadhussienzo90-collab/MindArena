@@ -73,6 +73,10 @@ func refresh_token() -> bool:
 	})
 	if result.status == 200 and result.data:
 		_access_token = result.data.get("access", "")
+		# ROTATE_REFRESH_TOKENS is enabled, so save the new refresh token
+		var new_refresh = result.data.get("refresh", "")
+		if not new_refresh.is_empty():
+			_refresh_token = new_refresh
 		_save_tokens()
 		return true
 	else:

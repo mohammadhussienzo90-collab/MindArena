@@ -30,14 +30,15 @@ func load_realm_stats() -> void:
 	var result = await ApiClient.get("/progression/progression/stats/")
 	if result.status == 200 and result.data:
 		for stat in result.data.get("realm_stats", []):
-			realm_stats[stat.realm_slug] = {
+			realm_stats[stat.get("realm_slug", "")] = {
 				"level": stat.get("realm_level", 1),
 				"xp": stat.get("realm_xp", 0),
 				"visual_stage": stat.get("visual_stage", 0),
 				"challenges_completed": stat.get("challenges_completed", 0),
 			}
-		if result.data.has("streak"):
-			streak_days = result.data.streak.get("current_streak", 0)
+		var streak_data = result.data.get("streak")
+		if streak_data:
+			streak_days = streak_data.get("current_streak", 0)
 		data_updated.emit()
 
 
