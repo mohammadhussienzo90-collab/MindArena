@@ -16,8 +16,8 @@ COPY backend/ .
 
 RUN DJANGO_ENV=production SECRET_KEY=build-placeholder python manage.py collectstatic --noinput 2>/dev/null || true
 
-# Create startup script that runs migrations then starts gunicorn
-RUN printf '#!/bin/bash\nset -e\npython manage.py migrate --no-input\npython manage.py seed_game_content --no-input 2>/dev/null || true\npython manage.py seed_achievements --no-input 2>/dev/null || true\npython manage.py seed_feed_content --no-input 2>/dev/null || true\nexec gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 120\n' > /app/start.sh && chmod +x /app/start.sh
+# Create startup script that runs migrations, seeds data, then starts gunicorn
+RUN printf '#!/bin/bash\nset -e\npython manage.py migrate --no-input\npython manage.py seed_game_content 2>&1 || echo "WARN: seed_game_content failed"\npython manage.py seed_achievements 2>&1 || echo "WARN: seed_achievements failed"\npython manage.py seed_feed_content 2>&1 || echo "WARN: seed_feed_content failed"\nexec gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 120\n' > /app/start.sh && chmod +x /app/start.sh
 
 EXPOSE 8000
 
