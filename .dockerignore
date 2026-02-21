@@ -1,0 +1,35 @@
+# Godot game client (not needed for backend)
+game/
+.godot/
+
+# Git
+.git/
+
+# IDE
+.idea/
+.vscode/
+
+# Docker volumes
+pgdata/
+postgres_data/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+backend/venv/
+
+# SQLite dev database
+*.sqlite3
+db.sqlite3
+
+# Logs
+logs/
+
+# Documentation
+PROJECT_PLAN.md
+README.md
+
+# Static files (rebuilt in Docker)
+backend/staticfiles/
