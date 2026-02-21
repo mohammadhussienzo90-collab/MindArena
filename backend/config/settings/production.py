@@ -25,6 +25,12 @@ SECURE_HSTS_PRELOAD = True
 # Tighter ALLOWED_HOSTS in production
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '.railway.app').split(',')
 
+# CORS — allow Railway domain and Godot clients
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r'^https://.*\.railway\.app$',
+]
+CORS_ALLOW_ALL_ORIGINS = os.environ.get('CORS_ALLOW_ALL', 'false').lower() == 'true'
+
 # Sentry
 sentry_dsn = os.environ.get('SENTRY_DSN')
 if sentry_dsn:
