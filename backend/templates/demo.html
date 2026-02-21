@@ -261,6 +261,32 @@ body {
 .streak-display { display: flex; align-items: center; gap: 8px; padding: 12px; background: var(--bg); border-radius: var(--radius); margin-bottom: 16px; }
 .streak-fire { font-size: 1.5rem; }
 .streak-num { font-size: 1.5rem; font-weight: 700; color: var(--gold); }
+
+/* Chat */
+.chat-msg {
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  max-width: 85%;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+.chat-msg.user {
+  background: var(--accent);
+  align-self: flex-end;
+  border-bottom-right-radius: 4px;
+}
+.chat-msg.noor {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  align-self: flex-start;
+  border-bottom-left-radius: 4px;
+}
+.chat-msg .sender {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 4px;
+  font-weight: 600;
+}
 </style>
 </head>
 <body>
@@ -316,6 +342,7 @@ body {
     <div class="panel active" style="display:block" id="assessPanel">
       <h2 style="text-align:center">Personality Assessment</h2>
       <p style="color:var(--muted);text-align:center;margin-bottom:8px">Answer these questions to personalize your MindArena experience.</p>
+      <p style="text-align:center;margin-bottom:16px"><button class="link-btn" onclick="finishAssessment()">Skip for now</button></p>
       <div id="assessProgress" style="margin-bottom:16px">
         <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:var(--muted);margin-bottom:4px">
           <span>Question <span id="assessQNum">1</span> of <span id="assessQTotal">25</span></span>
@@ -366,6 +393,9 @@ body {
         </button>
         <button class="nav-btn" onclick="showPanel('achievements')" data-panel="achievements">
           <span class="icon">&#x1F3C6;</span> Achievements
+        </button>
+        <button class="nav-btn" onclick="showPanel('companion')" data-panel="companion">
+          <span class="icon">&#x1F4AC;</span> Noor AI
         </button>
       </div>
       <div class="main">
@@ -439,6 +469,23 @@ body {
           <h2>Achievements</h2>
           <div id="achList" class="realm-grid">
             <p class="loading-text"><span class="spinner"></span> Loading...</p>
+          </div>
+        </div>
+
+        <!-- Noor Companion Chat -->
+        <div class="panel" id="panel-companion">
+          <h2>Noor AI Companion</h2>
+          <p style="color:var(--muted);margin-bottom:16px">Your personal growth companion. Ask about challenges, get motivational advice, or explore your learning journey.</p>
+          <div id="chatMessages" style="max-height:400px;overflow-y:auto;margin-bottom:16px;display:flex;flex-direction:column;gap:10px"></div>
+          <div style="display:flex;gap:10px">
+            <input type="text" id="chatInput" placeholder="Ask Noor anything..." style="flex:1;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.95rem" onkeypress="if(event.key==='Enter')sendChat()">
+            <button class="btn btn-primary" onclick="sendChat()" style="width:auto;padding:10px 20px">Send</button>
+          </div>
+          <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-sm btn-outline" onclick="quickChat('What should I focus on today?')">Today's Focus</button>
+            <button class="btn btn-sm btn-outline" onclick="quickChat('Give me a motivational quote')">Motivate Me</button>
+            <button class="btn btn-sm btn-outline" onclick="quickChat('Explain my personality profile')">My Profile</button>
+            <button class="btn btn-sm btn-outline" onclick="quickChat('What realm should I explore next?')">Realm Advice</button>
           </div>
         </div>
 
@@ -981,6 +1028,58 @@ async function loadAchievements() {
       </div>`;
     }).join('');
   } catch(e) { document.getElementById('achList').innerHTML = '<p style="color:var(--red)">Failed to load achievements</p>'; }
+}
+
+// ============ COMPANION CHAT ============
+let conversationId = null;
+
+function addChatMessage(text, sender) {
+  const container = document.getElementById('chatMessages');
+  const msg = document.createElement('div');
+  msg.className = 'chat-msg ' + sender;
+  msg.innerHTML = `<div class="sender">${sender === 'user' ? 'You' : 'Noor'}</div><div>${text}</div>`;
+  container.appendChild(msg);
+  container.scrollTop = container.scrollHeight;
+}
+
+function quickChat(text) {
+  document.getElementById('chatInput').value = text;
+  sendChat();
+}
+
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+
+  addChatMessage(text, 'user');
+
+  // Show typing indicator
+  const typingId = 'typing-' + Date.now();
+  const container = document.getElementById('chatMessages');
+  const typing = document.createElement('div');
+  typing.className = 'chat-msg noor';
+  typing.id = typingId;
+  typing.innerHTML = '<div class="sender">Noor</div><div class="loading-text"><span class="spinner"></span> Thinking...</div>';
+  container.appendChild(typing);
+  container.scrollTop = container.scrollHeight;
+
+  try {
+    const body = { message: text };
+    if (conversationId) body.conversation_id = conversationId;
+    const result = await api('POST', '/companion/chat/', body);
+    conversationId = result.conversation_id || conversationId;
+
+    // Remove typing indicator and show response
+    const typingEl = document.getElementById(typingId);
+    if (typingEl) typingEl.remove();
+    addChatMessage(result.reply || result.message || 'Noor is thinking...', 'noor');
+  } catch(e) {
+    const typingEl = document.getElementById(typingId);
+    if (typingEl) typingEl.remove();
+    addChatMessage('Sorry, I could not connect. Please try again.', 'noor');
+  }
 }
 
 // ============ NAV ============
