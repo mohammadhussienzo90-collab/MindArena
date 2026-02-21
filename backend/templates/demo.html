@@ -306,6 +306,35 @@ body {
   </div>
 </div>
 
+<!-- Assessment / Onboarding Screen -->
+<div id="assessmentScreen" style="display:none">
+  <div class="header">
+    <h1>Mind<span>Arena</span></h1>
+    <div class="user-info"><span id="assessUserName"></span></div>
+  </div>
+  <div class="container" style="max-width:700px">
+    <div class="panel active" style="display:block" id="assessPanel">
+      <h2 style="text-align:center">Personality Assessment</h2>
+      <p style="color:var(--muted);text-align:center;margin-bottom:8px">Answer these questions to personalize your MindArena experience.</p>
+      <div id="assessProgress" style="margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:var(--muted);margin-bottom:4px">
+          <span>Question <span id="assessQNum">1</span> of <span id="assessQTotal">25</span></span>
+          <span id="assessPct">0%</span>
+        </div>
+        <div class="xp-bar"><div class="xp-bar-fill" id="assessBar" style="width:0%"></div></div>
+      </div>
+      <div id="assessQuestion" class="challenge-question" style="font-size:1.1rem"></div>
+      <div id="assessOptions" class="options-list" style="margin-top:16px"></div>
+      <div id="assessResult" style="display:none;margin-top:24px;text-align:center">
+        <h3 style="color:var(--green);font-size:1.3rem;margin-bottom:12px">Assessment Complete!</h3>
+        <p style="color:var(--muted);margin-bottom:16px">Your personality profile has been created. MindArena will now adapt to your unique strengths.</p>
+        <div id="traitResults" class="stat-grid" style="margin-bottom:20px"></div>
+        <button class="btn btn-primary" onclick="finishAssessment()" style="max-width:300px;margin:0 auto">Enter MindArena</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Main App -->
 <div id="appScreen" style="display:none">
   <div class="header">
@@ -511,6 +540,7 @@ function logout() {
   localStorage.removeItem('ma_refresh');
   document.getElementById('authScreen').style.display = 'block';
   document.getElementById('appScreen').style.display = 'none';
+  document.getElementById('assessmentScreen').style.display = 'none';
 }
 
 function showAuthError(msg) {
@@ -523,25 +553,137 @@ function showAuthError(msg) {
 // ============ APP ============
 async function loadApp() {
   document.getElementById('authScreen').style.display = 'none';
-  document.getElementById('appScreen').style.display = 'block';
   try {
     player = await api('GET', '/accounts/profile/');
-    updateHeader();
-    loadDashboard();
-    loadRealms();
-    loadFeed();
-    loadAchievements();
-    loadArena();
+    if (!player.onboarding_done) {
+      startAssessment();
+      return;
+    }
+    showMainApp();
   } catch(e) {
     if (e.status === 401) { logout(); return; }
     toast('Failed to load app data', 'error');
   }
 }
 
+function showMainApp() {
+  document.getElementById('assessmentScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display = 'block';
+  updateHeader();
+  loadDashboard();
+  loadRealms();
+  loadFeed();
+  loadAchievements();
+  loadArena();
+}
+
 function updateHeader() {
   document.getElementById('headerName').textContent = player.display_name || player.username;
   document.getElementById('headerXP').textContent = player.total_xp + ' XP';
   document.getElementById('headerLevel').textContent = 'Lv.' + player.overall_level;
+}
+
+// ============ ASSESSMENT ============
+let assessQuestions = [];
+let assessAnswers = [];
+let assessIdx = 0;
+
+async function startAssessment() {
+  document.getElementById('assessmentScreen').style.display = 'block';
+  document.getElementById('appScreen').style.display = 'none';
+  document.getElementById('assessUserName').textContent = player.display_name || player.username;
+
+  try {
+    const data = await api('GET', '/assessment/questions/');
+    assessQuestions = data.questions || [];
+    assessAnswers = [];
+    assessIdx = 0;
+    if (assessQuestions.length === 0) {
+      // No questions, skip assessment
+      finishAssessment();
+      return;
+    }
+    document.getElementById('assessQTotal').textContent = assessQuestions.length;
+    showAssessQuestion();
+  } catch(e) {
+    toast('Failed to load assessment', 'error');
+    finishAssessment();
+  }
+}
+
+function showAssessQuestion() {
+  const q = assessQuestions[assessIdx];
+  document.getElementById('assessQNum').textContent = assessIdx + 1;
+  const pct = Math.round((assessIdx / assessQuestions.length) * 100);
+  document.getElementById('assessPct').textContent = pct + '%';
+  document.getElementById('assessBar').style.width = pct + '%';
+  document.getElementById('assessQuestion').textContent = q.text || q.question || ('Question ' + (assessIdx + 1));
+
+  // Likert scale 1-5
+  const labels = ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'];
+  document.getElementById('assessOptions').innerHTML = labels.map((label, i) =>
+    `<button class="option-btn" onclick="assessPick(${i+1})" style="text-align:center">
+      <strong>${i+1}</strong> &mdash; ${label}
+    </button>`
+  ).join('');
+}
+
+function assessPick(value) {
+  assessAnswers.push(value);
+  assessIdx++;
+  if (assessIdx < assessQuestions.length) {
+    showAssessQuestion();
+  } else {
+    submitAssessment();
+  }
+}
+
+async function submitAssessment() {
+  document.getElementById('assessOptions').innerHTML = '<p class="loading-text"><span class="spinner"></span> Analyzing your personality...</p>';
+  document.getElementById('assessQuestion').textContent = 'Processing your assessment...';
+  document.getElementById('assessBar').style.width = '100%';
+  document.getElementById('assessPct').textContent = '100%';
+
+  try {
+    const result = await api('POST', '/assessment/submit/', { answers: assessAnswers });
+    // Show results
+    document.getElementById('assessProgress').style.display = 'none';
+    document.getElementById('assessQuestion').style.display = 'none';
+    document.getElementById('assessOptions').style.display = 'none';
+    document.getElementById('assessResult').style.display = 'block';
+
+    const traits = result.traits || result;
+    const traitNames = {
+      openness: 'Openness', conscientiousness: 'Discipline', extraversion: 'Extraversion',
+      agreeableness: 'Agreeableness', neuroticism: 'Emotional Sensitivity',
+      analytical_thinking: 'Analytical', creative_thinking: 'Creativity',
+      self_awareness: 'Self-Awareness', empathy: 'Empathy'
+    };
+    const traitHtml = Object.entries(traits)
+      .filter(([k]) => traitNames[k])
+      .slice(0, 6)
+      .map(([k, v]) => {
+        const val = typeof v === 'number' ? v : 50;
+        return `<div class="stat-card">
+          <div class="value">${Math.round(val)}</div>
+          <div class="label">${traitNames[k] || k}</div>
+          <div class="xp-bar" style="margin-top:8px"><div class="xp-bar-fill" style="width:${val}%"></div></div>
+        </div>`;
+      }).join('');
+    document.getElementById('traitResults').innerHTML = traitHtml || '<p style="color:var(--muted)">Profile created!</p>';
+  } catch(e) {
+    toast('Assessment saved', 'success');
+    document.getElementById('assessProgress').style.display = 'none';
+    document.getElementById('assessQuestion').style.display = 'none';
+    document.getElementById('assessOptions').style.display = 'none';
+    document.getElementById('assessResult').style.display = 'block';
+  }
+}
+
+function finishAssessment() {
+  player.onboarding_done = true;
+  document.getElementById('assessmentScreen').style.display = 'none';
+  showMainApp();
 }
 
 // ============ DASHBOARD ============
