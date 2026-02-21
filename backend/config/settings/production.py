@@ -16,15 +16,17 @@ if _db_url:
     }
 else:
     # Fallback to SQLite if no DATABASE_URL (initial Railway deploy)
+    # Use /tmp for writable filesystem on containerized platforms
+    import tempfile
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',  # noqa: F405
+            'NAME': os.path.join(tempfile.gettempdir(), 'mindarena.sqlite3'),
         }
     }
 
-# Security
-SECURE_SSL_REDIRECT = True
+# Security — Railway healthcheck uses HTTP internally, so conditionally redirect
+SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'true').lower() == 'true'
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
