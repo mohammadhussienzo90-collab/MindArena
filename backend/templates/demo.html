@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MindArena — Interactive Demo</title>
+<style>
+:root {
+  --bg: #0f0f1a;
+  --card: #1a1a2e;
+  --card-hover: #22223a;
+  --accent: #7c3aed;
+  --accent-light: #a78bfa;
+  --green: #10b981;
+  --red: #ef4444;
+  --gold: #f59e0b;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --border: #334155;
+  --radius: 12px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+/* Header */
+.header {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+.header h1 { font-size: 1.5rem; font-weight: 700; }
+.header h1 span { color: var(--accent-light); }
+.user-info { display: flex; align-items: center; gap: 12px; font-size: 0.9rem; }
+.user-info .xp { color: var(--gold); font-weight: 600; }
+.user-info .level { background: var(--accent); padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; }
+
+/* Layout */
+.container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+.grid { display: grid; grid-template-columns: 280px 1fr; gap: 24px; }
+@media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+
+/* Sidebar */
+.sidebar { display: flex; flex-direction: column; gap: 8px; }
+.nav-btn {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 0.95rem;
+  text-align: left;
+  transition: all 0.2s;
+  display: flex; align-items: center; gap: 10px;
+}
+.nav-btn:hover { background: var(--card-hover); border-color: var(--accent); }
+.nav-btn.active { background: var(--accent); border-color: var(--accent); }
+.nav-btn .icon { font-size: 1.2rem; width: 24px; text-align: center; }
+
+/* Main content */
+.main { min-height: 500px; }
+.panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  display: none;
+}
+.panel.active { display: block; }
+.panel h2 { font-size: 1.3rem; margin-bottom: 16px; color: var(--accent-light); }
+.panel h3 { font-size: 1.1rem; margin: 16px 0 8px; }
+
+/* Auth panel */
+.auth-panel { max-width: 420px; margin: 80px auto; }
+.auth-panel h2 { text-align: center; font-size: 1.8rem; margin-bottom: 24px; }
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; margin-bottom: 4px; color: var(--muted); font-size: 0.85rem; }
+.form-group input {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+.form-group input:focus { outline: none; border-color: var(--accent); }
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.btn-primary { background: var(--accent); color: white; width: 100%; }
+.btn-primary:hover { background: #6d28d9; }
+.btn-sm { padding: 6px 14px; font-size: 0.85rem; }
+.btn-green { background: var(--green); color: white; }
+.btn-green:hover { background: #059669; }
+.btn-gold { background: var(--gold); color: #1a1a2e; }
+.btn-gold:hover { background: #d97706; }
+.btn-red { background: var(--red); color: white; }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+.btn-outline:hover { border-color: var(--accent); }
+.link-btn { background: none; border: none; color: var(--accent-light); cursor: pointer; font-size: 0.9rem; margin-top: 12px; }
+
+/* Realm cards */
+.realm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+.realm-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.realm-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.realm-card .color-bar { position: absolute; top: 0; left: 0; right: 0; height: 4px; }
+.realm-card h3 { font-size: 1rem; margin-bottom: 4px; }
+.realm-card .desc { color: var(--muted); font-size: 0.85rem; line-height: 1.4; }
+.realm-card .stats-row { display: flex; gap: 12px; margin-top: 12px; font-size: 0.8rem; color: var(--muted); }
+
+/* Challenge UI */
+.challenge-container { max-width: 700px; }
+.challenge-question {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  padding: 20px;
+  background: var(--bg);
+  border-radius: var(--radius);
+  border-left: 4px solid var(--accent);
+}
+.options-list { display: flex; flex-direction: column; gap: 10px; }
+.option-btn {
+  background: var(--bg);
+  border: 2px solid var(--border);
+  color: var(--text);
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 1rem;
+  text-align: left;
+  transition: all 0.2s;
+}
+.option-btn:hover { border-color: var(--accent); background: var(--card-hover); }
+.option-btn.selected { border-color: var(--accent); background: rgba(124, 58, 237, 0.15); }
+.option-btn.correct { border-color: var(--green); background: rgba(16, 185, 129, 0.15); }
+.option-btn.wrong { border-color: var(--red); background: rgba(239, 68, 68, 0.15); }
+.timer-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.timer-bar .bar { flex: 1; height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+.timer-bar .bar-fill { height: 100%; background: var(--accent); transition: width 0.1s linear; }
+.timer-bar .time-text { font-size: 0.9rem; color: var(--muted); min-width: 40px; }
+.result-box {
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.result-box.correct-result { border-color: var(--green); background: rgba(16, 185, 129, 0.08); }
+.result-box.wrong-result { border-color: var(--red); background: rgba(239, 68, 68, 0.08); }
+.result-box h3 { margin-bottom: 8px; }
+.result-box .xp-earned { color: var(--gold); font-weight: 600; font-size: 1.1rem; }
+
+/* Stats */
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.stat-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+}
+.stat-card .value { font-size: 2rem; font-weight: 700; color: var(--accent-light); }
+.stat-card .label { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+
+/* Feed */
+.feed-list { display: flex; flex-direction: column; gap: 12px; }
+.feed-item {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+.feed-item .type-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.feed-item h4 { font-size: 1rem; margin-bottom: 6px; }
+.feed-item p { color: var(--muted); font-size: 0.9rem; line-height: 1.5; }
+
+/* Arena */
+.match-types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+.match-type-card {
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.match-type-card:hover { border-color: var(--accent); }
+.match-type-card.selected { border-color: var(--gold); background: rgba(245, 158, 11, 0.08); }
+.match-type-card .emoji { font-size: 2rem; margin-bottom: 8px; }
+.match-type-card h4 { margin-bottom: 4px; }
+.match-type-card p { color: var(--muted); font-size: 0.85rem; }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  font-size: 0.9rem;
+  z-index: 1000;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.3s;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.success { border-color: var(--green); }
+.toast.error { border-color: var(--red); }
+
+/* Loading */
+.spinner {
+  display: inline-block;
+  width: 20px; height: 20px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { color: var(--muted); display: flex; align-items: center; gap: 10px; }
+
+/* Progress bar */
+.xp-bar { width: 100%; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; margin-top: 6px; }
+.xp-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-light)); border-radius: 4px; transition: width 0.5s; }
+
+/* Streak */
+.streak-display { display: flex; align-items: center; gap: 8px; padding: 12px; background: var(--bg); border-radius: var(--radius); margin-bottom: 16px; }
+.streak-fire { font-size: 1.5rem; }
+.streak-num { font-size: 1.5rem; font-weight: 700; color: var(--gold); }
+</style>
+</head>
+<body>
+
+<!-- Auth Screen -->
+<div id="authScreen">
+  <div class="auth-panel panel active" style="display:block">
+    <h2>Mind<span style="color:var(--accent-light)">Arena</span></h2>
+    <p style="text-align:center;color:var(--muted);margin-bottom:24px;">Interactive Self-Development Game</p>
+    <div id="loginForm">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="loginUser" placeholder="Enter username" value="demo_player">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="loginPass" placeholder="Enter password" value="DemoPass123!">
+      </div>
+      <button class="btn btn-primary" onclick="login()">Login</button>
+      <button class="link-btn" onclick="showRegister()" style="display:block;text-align:center;width:100%">Create new account</button>
+    </div>
+    <div id="registerForm" style="display:none">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="regUser" placeholder="Choose username">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="regEmail" placeholder="your@email.com">
+      </div>
+      <div class="form-group">
+        <label>Display Name</label>
+        <input type="text" id="regDisplay" placeholder="Your display name">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="regPass" placeholder="Min 8 characters">
+      </div>
+      <button class="btn btn-primary" onclick="register()">Create Account</button>
+      <button class="link-btn" onclick="showLogin()" style="display:block;text-align:center;width:100%">Back to login</button>
+    </div>
+    <div id="authError" style="color:var(--red);text-align:center;margin-top:12px;display:none"></div>
+  </div>
+</div>
+
+<!-- Main App -->
+<div id="appScreen" style="display:none">
+  <div class="header">
+    <h1>Mind<span>Arena</span></h1>
+    <div class="user-info">
+      <span id="headerName"></span>
+      <span class="xp" id="headerXP"></span>
+      <span class="level" id="headerLevel"></span>
+      <button class="btn btn-sm btn-outline" onclick="logout()">Logout</button>
+    </div>
+  </div>
+  <div class="container">
+    <div class="grid">
+      <div class="sidebar">
+        <button class="nav-btn active" onclick="showPanel('dashboard')" data-panel="dashboard">
+          <span class="icon">&#x1F3E0;</span> Dashboard
+        </button>
+        <button class="nav-btn" onclick="showPanel('realms')" data-panel="realms">
+          <span class="icon">&#x1F30D;</span> Realms
+        </button>
+        <button class="nav-btn" onclick="showPanel('challenge')" data-panel="challenge">
+          <span class="icon">&#x26A1;</span> Play Challenge
+        </button>
+        <button class="nav-btn" onclick="showPanel('arena')" data-panel="arena">
+          <span class="icon">&#x2694;</span> Arena
+        </button>
+        <button class="nav-btn" onclick="showPanel('feed')" data-panel="feed">
+          <span class="icon">&#x1F4F0;</span> Feed
+        </button>
+        <button class="nav-btn" onclick="showPanel('achievements')" data-panel="achievements">
+          <span class="icon">&#x1F3C6;</span> Achievements
+        </button>
+      </div>
+      <div class="main">
+
+        <!-- Dashboard -->
+        <div class="panel active" id="panel-dashboard">
+          <h2>Dashboard</h2>
+          <div id="streakBox" class="streak-display" style="display:none">
+            <span class="streak-fire">&#x1F525;</span>
+            <span class="streak-num" id="streakCount">0</span>
+            <span style="color:var(--muted)">day streak</span>
+          </div>
+          <div class="stat-grid" id="dashStats"></div>
+          <h3>Realm Progress</h3>
+          <div id="realmProgress" style="margin-top:12px"></div>
+          <h3 style="margin-top:24px">Daily Challenges</h3>
+          <div id="dailyChallenges" style="margin-top:12px" class="realm-grid"></div>
+        </div>
+
+        <!-- Realms -->
+        <div class="panel" id="panel-realms">
+          <h2>8 Realms of Growth</h2>
+          <p style="color:var(--muted);margin-bottom:20px">Each realm develops a different aspect of your mind. Explore them all.</p>
+          <div class="realm-grid" id="realmGrid"></div>
+        </div>
+
+        <!-- Challenge -->
+        <div class="panel" id="panel-challenge">
+          <h2>Play Challenge</h2>
+          <div id="challengeSelect">
+            <p style="color:var(--muted);margin-bottom:16px">Select a realm to start a challenge:</p>
+            <div class="realm-grid" id="challengeRealmSelect"></div>
+          </div>
+          <div id="challengePlay" style="display:none" class="challenge-container">
+            <div class="timer-bar">
+              <div class="bar"><div class="bar-fill" id="timerFill" style="width:100%"></div></div>
+              <span class="time-text" id="timerText">30s</span>
+            </div>
+            <div id="challengeMeta" style="font-size:0.85rem;color:var(--muted);margin-bottom:8px"></div>
+            <div class="challenge-question" id="questionBox"></div>
+            <div class="options-list" id="optionsList"></div>
+            <div id="resultBox" style="display:none"></div>
+            <div style="margin-top:16px;display:flex;gap:10px" id="challengeActions">
+              <button class="btn btn-primary" id="submitBtn" onclick="submitAnswer()" disabled>Submit Answer</button>
+              <button class="btn btn-outline" onclick="showChallengeSelect()">Back</button>
+            </div>
+            <button class="btn btn-green" id="nextBtn" onclick="loadNextChallenge()" style="display:none;margin-top:12px">Next Challenge</button>
+          </div>
+        </div>
+
+        <!-- Arena -->
+        <div class="panel" id="panel-arena">
+          <h2>Arena PvP</h2>
+          <div id="arenaStatus"></div>
+          <h3>Match Types</h3>
+          <div class="match-types" id="matchTypes"></div>
+          <h3>Your Arena Stats</h3>
+          <div class="stat-grid" id="arenaStats"></div>
+        </div>
+
+        <!-- Feed -->
+        <div class="panel" id="panel-feed">
+          <h2>Discovery Feed</h2>
+          <div class="feed-list" id="feedList">
+            <p class="loading-text"><span class="spinner"></span> Loading feed...</p>
+          </div>
+        </div>
+
+        <!-- Achievements -->
+        <div class="panel" id="panel-achievements">
+          <h2>Achievements</h2>
+          <div id="achList" class="realm-grid">
+            <p class="loading-text"><span class="spinner"></span> Loading...</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const BASE = '/api/v1';
+let token = localStorage.getItem('ma_token') || '';
+let refreshToken = localStorage.getItem('ma_refresh') || '';
+let player = null;
+let currentChallenge = null;
+let selectedOption = null;
+let timerInterval = null;
+let timeLeft = 30;
+let startTime = 0;
+let currentRealmSlug = '';
+let realmChallenges = {};
+
+// ============ AUTH ============
+function headers() {
+  return { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
+}
+
+async function api(method, path, body) {
+  const opts = { method, headers: headers() };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(BASE + path, opts);
+  const data = await r.json();
+  if (!r.ok) throw { status: r.status, data };
+  return data;
+}
+
+function showLogin() {
+  document.getElementById('loginForm').style.display = 'block';
+  document.getElementById('registerForm').style.display = 'none';
+}
+function showRegister() {
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('registerForm').style.display = 'block';
+}
+
+async function login() {
+  const u = document.getElementById('loginUser').value;
+  const p = document.getElementById('loginPass').value;
+  try {
+    const data = await fetch(BASE + '/accounts/login/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: u, password: p })
+    }).then(r => r.json());
+    if (data.access) {
+      token = data.access;
+      refreshToken = data.refresh || '';
+      localStorage.setItem('ma_token', token);
+      localStorage.setItem('ma_refresh', refreshToken);
+      await loadApp();
+    } else {
+      showAuthError('Invalid username or password');
+    }
+  } catch(e) { showAuthError('Login failed'); }
+}
+
+async function register() {
+  const body = {
+    username: document.getElementById('regUser').value,
+    email: document.getElementById('regEmail').value,
+    display_name: document.getElementById('regDisplay').value,
+    password: document.getElementById('regPass').value,
+    preferred_language: 'en'
+  };
+  try {
+    const data = await fetch(BASE + '/accounts/register/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(r => r.json());
+    if (data.tokens) {
+      token = data.tokens.access;
+      refreshToken = data.tokens.refresh || '';
+      localStorage.setItem('ma_token', token);
+      localStorage.setItem('ma_refresh', refreshToken);
+      await loadApp();
+    } else {
+      const err = Object.values(data).flat().join(', ');
+      showAuthError(err || 'Registration failed');
+    }
+  } catch(e) { showAuthError('Registration failed'); }
+}
+
+function logout() {
+  token = '';
+  refreshToken = '';
+  localStorage.removeItem('ma_token');
+  localStorage.removeItem('ma_refresh');
+  document.getElementById('authScreen').style.display = 'block';
+  document.getElementById('appScreen').style.display = 'none';
+}
+
+function showAuthError(msg) {
+  const el = document.getElementById('authError');
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 4000);
+}
+
+// ============ APP ============
+async function loadApp() {
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display = 'block';
+  try {
+    player = await api('GET', '/accounts/profile/');
+    updateHeader();
+    loadDashboard();
+    loadRealms();
+    loadFeed();
+    loadAchievements();
+    loadArena();
+  } catch(e) {
+    if (e.status === 401) { logout(); return; }
+    toast('Failed to load app data', 'error');
+  }
+}
+
+function updateHeader() {
+  document.getElementById('headerName').textContent = player.display_name || player.username;
+  document.getElementById('headerXP').textContent = player.total_xp + ' XP';
+  document.getElementById('headerLevel').textContent = 'Lv.' + player.overall_level;
+}
+
+// ============ DASHBOARD ============
+async function loadDashboard() {
+  try {
+    const stats = await api('GET', '/progression/stats/');
+    const streak = stats.streak;
+
+    // Streak
+    if (streak && streak.current_streak > 0) {
+      document.getElementById('streakBox').style.display = 'flex';
+      document.getElementById('streakCount').textContent = streak.current_streak;
+    }
+
+    // Top stats
+    document.getElementById('dashStats').innerHTML = `
+      <div class="stat-card"><div class="value">${player.overall_level}</div><div class="label">Level</div></div>
+      <div class="stat-card"><div class="value">${player.total_xp}</div><div class="label">Total XP</div></div>
+      <div class="stat-card"><div class="value">${stats.realm_stats ? stats.realm_stats.length : 0}/8</div><div class="label">Realms Active</div></div>
+      <div class="stat-card"><div class="value">${streak ? streak.longest_streak : 0}</div><div class="label">Best Streak</div></div>
+    `;
+
+    // Realm progress
+    const rp = document.getElementById('realmProgress');
+    if (stats.realm_stats && stats.realm_stats.length > 0) {
+      rp.innerHTML = stats.realm_stats.map(rs => {
+        const pct = Math.min(100, (rs.realm_xp / Math.max(1, Math.floor(100 * Math.pow(rs.realm_level, 1.5)))) * 100);
+        return `<div style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;font-size:0.9rem">
+            <span>${rs.realm_name}</span>
+            <span style="color:var(--muted)">Lv.${rs.realm_level} &middot; ${rs.realm_xp} XP</span>
+          </div>
+          <div class="xp-bar"><div class="xp-bar-fill" style="width:${pct}%"></div></div>
+        </div>`;
+      }).join('');
+    } else {
+      rp.innerHTML = '<p style="color:var(--muted)">Start playing challenges to see your progress here!</p>';
+    }
+
+    // Daily challenges
+    const daily = await api('GET', '/progression/daily-challenge/');
+    const dc = document.getElementById('dailyChallenges');
+    dc.innerHTML = daily.challenges.map(c => `
+      <div class="realm-card" onclick="playDailyChallenge('${c.realm_slug}', ${c.challenge_id})" style="cursor:pointer">
+        <div class="color-bar" style="background:${c.color}"></div>
+        <h3>${c.realm_name_en}</h3>
+        <p class="desc">${c.completed_today ? '<span style="color:var(--green)">&#10003; Completed</span>' : 'Ready to play'}</p>
+      </div>
+    `).join('');
+  } catch(e) { console.error('Dashboard error:', e); }
+}
+
+// ============ REALMS ============
+const REALM_EMOJIS = {
+  logic_fortress: '&#x1F9E9;', emotion_ocean: '&#x1F30A;', creativity_nebula: '&#x2728;',
+  discipline_citadel: '&#x1F3F0;', knowledge_peaks: '&#x26F0;', social_bridge: '&#x1F309;',
+  wealth_garden: '&#x1F33F;', wellness_grove: '&#x1F333;'
+};
+
+async function loadRealms() {
+  try {
+    const data = await api('GET', '/realms/');
+    const realms = data.results || data;
+    const grid = document.getElementById('realmGrid');
+    const selectGrid = document.getElementById('challengeRealmSelect');
+    const html = realms.map(r => `
+      <div class="realm-card" onclick="selectRealm('${r.slug}')">
+        <div class="color-bar" style="background:${r.color || '#7c3aed'}"></div>
+        <h3>${REALM_EMOJIS[r.slug] || ''} ${r.name_en}</h3>
+        <p class="desc">${(r.description_en || '').substring(0, 100)}...</p>
+        <div class="stats-row">
+          <span>Lv.${r.max_level || 50}</span>
+        </div>
+      </div>
+    `).join('');
+    grid.innerHTML = html;
+    selectGrid.innerHTML = html;
+  } catch(e) { console.error('Realms error:', e); }
+}
+
+async function selectRealm(slug) {
+  currentRealmSlug = slug;
+  showPanel('challenge');
+  try {
+    const data = await api('GET', '/realms/' + slug + '/challenges/');
+    const challenges = data.results || data;
+    realmChallenges[slug] = challenges;
+    if (challenges.length > 0) {
+      loadChallenge(challenges[0]);
+    }
+  } catch(e) { toast('Failed to load challenges', 'error'); }
+}
+
+function playDailyChallenge(realmSlug, challengeId) {
+  currentRealmSlug = realmSlug;
+  showPanel('challenge');
+  api('GET', '/realms/challenges/' + challengeId + '/').then(ch => {
+    loadChallenge(ch);
+  }).catch(e => toast('Failed to load challenge', 'error'));
+}
+
+// ============ CHALLENGE ============
+function showChallengeSelect() {
+  document.getElementById('challengeSelect').style.display = 'block';
+  document.getElementById('challengePlay').style.display = 'none';
+  clearTimer();
+}
+
+function loadChallenge(ch) {
+  currentChallenge = ch;
+  selectedOption = null;
+  document.getElementById('challengeSelect').style.display = 'none';
+  document.getElementById('challengePlay').style.display = 'block';
+  document.getElementById('resultBox').style.display = 'none';
+  document.getElementById('nextBtn').style.display = 'none';
+  document.getElementById('challengeActions').style.display = 'flex';
+  document.getElementById('submitBtn').disabled = true;
+
+  // Meta
+  document.getElementById('challengeMeta').innerHTML =
+    `<strong>${ch.title_en}</strong> &middot; Difficulty: ${'&#x2B50;'.repeat(ch.difficulty || 1)} &middot; +${ch.base_xp} XP`;
+
+  // Question
+  document.getElementById('questionBox').textContent = ch.content.question_en || ch.title_en;
+
+  // Options
+  const opts = ch.content.options_en || [];
+  document.getElementById('optionsList').innerHTML = opts.map((opt, i) =>
+    `<button class="option-btn" onclick="pickOption(${i})" id="opt-${i}">${String.fromCharCode(65+i)}. ${opt}</button>`
+  ).join('');
+
+  // Timer
+  timeLeft = ch.time_limit_secs || 30;
+  startTime = Date.now();
+  startTimer();
+}
+
+function pickOption(idx) {
+  selectedOption = idx;
+  document.querySelectorAll('.option-btn').forEach((b, i) => {
+    b.classList.toggle('selected', i === idx);
+  });
+  document.getElementById('submitBtn').disabled = false;
+}
+
+function startTimer() {
+  clearTimer();
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    const elapsed = (Date.now() - startTime) / 1000;
+    const remaining = Math.max(0, (currentChallenge.time_limit_secs || 30) - elapsed);
+    timeLeft = remaining;
+    updateTimerDisplay();
+    if (remaining <= 0) {
+      clearTimer();
+      submitAnswer();
+    }
+  }, 100);
+}
+
+function updateTimerDisplay() {
+  const total = currentChallenge ? (currentChallenge.time_limit_secs || 30) : 30;
+  const pct = (timeLeft / total) * 100;
+  document.getElementById('timerFill').style.width = pct + '%';
+  document.getElementById('timerText').textContent = Math.ceil(timeLeft) + 's';
+  if (pct < 30) document.getElementById('timerFill').style.background = 'var(--red)';
+  else if (pct < 60) document.getElementById('timerFill').style.background = 'var(--gold)';
+  else document.getElementById('timerFill').style.background = 'var(--accent)';
+}
+
+function clearTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+}
+
+async function submitAnswer() {
+  clearTimer();
+  const timeTaken = (Date.now() - startTime) / 1000;
+  document.getElementById('submitBtn').disabled = true;
+
+  try {
+    const result = await api('POST', '/realms/challenges/' + currentChallenge.id + '/submit/', {
+      answer_data: { selected_index: selectedOption !== null ? selectedOption : -1 },
+      time_taken_secs: Math.round(timeTaken * 10) / 10
+    });
+
+    // Highlight correct/wrong
+    const correctIdx = currentChallenge.content.correct_index;
+    document.querySelectorAll('.option-btn').forEach((b, i) => {
+      b.onclick = null;
+      if (i === correctIdx) b.classList.add('correct');
+      if (i === selectedOption && selectedOption !== correctIdx) b.classList.add('wrong');
+    });
+
+    // Show result
+    const rb = document.getElementById('resultBox');
+    rb.style.display = 'block';
+    rb.className = 'result-box ' + (result.is_correct ? 'correct-result' : 'wrong-result');
+    rb.innerHTML = `
+      <h3>${result.is_correct ? '&#10003; Correct!' : '&#10007; Incorrect'}</h3>
+      <p style="color:var(--muted);margin:8px 0">${result.explanation || ''}</p>
+      <p class="xp-earned">+${result.base_xp + (result.bonus_xp || 0)} XP ${result.bonus ? '(speed bonus!)' : ''}</p>
+      <p style="font-size:0.85rem;color:var(--muted);margin-top:4px">Score: ${result.score}/100 &middot; Time: ${timeTaken.toFixed(1)}s</p>
+    `;
+
+    // Update header XP
+    player.total_xp += result.base_xp + (result.bonus_xp || 0);
+    updateHeader();
+
+    document.getElementById('challengeActions').style.display = 'none';
+    document.getElementById('nextBtn').style.display = 'block';
+
+    if (result.is_correct) toast('+' + (result.base_xp + (result.bonus_xp || 0)) + ' XP earned!', 'success');
+  } catch(e) {
+    const msg = e.data ? (Object.values(e.data).flat().join(', ')) : 'Submit failed';
+    toast(msg, 'error');
+    document.getElementById('challengeActions').style.display = 'flex';
+  }
+}
+
+function loadNextChallenge() {
+  const challenges = realmChallenges[currentRealmSlug] || [];
+  const currentIdx = challenges.findIndex(c => c.id === currentChallenge.id);
+  const nextIdx = currentIdx + 1;
+  if (nextIdx < challenges.length) {
+    loadChallenge(challenges[nextIdx]);
+  } else {
+    toast('All challenges completed in this realm!', 'success');
+    showChallengeSelect();
+  }
+}
+
+// ============ ARENA ============
+async function loadArena() {
+  try {
+    const status = await api('GET', '/arena/status/');
+    document.getElementById('arenaStatus').innerHTML =
+      `<p style="color:var(--green);margin-bottom:16px">&#x2694; ${status.message}</p>`;
+
+    const types = status.match_types || [];
+    const emojis = { speed: '&#x26A1;', strategic: '&#x1F9E0;', team: '&#x1F91D;' };
+    document.getElementById('matchTypes').innerHTML = types.map(t =>
+      `<div class="match-type-card" onclick="createMatch('${t.slug}')">
+        <div class="emoji">${emojis[t.slug] || '&#x2694;'}</div>
+        <h4>${t.name}</h4>
+        <p>${t.players} players</p>
+      </div>`
+    ).join('');
+
+    const stats = await api('GET', '/arena/stats/');
+    document.getElementById('arenaStats').innerHTML = `
+      <div class="stat-card"><div class="value">${stats.elo_rating || 1000}</div><div class="label">ELO Rating</div></div>
+      <div class="stat-card"><div class="value">${stats.matches_played || 0}</div><div class="label">Matches</div></div>
+      <div class="stat-card"><div class="value">${stats.matches_won || 0}</div><div class="label">Wins</div></div>
+      <div class="stat-card"><div class="value">${stats.win_streak || 0}</div><div class="label">Win Streak</div></div>
+    `;
+  } catch(e) { console.error('Arena error:', e); }
+}
+
+async function createMatch(matchType) {
+  toast('Creating ' + matchType + ' match... (Need another player to join)', 'success');
+}
+
+// ============ FEED ============
+async function loadFeed() {
+  try {
+    const data = await api('GET', '/feed/');
+    const items = data.results || data;
+    const colors = { tip: '#10b981', fact: '#3b82f6', challenge: '#f59e0b', quote: '#8b5cf6', lesson: '#ec4899', reflection: '#06b6d4' };
+    document.getElementById('feedList').innerHTML = items.map(f =>
+      `<div class="feed-item">
+        <span class="type-badge" style="background:${colors[f.content_type] || '#666'};color:white">${f.content_type}</span>
+        <h4>${f.title_en}</h4>
+        <p>${(f.body_en || '').substring(0, 200)}${(f.body_en || '').length > 200 ? '...' : ''}</p>
+      </div>`
+    ).join('');
+  } catch(e) { document.getElementById('feedList').innerHTML = '<p style="color:var(--red)">Failed to load feed</p>'; }
+}
+
+// ============ ACHIEVEMENTS ============
+async function loadAchievements() {
+  try {
+    const data = await api('GET', '/progression/achievements/');
+    const achs = data.results || data;
+    const icons = { exploration: '&#x1F30D;', mastery: '&#x1F3AF;', social: '&#x1F91D;', streak: '&#x1F525;', special: '&#x2B50;' };
+    document.getElementById('achList').innerHTML = achs.map(a => {
+      const earned = a.earned;
+      return `<div class="realm-card" style="${earned ? 'border-color:var(--gold)' : 'opacity:0.6'}">
+        <div class="color-bar" style="background:${earned ? 'var(--gold)' : 'var(--border)'}"></div>
+        <h3>${icons[a.category] || '&#x1F3C6;'} ${a.title_en}</h3>
+        <p class="desc">${a.description_en || ''}</p>
+        <div class="stats-row">
+          <span style="color:var(--gold)">+${a.xp_reward} XP</span>
+          <span>${earned ? '<span style="color:var(--green)">&#10003; Earned</span>' : 'Locked'}</span>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { document.getElementById('achList').innerHTML = '<p style="color:var(--red)">Failed to load achievements</p>'; }
+}
+
+// ============ NAV ============
+function showPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const panel = document.getElementById('panel-' + name);
+  if (panel) panel.classList.add('active');
+  const btn = document.querySelector(`[data-panel="${name}"]`);
+  if (btn) btn.classList.add('active');
+
+  if (name === 'challenge') showChallengeSelect();
+  if (name === 'dashboard') loadDashboard();
+}
+
+// ============ TOAST ============
+function toast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + (type || '') + ' show';
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+// ============ INIT ============
+if (token) {
+  loadApp().catch(() => {
+    document.getElementById('authScreen').style.display = 'block';
+    document.getElementById('appScreen').style.display = 'none';
+  });
+}
+</script>
+</body>
+</html>
