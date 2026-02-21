@@ -57,11 +57,20 @@ class CompanionService:
                 messages=messages,
             )
             reply = response.content[0].text
-        except Exception as e:
-            reply = (
-                "I'm having trouble connecting right now. "
-                f"Let's try again in a moment. ({type(e).__name__})"
-            )
+        except Exception:
+            # Fallback to Smart Noor (no external API needed)
+            try:
+                from apps.ai_engine.noor.engine import SmartNoorEngine
+                noor_result = SmartNoorEngine.generate_response(
+                    player=player, message=message,
+                    context={'context_type': effective_context, 'realm_slug': realm_slug},
+                )
+                reply = noor_result if isinstance(noor_result, str) else noor_result.get('response', noor_result.get('text', ''))
+            except Exception:
+                reply = (
+                    "I'm here for you! Let's keep going. "
+                    "What would you like to explore next?"
+                )
 
         CompanionMessage.objects.create(
             conversation=conversation, role='companion', content=reply,

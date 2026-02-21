@@ -21,6 +21,7 @@ urlpatterns = [
     path('api/v1/arena/', include('apps.arena.urls')),
     path('api/v1/friends/', include('apps.accounts.friends_urls')),
     path('api/v1/notifications/', include('apps.notifications.urls')),
+    path('api/v1/ai/', include('apps.ai_engine.urls')),
 
     path('admin/', admin.site.urls),
 ]

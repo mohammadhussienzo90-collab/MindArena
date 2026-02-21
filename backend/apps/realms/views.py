@@ -133,6 +133,17 @@ class ChallengeViewSet(viewsets.ReadOnlyModelViewSet):
                     quest_progress.completed_at = timezone.now()
                 quest_progress.save()
 
+        # AI Engine: update models after challenge completion
+        try:
+            from apps.ai_engine.orchestrator import AIOrchestrator
+            AIOrchestrator.on_challenge_completed(
+                player=request.user.player,
+                challenge=challenge,
+                result=result,
+            )
+        except Exception:
+            pass  # AI engine errors must not block gameplay
+
         # Check for newly earned achievements
         from apps.progression.achievement_checker import AchievementChecker
         new_achievements = AchievementChecker.check_specific(

@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'apps.feed',
     'apps.arena',
     'apps.notifications',
+    'apps.ai_engine',
 ]
 
 # =============================================================================
