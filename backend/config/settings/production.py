@@ -6,12 +6,22 @@ from .base import *  # noqa: F401,F403
 
 DEBUG = False
 
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL'),
-        conn_max_age=600,
-    )
-}
+_db_url = os.environ.get('DATABASE_URL')
+if _db_url:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=_db_url,
+            conn_max_age=600,
+        )
+    }
+else:
+    # Fallback to SQLite if no DATABASE_URL (initial Railway deploy)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',  # noqa: F405
+        }
+    }
 
 # Security
 SECURE_SSL_REDIRECT = True
