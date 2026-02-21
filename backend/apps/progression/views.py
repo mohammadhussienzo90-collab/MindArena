@@ -34,11 +34,20 @@ class ProgressionViewSet(viewsets.ViewSet):
         })
 
     def history(self, request):
+        from rest_framework.pagination import PageNumberPagination
         player = request.user.player
         results = PlayerChallengeResult.objects.filter(
             player=player
-        ).select_related('challenge')[:50]
-        return Response(PlayerChallengeResultSerializer(results, many=True).data)
+        ).select_related('challenge').order_by('-played_at')
+
+        paginator = PageNumberPagination()
+        paginator.page_size = 20
+        page = paginator.paginate_queryset(results, request)
+        if page is not None:
+            return paginator.get_paginated_response(
+                PlayerChallengeResultSerializer(page, many=True).data
+            )
+        return Response(PlayerChallengeResultSerializer(results[:50], many=True).data)
 
     def quests(self, request):
         player = request.user.player

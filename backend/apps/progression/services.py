@@ -45,6 +45,10 @@ class XPService:
 
         cls.update_streak(player)
 
+        if leveled_up:
+            from apps.notifications.services import NotificationService
+            NotificationService.send_level_up(player, new_level)
+
         return {
             'xp_earned': amount,
             'total_xp': player.total_xp,

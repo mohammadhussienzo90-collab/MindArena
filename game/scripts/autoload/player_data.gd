@@ -12,6 +12,7 @@ var preferred_lang: String = "en"
 var realm_stats: Dictionary = {}
 var personality_traits: Dictionary = {}
 var streak_days: int = 0
+var avatar_colors: Dictionary = {}
 
 
 func load_profile() -> void:
@@ -70,3 +71,7 @@ func localized(data: Dictionary, field_base: String, fallback: String = "") -> S
 		# Fall back to English
 		value = data.get(field_base + "_en", fallback)
 	return value if value != null else fallback
+
+
+func get_avatar_colors() -> Dictionary:
+	return avatar_colors

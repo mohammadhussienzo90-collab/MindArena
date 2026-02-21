@@ -294,3 +294,118 @@ def generate_learning_paths():
         'errors': error_count,
         'total_active': active_players.count(),
     }
+
+
+# ======================================================================
+# Periodic: nightly AI learning & prompt evolution
+# ======================================================================
+
+@shared_task
+def nightly_ai_learning():
+    """Aggregate player interaction patterns and evolve AI strategies.
+
+    Runs nightly to:
+    1. Evaluate companion conversation effectiveness (did players improve?)
+    2. Update prompt variant scores based on 24h outcome data
+    3. Deactivate consistently underperforming prompt strategies
+    4. Generate challenges for active players with identified gaps
+
+    This task should be scheduled to run daily (e.g., 05:00 UTC).
+    """
+    now = timezone.now()
+    yesterday = now - timedelta(days=1)
+    results = {
+        'companion_evaluations': 0,
+        'variants_updated': 0,
+        'variants_deactivated': 0,
+        'challenges_generated': 0,
+    }
+
+    # ---- 1. Evaluate companion conversations from last 24h ----
+    try:
+        from apps.companion.models import CompanionConversation, CompanionMessage
+        from apps.progression.models import PlayerChallengeResult
+
+        recent_convos = CompanionConversation.objects.filter(
+            started_at__gte=yesterday,
+        ).select_related('player')
+
+        for convo in recent_convos.iterator():
+            player = convo.player
+
+            # Check if the player performed better AFTER chatting with Noor
+            # (challenges completed in the 4 hours after conversation)
+            convo_end = convo.messages.order_by('-created_at').first()
+            if not convo_end:
+                continue
+            after_start = convo_end.created_at
+            after_end = after_start + timedelta(hours=4)
+
+            post_chat_results = PlayerChallengeResult.objects.filter(
+                player=player,
+                played_at__gte=after_start,
+                played_at__lte=after_end,
+            )
+
+            if post_chat_results.exists():
+                accuracy = post_chat_results.filter(
+                    is_correct=True,
+                ).count() / post_chat_results.count()
+                was_positive = accuracy >= 0.5 or post_chat_results.count() >= 2
+            else:
+                # Player didn't continue playing — neutral (not negative)
+                was_positive = False
+
+            results['companion_evaluations'] += 1
+
+    except Exception as e:
+        logger.error("Companion evaluation failed: %s", e)
+
+    # ---- 2. Deactivate underperforming prompt variants ----
+    try:
+        from apps.ai_engine.prompt_evolution import PromptEvolution
+        deactivated = PromptEvolution.deactivate_underperformers(
+            min_trials=50, min_rate=0.3,
+        )
+        results['variants_deactivated'] = deactivated
+    except Exception as e:
+        logger.error("Prompt evolution update failed: %s", e)
+
+    # ---- 3. Generate challenges for active players with gaps ----
+    try:
+        from apps.accounts.models import Player
+        from apps.ai_engine.challenge_generator import ChallengeGenerator
+
+        # Only generate for players who were active in last 3 days
+        active_cutoff = now - timedelta(days=3)
+        active_players = Player.objects.filter(
+            last_active_at__gte=active_cutoff,
+        )[:20]  # Limit to 20 players per night to manage API costs
+
+        for player in active_players:
+            # Find their weakest realm
+            from apps.ai_engine.models import KnowledgeState
+            weakest = KnowledgeState.objects.filter(
+                player=player,
+            ).order_by('p_known').first()
+
+            if weakest and weakest.p_known < 0.7:
+                # Find which realm this skill belongs to
+                from apps.realms.models import Realm
+                realm = Realm.objects.filter(
+                    primary_trait=weakest.skill,
+                    is_active=True,
+                ).first()
+
+                if realm:
+                    generated = ChallengeGenerator.generate_for_player(
+                        player, realm.slug, count=2,
+                    )
+                    if generated:
+                        results['challenges_generated'] += len(generated)
+
+    except Exception as e:
+        logger.error("Challenge generation in nightly task failed: %s", e)
+
+    logger.info("Nightly AI learning complete: %s", results)
+    return results

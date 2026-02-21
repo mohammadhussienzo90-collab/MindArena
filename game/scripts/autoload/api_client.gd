@@ -7,7 +7,6 @@ signal connection_status_changed(is_connected: bool)
 
 var base_url: String = "http://localhost:8000/api/v1"
 var is_connected: bool = true
-var _http: HTTPRequest
 var _consecutive_failures: int = 0
 
 const CONFIG_PATH := "user://server_config.cfg"
@@ -16,9 +15,6 @@ const RETRY_DELAY_SECS := 1.0
 
 
 func _ready() -> void:
-	_http = HTTPRequest.new()
-	add_child(_http)
-	_http.timeout = 30.0
 	_load_server_config()
 
 

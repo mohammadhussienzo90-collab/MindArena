@@ -40,6 +40,20 @@ class AssessmentScoringService:
                 traits[trait] = round((avg - 1) / 4 * 100, 1)
             else:
                 traits[trait] = 50.0
+
+        # Derive learning style from cognitive traits
+        analytical = traits.get('analytical_thinking', 50)
+        creative = traits.get('creative_thinking', 50)
+        practical = traits.get('practical_thinking', 50)
+        if analytical >= 65 and analytical >= creative and analytical >= practical:
+            traits['learning_style'] = 'reading'
+        elif creative >= 65 and creative >= analytical and creative >= practical:
+            traits['learning_style'] = 'visual'
+        elif practical >= 65 and practical >= analytical and practical >= creative:
+            traits['learning_style'] = 'kinesthetic'
+        else:
+            traits['learning_style'] = 'mixed'
+
         return traits
 
     @classmethod
@@ -100,7 +114,13 @@ class AssessmentScoringService:
         assessment, _ = PersonalityAssessment.objects.update_or_create(
             player=player,
             defaults={
-                **{k: v for k, v in traits.items() if k != 'learning_style'},
+                **{k: v for k, v in traits.items() if k in {
+                    'openness', 'conscientiousness', 'extraversion',
+                    'agreeableness', 'neuroticism', 'self_awareness',
+                    'empathy', 'emotional_regulation', 'social_skills',
+                    'analytical_thinking', 'creative_thinking',
+                    'practical_thinking', 'risk_tolerance', 'learning_style',
+                }},
                 'raw_answers': {'answers': answers, 'version': 1},
                 'completed_at': timezone.now(),
             }

@@ -23,12 +23,18 @@ func _ready() -> void:
 	_load_settings()
 
 
-func play_music(stream: AudioStream, _fade_in := true) -> void:
+func play_music(stream: AudioStream, fade_in := true) -> void:
 	if not music_enabled:
 		return
 	music_player.stream = stream
-	music_player.volume_db = linear_to_db(music_volume)
-	music_player.play()
+	if fade_in:
+		music_player.volume_db = linear_to_db(0.0)
+		music_player.play()
+		var tween = create_tween()
+		tween.tween_property(music_player, "volume_db", linear_to_db(music_volume), 1.5)
+	else:
+		music_player.volume_db = linear_to_db(music_volume)
+		music_player.play()
 
 
 func stop_music() -> void:

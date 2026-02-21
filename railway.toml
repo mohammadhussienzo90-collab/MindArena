@@ -7,3 +7,4 @@ healthcheckPath = "/api/health/"
 healthcheckTimeout = 120
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 10
+releaseCommand = "python manage.py migrate --no-input && python manage.py seed_game_content 2>/dev/null; python manage.py seed_achievements 2>/dev/null; python manage.py seed_feed_content 2>/dev/null; python manage.py init_ai_engine 2>/dev/null"

@@ -68,12 +68,20 @@ class SendFriendRequestView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Check no duplicate pending request
+        # Check no duplicate pending request (either direction)
         if FriendRequest.objects.filter(
             from_player=player, to_player=target, status='pending'
         ).exists():
             return Response(
                 {'detail': 'You already have a pending friend request to this player.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if FriendRequest.objects.filter(
+            from_player=target, to_player=player, status='pending'
+        ).exists():
+            return Response(
+                {'detail': 'This player has already sent you a friend request. Check your requests.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -83,6 +91,9 @@ class SendFriendRequestView(APIView):
             message=message,
             status='pending',
         )
+
+        from apps.notifications.services import NotificationService
+        NotificationService.send_friend_request(target, player)
 
         return Response(
             FriendRequestSerializer(friend_request).data,

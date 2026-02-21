@@ -19,4 +19,20 @@ app.conf.beat_schedule = {
         'task': 'apps.progression.tasks.generate_daily_stats',
         'schedule': crontab(hour=0, minute=5),  # Daily at 00:05 UTC
     },
+    'expire-stale-arena-matches': {
+        'task': 'apps.progression.tasks.expire_stale_arena_matches',
+        'schedule': crontab(minute='*/5'),  # Every 5 minutes
+    },
+    'recalibrate-irt-params': {
+        'task': 'apps.ai_engine.tasks.recalibrate_irt_params',
+        'schedule': crontab(hour=3, minute=0),  # Daily at 3 AM UTC
+    },
+    'generate-learning-paths': {
+        'task': 'apps.ai_engine.tasks.generate_learning_paths',
+        'schedule': crontab(hour=4, minute=0),  # Daily at 4 AM UTC
+    },
+    'nightly-ai-learning': {
+        'task': 'apps.ai_engine.tasks.nightly_ai_learning',
+        'schedule': crontab(hour=5, minute=0),  # Daily at 5 AM UTC
+    },
 }

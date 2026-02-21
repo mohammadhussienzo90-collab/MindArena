@@ -50,7 +50,7 @@ func _populate_stats(data: Dictionary) -> void:
 	else:
 		streak_label.text = ""
 
-	# Radar chart
+	# Radar chart — realm levels are typically 1-50, not 0-100
 	var realm_stats = data.get("realm_stats", [])
 	if realm_stats.size() > 0:
 		var labels: PackedStringArray = []
@@ -58,6 +58,7 @@ func _populate_stats(data: Dictionary) -> void:
 		for stat in realm_stats:
 			labels.append(stat.get("realm_name", ""))
 			values.append(float(stat.get("realm_level", 0)))
+		radar_chart.max_value = 50.0
 		radar_chart.set_data(labels, values)
 
 	# Realm stat bars

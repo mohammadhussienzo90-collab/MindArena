@@ -9,6 +9,7 @@ urlpatterns = [
     path('matches/<int:match_id>/', views.ArenaMatchDetailView.as_view(), name='arena-match-detail'),
     path('matches/<int:match_id>/join/', views.ArenaJoinMatchView.as_view(), name='arena-join-match'),
     path('matches/<int:match_id>/challenge/', views.ArenaCurrentChallengeView.as_view(), name='arena-current-challenge'),
+    path('matches/<int:match_id>/cancel/', views.ArenaCancelMatchView.as_view(), name='arena-cancel-match'),
     path('submit/', views.ArenaSubmitAnswerView.as_view(), name='arena-submit-answer'),
     path('stats/', views.ArenaStatsView.as_view(), name='arena-stats'),
     path('leaderboard/', views.ArenaLeaderboardView.as_view(), name='arena-leaderboard'),

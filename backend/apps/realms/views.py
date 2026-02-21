@@ -3,6 +3,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from apps.core.permissions import IsOnboarded
 from .models import Realm, Quest, Challenge
 from .serializers import (
     RealmListSerializer, RealmDetailSerializer,
@@ -33,7 +34,7 @@ class RealmViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class QuestViewSet(viewsets.ReadOnlyModelViewSet):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOnboarded]
 
     def get_queryset(self):
         realm_slug = self.kwargs.get('realm_slug')
@@ -49,25 +50,56 @@ class QuestViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=True, methods=['post'])
     def start(self, request, pk=None):
         quest = self.get_object()
+        player = request.user.player
+
+        # Check realm level requirement
+        if quest.required_realm_level and quest.required_realm_level > 0:
+            from apps.progression.models import PlayerRealmStat
+            stat = PlayerRealmStat.objects.filter(
+                player=player, realm=quest.realm,
+            ).first()
+            current_level = stat.realm_level if stat else 1
+            if current_level < quest.required_realm_level:
+                return Response(
+                    {'detail': f'Requires realm level {quest.required_realm_level}. You are level {current_level}.'},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+        # Check prerequisite quest completion
+        if quest.prerequisite_quest:
+            from apps.progression.models import PlayerQuestProgress as PQP
+            prereq_done = PQP.objects.filter(
+                player=player,
+                quest=quest.prerequisite_quest,
+                status='completed',
+            ).exists()
+            if not prereq_done:
+                return Response(
+                    {'detail': f'Complete "{quest.prerequisite_quest.title_en}" first.'},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
         from apps.progression.models import PlayerQuestProgress
+        challenges_count = quest.challenges.filter(is_active=True).count()
         progress, created = PlayerQuestProgress.objects.get_or_create(
-            player=request.user.player,
+            player=player,
             quest=quest,
             defaults={
                 'status': 'in_progress',
-                'challenges_total': quest.challenges.count(),
+                'challenges_total': challenges_count,
             }
         )
         if not created and progress.status == 'locked':
             progress.status = 'in_progress'
-            progress.save()
+            progress.challenges_total = challenges_count
+            progress.save(update_fields=['status', 'challenges_total'])
         return Response({'status': progress.status, 'challenges_total': progress.challenges_total})
 
 
 class ChallengeViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Challenge.objects.filter(is_active=True)
     serializer_class = ChallengeSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOnboarded]
 
     @action(detail=True, methods=['post'])
     def submit(self, request, pk=None):

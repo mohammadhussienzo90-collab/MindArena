@@ -4,12 +4,8 @@
 [ext_resource type="Script" path="res://scripts/world/world_transformer.gd" id="2"]
 [ext_resource type="Script" path="res://scripts/ui/hud_controller.gd" id="3"]
 [ext_resource type="PackedScene" uid="uid://portal001" path="res://scenes/world/portal.tscn" id="4"]
-
-[sub_resource type="BoxShape3D" id="ground_shape"]
-size = Vector3(100, 0.2, 100)
-
-[sub_resource type="BoxMesh" id="ground_mesh"]
-size = Vector3(100, 0.2, 100)
+[ext_resource type="Script" path="res://scripts/world/procedural_hub.gd" id="5"]
+[ext_resource type="Script" path="res://scripts/world/sky_manager.gd" id="6"]
 
 [sub_resource type="CapsuleShape3D" id="player_shape"]
 radius = 0.4
@@ -17,21 +13,20 @@ height = 1.8
 
 [node name="WorldHub" type="Node3D"]
 
+[node name="SkyManager" type="Node3D" parent="."]
+script = ExtResource("6")
+
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -0.866, 0.5, 0, -0.5, -0.866, 0, 15, 0)
 shadow_enabled = true
 light_energy = 1.2
+directional_shadow_max_distance = 80.0
 
-[node name="Ground" type="StaticBody3D" parent="."]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
-shape = SubResource("ground_shape")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Ground"]
-mesh = SubResource("ground_mesh")
+[node name="ProceduralHub" type="Node3D" parent="."]
+script = ExtResource("5")
 
 [node name="Player" type="CharacterBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 0)
 collision_layer = 2
 script = ExtResource("1")
 
@@ -53,48 +48,56 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 20)
 realm_slug = "logic_fortress"
 realm_display_name = "Logic Fortress"
 portal_color = Color(0.2, 0.4, 1.0)
+portal_secondary_color = Color(0.1, 0.2, 0.6)
 
 [node name="EmotionOcean" parent="Portals" instance=ExtResource("4")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.14, 0, 14.14)
 realm_slug = "emotion_ocean"
 realm_display_name = "Emotion Ocean"
 portal_color = Color(0.0, 0.8, 0.8)
+portal_secondary_color = Color(0.0, 0.4, 0.5)
 
 [node name="CreativityNebula" parent="Portals" instance=ExtResource("4")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 0)
 realm_slug = "creativity_nebula"
 realm_display_name = "Creativity Nebula"
 portal_color = Color(0.6, 0.2, 0.9)
+portal_secondary_color = Color(0.3, 0.1, 0.5)
 
 [node name="DisciplineCitadel" parent="Portals" instance=ExtResource("4")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.14, 0, -14.14)
 realm_slug = "discipline_citadel"
 realm_display_name = "Discipline Citadel"
 portal_color = Color(0.9, 0.7, 0.1)
+portal_secondary_color = Color(0.5, 0.35, 0.05)
 
 [node name="KnowledgePeaks" parent="Portals" instance=ExtResource("4")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -20)
 realm_slug = "knowledge_peaks"
 realm_display_name = "Knowledge Peaks"
 portal_color = Color(0.1, 0.8, 0.3)
+portal_secondary_color = Color(0.05, 0.4, 0.15)
 
 [node name="SocialBridge" parent="Portals" instance=ExtResource("4")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.14, 0, -14.14)
 realm_slug = "social_bridge"
 realm_display_name = "Social Bridge"
 portal_color = Color(1.0, 0.5, 0.1)
+portal_secondary_color = Color(0.5, 0.25, 0.05)
 
 [node name="WealthGarden" parent="Portals" instance=ExtResource("4")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 0, 0)
 realm_slug = "wealth_garden"
 realm_display_name = "Wealth Garden"
 portal_color = Color(0.1, 0.7, 0.5)
+portal_secondary_color = Color(0.05, 0.35, 0.25)
 
 [node name="WellnessGrove" parent="Portals" instance=ExtResource("4")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.14, 0, 14.14)
 realm_slug = "wellness_grove"
 realm_display_name = "Wellness Grove"
 portal_color = Color(0.9, 0.3, 0.6)
+portal_secondary_color = Color(0.45, 0.15, 0.3)
 
 [node name="HUD" type="CanvasLayer" parent="."]
 script = ExtResource("3")

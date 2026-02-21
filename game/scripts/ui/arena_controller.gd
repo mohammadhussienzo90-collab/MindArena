@@ -606,8 +606,12 @@ func _on_play_again() -> void:
 
 func _on_back_pressed() -> void:
 	if _state == ArenaState.WAITING:
-		# TODO: optionally cancel the match via API
-		print("[Arena] Leaving while waiting for opponent")
+		var match_id: int = _current_match.get("id", 0)
+		if match_id > 0:
+			print("[Arena] Cancelling match #%d" % match_id)
+			ApiClient.post("/arena/matches/%d/cancel/" % match_id)
+		else:
+			print("[Arena] Leaving while waiting for opponent")
 	elif _state == ArenaState.PLAYING:
 		print("[Arena] Leaving active match!")
 	_state = ArenaState.LOBBY

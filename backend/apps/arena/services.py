@@ -13,6 +13,7 @@ from apps.arena.models import (
     PlayerArenaStats,
 )
 from apps.realms.models import Challenge, Realm
+from apps.realms.services import validate_challenge_answer
 
 
 class ArenaService:
@@ -243,9 +244,11 @@ class ArenaService:
         if challenge.id != expected_challenge_id:
             raise ValueError("Challenge does not match the current round.")
 
-        # Check the answer
-        correct_answer = challenge.content.get('correct_answer')
-        is_correct = (answer == correct_answer)
+        # Validate answer using the same logic as single-player challenges
+        validation = validate_challenge_answer(
+            challenge, {'selected_index': answer}, time_taken_secs,
+        )
+        is_correct = validation['is_correct']
 
         # Calculate score
         score_earned = 0
@@ -292,7 +295,7 @@ class ArenaService:
             'round_number': round_number,
             'challenge_id': challenge.id,
             'is_correct': is_correct,
-            'correct_answer': correct_answer,
+            'correct_answer': challenge.content.get('correct_index'),
             'score_earned': score_earned,
             'time_taken_secs': time_taken_secs,
             'participant_total_score': participant.score,
@@ -524,9 +527,13 @@ class ArenaService:
                     )
                     elo_change_total = change
                 else:
-                    # Loser: lose ELO
+                    # Loser: lose ELO vs winner's actual ELO rating
+                    winner_stats_obj, _ = PlayerArenaStats.objects.get_or_create(
+                        player=winner_participant.player,
+                        defaults={'elo_rating': 1000},
+                    )
                     _, new_rating, _ = ArenaService.calculate_elo(
-                        winner_participant.score,  # use winner's rating
+                        winner_stats_obj.elo_rating,
                         stats.elo_rating,
                     )
                     stats.elo_rating = max(0, new_rating)
@@ -537,5 +544,13 @@ class ArenaService:
 
         match.elo_change = elo_change_total
         match.save(update_fields=['status', 'winner', 'finished_at', 'elo_change'])
+
+        # Send arena result notifications to all participants
+        from apps.notifications.services import NotificationService
+        for participant in participants:
+            won = (participant.id == winner_participant.id)
+            NotificationService.send_arena_result(
+                participant.player, match, won,
+            )
 
         return match

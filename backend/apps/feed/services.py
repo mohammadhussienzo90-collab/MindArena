@@ -8,16 +8,30 @@ class FeedService:
         """Get personalized feed items for a player."""
         from .models import FeedItem, FeedInteraction
 
-        seen_ids = FeedInteraction.objects.filter(
+        seen_ids = list(FeedInteraction.objects.filter(
             player=player,
-        ).values_list('feed_item_id', flat=True)
+        ).values_list('feed_item_id', flat=True))
 
-        items = FeedItem.objects.filter(
-            is_active=True,
-        ).exclude(id__in=seen_ids)
-
+        base_qs = FeedItem.objects.filter(is_active=True)
         if player.premium_tier == 'free':
-            items = items.filter(is_premium=False)
+            base_qs = base_qs.filter(is_premium=False)
+
+        items = base_qs.exclude(id__in=seen_ids)
+
+        # Reset oldest half of interactions when feed is exhausted
+        if not items.exists() and page == 1 and seen_ids:
+            oldest_ids = list(
+                FeedInteraction.objects.filter(player=player)
+                .order_by('id')
+                .values_list('id', flat=True)
+            )
+            reset_count = len(oldest_ids) // 2
+            if reset_count > 0:
+                FeedInteraction.objects.filter(id__in=oldest_ids[:reset_count]).delete()
+                seen_ids = list(FeedInteraction.objects.filter(
+                    player=player,
+                ).values_list('feed_item_id', flat=True))
+                items = base_qs.exclude(id__in=seen_ids)
 
         # Prioritize weak realms
         weak_realms = cls._get_weak_realms(player)

@@ -1,5 +1,6 @@
 extends CharacterBody3D
 ## First/third person player controller for MindArena world.
+## Integrates with AvatarBuilder for visual representation and NoorVisual as companion.
 
 @export var speed := 5.0
 @export var sprint_multiplier := 1.8
@@ -10,16 +11,51 @@ var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var _is_sprinting := false
 var _nearby_portal: Node3D = null
 
+# Visual components
+var avatar: AvatarBuilder
+var avatar_animator: AvatarAnimator
+var noor: NoorVisual
+
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var camera: Camera3D = $CameraPivot/Camera3D
-@onready var interaction_label: Label3D = $InteractionLabel if has_node("InteractionLabel") else null
 
 
 func _ready() -> void:
 	add_to_group("player")
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-	if interaction_label:
-		interaction_label.visible = false
+	_build_avatar()
+	_build_noor()
+
+
+func _build_avatar() -> void:
+	avatar = AvatarBuilder.new()
+	avatar.name = "Avatar"
+
+	# Apply colors from player profile if available
+	var colors: Dictionary = PlayerData.get_avatar_colors()
+	if colors.size() > 0:
+		avatar.apply_colors(colors)
+
+	add_child(avatar)
+
+	# Setup animator
+	avatar_animator = AvatarAnimator.new()
+	avatar_animator.name = "AvatarAnimator"
+	add_child(avatar_animator)
+	avatar_animator.setup(avatar)
+
+
+func _build_noor() -> void:
+	noor = NoorVisual.new()
+	noor.name = "NoorCompanion"
+	# Add to parent scene (not player) so it doesn't inherit player rotation
+	call_deferred("_attach_noor")
+
+
+func _attach_noor() -> void:
+	if get_parent():
+		get_parent().add_child(noor)
+		noor.set_target(self)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -35,6 +71,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	# Interact with nearby portal (E key)
 	if event.is_action_pressed("interact") and _nearby_portal:
+		if avatar_animator:
+			avatar_animator.animate_portal_enter()
 		_nearby_portal._enter_realm()
 
 	# Toggle mouse capture
@@ -72,17 +110,15 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
+	# Update avatar animation
+	if avatar_animator:
+		avatar_animator.update_movement(velocity)
+
 
 func set_nearby_portal(portal: Node3D) -> void:
 	_nearby_portal = portal
-	if interaction_label:
-		interaction_label.visible = true
-		var realm_name = portal.realm_display_name if "realm_display_name" in portal else ""
-		interaction_label.text = "Press E — %s" % realm_name if realm_name != "" else "Press E to enter"
 
 
 func clear_nearby_portal(portal: Node3D) -> void:
 	if _nearby_portal == portal:
 		_nearby_portal = null
-		if interaction_label:
-			interaction_label.visible = false

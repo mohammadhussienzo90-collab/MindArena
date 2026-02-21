@@ -19,6 +19,7 @@ AuthManager="*res://scripts/autoload/auth_manager.gd"
 PlayerData="*res://scripts/autoload/player_data.gd"
 SceneManager="*res://scripts/autoload/scene_manager.gd"
 AudioManager="*res://scripts/autoload/audio_manager.gd"
+WsClient="*res://scripts/autoload/ws_client.gd"
 
 [display]
 

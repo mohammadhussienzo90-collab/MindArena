@@ -27,6 +27,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # Third party
+    'daphne',
+    'channels',
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
@@ -140,7 +142,8 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'anon': '30/minute',
         'user': '120/minute',
-        'auth': '5/minute',    # Login/register attempts
+        'auth': '5/minute',       # Login/register attempts
+        'companion': '30/hour',   # AI companion chat (cost control)
     },
     'EXCEPTION_HANDLER': 'apps.core.exceptions.custom_exception_handler',
 }
@@ -207,6 +210,21 @@ ANTHROPIC_MODEL = 'claude-sonnet-4-20250514'
 COMPANION_MAX_TOKENS = 300
 COMPANION_RATE_LIMIT_FREE = 10      # messages per day for free users
 COMPANION_RATE_LIMIT_PREMIUM = 100  # messages per day for premium users
+
+# =============================================================================
+# CHANNELS (WebSocket support)
+# =============================================================================
+
+ASGI_APPLICATION = 'config.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [os.environ.get('REDIS_URL', 'redis://localhost:6379/0')],
+        },
+    },
+}
 
 # =============================================================================
 # LOGGING

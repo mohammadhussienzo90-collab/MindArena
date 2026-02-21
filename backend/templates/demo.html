@@ -251,6 +251,16 @@ body {
   animation: spin 0.6s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeSlideIn { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
+/* Leaderboard */
+.lb-row { display:flex; align-items:center; gap:12px; padding:12px 16px; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius); transition:all 0.2s; }
+.lb-row.me { border-color:var(--accent); background:rgba(124,58,237,0.08); }
+.lb-row .lb-rank { font-size:1.2rem; font-weight:700; min-width:36px; text-align:center; }
+.lb-row .lb-rank.gold { color:#f59e0b; }
+.lb-row .lb-rank.silver { color:#94a3b8; }
+.lb-row .lb-rank.bronze { color:#b45309; }
+.lb-row .lb-name { flex:1; font-weight:600; }
+.lb-row .lb-value { font-weight:700; color:var(--accent-light); }
 .loading-text { color: var(--muted); display: flex; align-items: center; gap: 10px; }
 
 /* Progress bar */
@@ -470,6 +480,24 @@ body {
 }
 .ai-badge { animation: pulse-glow 2s ease-in-out infinite; }
 
+/* 3D World */
+.world3d-container { position: relative; width: 100%; height: 550px; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); background: #0a0a18; }
+.world3d-container canvas { display: block; width: 100% !important; height: 100% !important; }
+.world3d-overlay { position: absolute; top: 12px; left: 12px; z-index: 10; display: flex; flex-direction: column; gap: 6px; }
+.world3d-overlay .w3d-badge { background: rgba(15,15,26,0.8); backdrop-filter: blur(6px); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; font-size: 0.75rem; color: var(--text); }
+.world3d-tooltip { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 10; background: rgba(15,15,26,0.9); backdrop-filter: blur(8px); border: 1px solid var(--accent); border-radius: 8px; padding: 10px 20px; color: var(--text); font-size: 0.9rem; opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; }
+.world3d-tooltip.visible { opacity: 1; }
+.portal-legend { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 16px; }
+@media (max-width: 768px) { .portal-legend { grid-template-columns: repeat(2, 1fr); } }
+.portal-legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; cursor: pointer; padding: 6px 8px; border-radius: 6px; transition: background 0.2s; }
+.portal-legend-item:hover { background: var(--card-hover); }
+.portal-legend-item .pl-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.story-panel { background: linear-gradient(135deg, rgba(124,58,237,0.08), rgba(236,72,153,0.08)); border: 1px solid var(--accent); border-radius: var(--radius); padding: 24px; margin-top: 20px; }
+.story-panel h3 { color: var(--accent-light); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.story-line { color: var(--muted); line-height: 1.7; font-size: 0.95rem; margin-bottom: 12px; }
+.story-line .speaker { color: var(--accent-light); font-weight: 600; }
+.story-nav { display: flex; gap: 10px; margin-top: 16px; }
+
 /* Smart chat in AI panel */
 .smart-chat-mini {
   border: 1px solid var(--border);
@@ -510,6 +538,7 @@ body {
 .smart-chat-input button:hover { background: #6d28d9; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 </head>
 <body>
 
@@ -619,8 +648,17 @@ body {
         <button class="nav-btn" onclick="showPanel('companion')" data-panel="companion">
           <span class="icon">&#x1F4AC;</span> Noor AI
         </button>
+        <button class="nav-btn" onclick="showPanel('profile')" data-panel="profile">
+          <span class="icon">&#x1F464;</span> Profile
+        </button>
+        <button class="nav-btn" onclick="showPanel('leaderboard')" data-panel="leaderboard">
+          <span class="icon">&#x1F3C5;</span> Leaderboard
+        </button>
         <button class="nav-btn" onclick="showPanel('ai')" data-panel="ai" style="background:linear-gradient(135deg,rgba(124,58,237,0.15),rgba(236,72,153,0.15));border-color:var(--accent)">
           <span class="icon">&#x1F9E0;</span> AI Intelligence
+        </button>
+        <button class="nav-btn" onclick="showPanel('world3d')" data-panel="world3d" style="background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(59,130,246,0.15));border-color:var(--green)">
+          <span class="icon">&#x1F30C;</span> 3D World
         </button>
       </div>
       <div class="main">
@@ -674,11 +712,71 @@ body {
         <!-- Arena -->
         <div class="panel" id="panel-arena">
           <h2>Arena PvP</h2>
-          <div id="arenaStatus"></div>
-          <h3>Match Types</h3>
-          <div class="match-types" id="matchTypes"></div>
-          <h3>Your Arena Stats</h3>
-          <div class="stat-grid" id="arenaStats"></div>
+
+          <!-- Lobby -->
+          <div id="arena-lobby">
+            <div id="arenaStatus"></div>
+            <h3>Choose Match Type</h3>
+            <div class="match-types" id="matchTypes"></div>
+            <div style="text-align:center;margin:20px 0">
+              <button class="btn btn-primary" id="arenaFindBtn" onclick="startArenaSearch()" disabled style="padding:14px 40px;font-size:1.1rem">Find Match</button>
+            </div>
+            <h3>Your Arena Stats</h3>
+            <div class="stat-grid" id="arenaStats"></div>
+          </div>
+
+          <!-- Searching -->
+          <div id="arena-searching" style="display:none;text-align:center;padding:40px">
+            <div style="font-size:3rem;margin-bottom:16px">&#x2694;</div>
+            <h3 style="margin-bottom:8px">Searching for Opponent...</h3>
+            <p style="color:var(--muted)" id="arenaSearchTime">0s</p>
+            <div class="spinner" style="margin:20px auto"></div>
+            <button class="btn btn-outline" onclick="cancelArenaSearch()" style="margin-top:20px">Cancel</button>
+          </div>
+
+          <!-- Opponent Found -->
+          <div id="arena-found" style="display:none;text-align:center;padding:40px">
+            <h3 style="color:var(--gold);font-size:1.4rem;margin-bottom:16px">Opponent Found!</h3>
+            <div style="display:flex;justify-content:center;align-items:center;gap:24px;margin:20px 0">
+              <div><div style="font-size:2.5rem">&#x1F9D1;</div><div style="font-weight:600" id="arenaPlayerName"></div><div style="color:var(--muted);font-size:0.85rem" id="arenaPlayerElo"></div></div>
+              <div style="font-size:1.8rem;color:var(--gold);font-weight:700">VS</div>
+              <div><div style="font-size:2.5rem">&#x1F916;</div><div style="font-weight:600" id="arenaOpponentName"></div><div style="color:var(--muted);font-size:0.85rem" id="arenaOpponentElo"></div></div>
+            </div>
+            <p style="color:var(--muted);font-size:1.1rem">Match starting in <strong id="arenaCountdown" style="color:var(--accent-light)">3</strong>...</p>
+          </div>
+
+          <!-- Playing -->
+          <div id="arena-playing" style="display:none">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding:12px;background:var(--bg);border-radius:var(--radius);border:1px solid var(--border)">
+              <div style="text-align:center;flex:1"><div style="font-size:0.8rem;color:var(--muted)">You</div><div style="font-size:1.5rem;font-weight:700;color:var(--green)" id="arenaPlayerScore">0</div></div>
+              <div style="text-align:center;padding:0 16px"><div style="font-size:0.8rem;color:var(--muted)">Round</div><div style="font-size:1.2rem;font-weight:700" id="arenaRound">1/5</div></div>
+              <div style="text-align:center;flex:1"><div style="font-size:0.8rem;color:var(--muted)" id="arenaOppLabel">Opponent</div><div style="font-size:1.5rem;font-weight:700;color:var(--red)" id="arenaOpponentScore">0</div></div>
+            </div>
+            <div class="challenge-container">
+              <div class="timer-bar"><div class="bar"><div class="bar-fill" id="arenaTimerFill" style="width:100%"></div></div><span class="time-text" id="arenaTimerText">20s</span></div>
+              <div class="challenge-question" id="arenaQuestionBox"></div>
+              <div class="options-list" id="arenaOptionsList"></div>
+              <div id="arenaRoundResult" style="display:none;margin-top:12px;padding:12px;border-radius:var(--radius);border:1px solid var(--border)"></div>
+              <button class="btn btn-primary" id="arenaSubmitBtn" onclick="arenaSubmitAnswer()" disabled style="margin-top:16px;width:100%">Submit Answer</button>
+            </div>
+          </div>
+
+          <!-- Result -->
+          <div id="arena-result" style="display:none;text-align:center;padding:30px">
+            <div id="arenaResultIcon" style="font-size:4rem;margin-bottom:12px"></div>
+            <h2 id="arenaResultTitle" style="margin-bottom:8px"></h2>
+            <p id="arenaResultSubtitle" style="color:var(--muted);margin-bottom:20px"></p>
+            <div class="stat-grid" id="arenaResultStats"></div>
+            <div style="margin-top:20px;padding:16px;background:var(--bg);border-radius:var(--radius);border:1px solid var(--border)">
+              <p style="font-size:0.9rem;color:var(--muted)">ELO Change</p>
+              <p style="font-size:1.8rem;font-weight:700" id="arenaEloChange"></p>
+              <p style="font-size:0.85rem;color:var(--muted)">New Rating: <strong id="arenaNewElo"></strong></p>
+            </div>
+            <div style="margin-top:20px;display:flex;gap:12px;justify-content:center">
+              <button class="btn btn-primary" onclick="showArenaView('lobby');loadArena()">Play Again</button>
+              <button class="btn btn-outline" onclick="showPanel('dashboard')">Dashboard</button>
+            </div>
+          </div>
         </div>
 
         <!-- Feed -->
@@ -712,6 +810,37 @@ body {
             <button class="btn btn-sm btn-outline" onclick="quickChat('Explain my personality profile')">My Profile</button>
             <button class="btn btn-sm btn-outline" onclick="quickChat('What realm should I explore next?')">Realm Advice</button>
           </div>
+        </div>
+
+        <!-- Profile -->
+        <div class="panel" id="panel-profile">
+          <h2>Player Profile</h2>
+          <div style="display:flex;align-items:center;gap:20px;margin-bottom:24px;padding:20px;background:var(--bg);border-radius:var(--radius);border:1px solid var(--border)">
+            <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#ec4899);display:flex;align-items:center;justify-content:center;font-size:2.5rem">&#x1F9D1;</div>
+            <div style="flex:1">
+              <h3 id="profileName" style="font-size:1.3rem;margin-bottom:4px"></h3>
+              <div style="color:var(--muted);font-size:0.9rem;margin-bottom:8px">Level <strong id="profileLevel" style="color:var(--accent-light)"></strong></div>
+              <div style="font-size:0.85rem;color:var(--muted);margin-bottom:4px"><span id="profileXpCurrent"></span> / <span id="profileXpNext"></span> XP to next level</div>
+              <div class="xp-bar"><div class="xp-bar-fill" id="profileXpBar" style="width:0%"></div></div>
+            </div>
+          </div>
+          <h3>Stats</h3>
+          <div class="stat-grid" id="profileStats"></div>
+          <h3 style="margin-top:20px">Realm Mastery</h3>
+          <div style="max-width:340px;margin:16px auto"><canvas id="profileRadar" width="300" height="300"></canvas></div>
+          <h3>Recent Achievements</h3>
+          <div id="profileAchievements" class="realm-grid"></div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="panel" id="panel-leaderboard">
+          <h2>Leaderboard</h2>
+          <div style="display:flex;gap:8px;margin-bottom:20px">
+            <button class="btn btn-sm btn-primary" id="lbTabXp" onclick="switchLeaderboard('xp')">Global XP</button>
+            <button class="btn btn-sm btn-outline" id="lbTabElo" onclick="switchLeaderboard('elo')">Arena ELO</button>
+            <button class="btn btn-sm btn-outline" id="lbTabWeekly" onclick="switchLeaderboard('weekly')">This Week</button>
+          </div>
+          <div id="leaderboardList" style="display:flex;flex-direction:column;gap:8px"></div>
         </div>
 
         <!-- AI Intelligence Dashboard -->
@@ -938,7 +1067,80 @@ body {
           </div>
         </div>
 
+        <!-- 3D World -->
+        <div class="panel" id="panel-world3d">
+          <h2 style="display:flex;align-items:center;gap:10px">
+            MindArena 3D World
+            <span class="ai-badge" style="font-size:0.7rem;background:linear-gradient(135deg,#10b981,#3b82f6);padding:3px 10px;border-radius:10px;color:white;font-weight:700">THREE.JS</span>
+          </h2>
+          <p style="color:var(--muted);margin-bottom:16px">
+            Explore the Mindscape — a floating island in your subconscious. Click on portals to enter realm challenges.
+          </p>
+          <div class="world3d-container" id="world3dContainer">
+            <div class="world3d-overlay">
+              <div class="w3d-badge" id="w3dFps">-- FPS</div>
+              <div class="w3d-badge">Scroll to zoom | Drag to orbit</div>
+            </div>
+            <div class="world3d-tooltip" id="w3dTooltip"></div>
+          </div>
+          <div class="portal-legend" id="portalLegend"></div>
+
+          <!-- Story Panel -->
+          <div class="story-panel" id="storyPanel">
+            <h3>The Story of MindArena</h3>
+            <div id="storyContent">
+              <div class="story-line"><span class="speaker">Narrator:</span> Your mind has shattered into eight fragments after a catalyzing event...</div>
+            </div>
+            <div class="story-nav">
+              <button class="btn btn-sm btn-outline" id="storyPrevBtn" onclick="storyPrev()" disabled>Previous</button>
+              <button class="btn btn-sm btn-primary" id="storyNextBtn" onclick="storyNext()">Next</button>
+              <span style="flex:1"></span>
+              <span style="color:var(--muted);font-size:0.8rem" id="storyProgress">1 / 8</span>
+            </div>
+          </div>
+        </div>
+
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Level-up celebration overlay -->
+<div id="levelUpOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:9998;align-items:center;justify-content:center;cursor:pointer" onclick="closeLevelUp()">
+  <div style="text-align:center;animation:fadeSlideIn 0.5s ease-out" onclick="event.stopPropagation()">
+    <div style="font-size:5rem;margin-bottom:16px">&#x2B50;</div>
+    <h2 style="font-size:2.2rem;color:var(--gold);margin-bottom:8px;text-transform:uppercase;letter-spacing:2px">Level Up!</h2>
+    <div style="font-size:3.5rem;font-weight:700;color:var(--accent-light);margin:12px 0" id="levelUpNumber"></div>
+    <p style="color:var(--muted);margin-bottom:24px;font-size:1rem" id="levelUpXpNeeded"></p>
+    <button class="btn btn-primary" onclick="closeLevelUp()" style="padding:12px 36px;font-size:1.05rem">Continue</button>
+  </div>
+</div>
+
+<!-- Session Summary Overlay -->
+<div id="sessionOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:9997;overflow-y:auto">
+  <div style="max-width:600px;margin:40px auto;padding:24px;animation:fadeSlideIn 0.5s ease-out">
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="font-size:3.5rem;margin-bottom:8px" id="sessionIcon"></div>
+      <h2 style="font-size:1.8rem;margin-bottom:4px" id="sessionTitle"></h2>
+      <p style="color:var(--muted)" id="sessionSubtitle"></p>
+    </div>
+    <div class="stat-grid" id="sessionStats" style="margin-bottom:20px"></div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px">
+      <h3 style="color:var(--accent-light);margin-bottom:12px;font-size:1rem">Performance Breakdown</h3>
+      <div id="sessionBreakdown"></div>
+    </div>
+    <div style="background:linear-gradient(135deg,rgba(124,58,237,0.1),rgba(236,72,153,0.1));border:1px solid var(--accent);border-radius:var(--radius);padding:20px;margin-bottom:16px">
+      <h3 style="color:var(--accent-light);margin-bottom:10px;font-size:1rem;display:flex;align-items:center;gap:8px">Noor's Analysis <span class="ai-badge" style="font-size:0.6rem">AI</span></h3>
+      <p style="line-height:1.7;font-size:0.95rem" id="sessionNoorMessage"></p>
+    </div>
+    <div id="sessionRecommendations" style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px">
+      <h3 style="color:var(--accent-light);margin-bottom:12px;font-size:1rem">What's Next</h3>
+      <div id="sessionNextSteps"></div>
+    </div>
+    <div style="display:flex;gap:12px;justify-content:center">
+      <button class="btn btn-primary" onclick="closeSessionSummary();showPanel('challenge')" style="padding:12px 28px">Play More</button>
+      <button class="btn btn-outline" onclick="closeSessionSummary();showPanel('dashboard')" style="padding:12px 28px">Dashboard</button>
+      <button class="btn btn-green" onclick="closeSessionSummary();showPanel('ai')" style="padding:12px 28px">AI Insights</button>
     </div>
   </div>
 </div>
@@ -957,6 +1159,329 @@ let timeLeft = 30;
 let startTime = 0;
 let currentRealmSlug = '';
 let realmChallenges = {};
+let completedChallenges = {};  // { realmSlug: Set([challengeId, ...]) }
+
+// Arena match state
+let arenaMatch = null;
+let arenaTimerInterval = null;
+let arenaSelectedOption = null;
+let selectedMatchType = null;
+const ARENA_OPPONENTS = [
+  {name:'BrainStorm_99',elo:1180},{name:'MindMaster_X',elo:1250},{name:'NeuroNinja',elo:1100},
+  {name:'ThinkTank42',elo:1220},{name:'PuzzleQueen',elo:1300},{name:'LogicLord',elo:1150},
+];
+
+// XP/Level utilities
+function xpForLevel(level) { return Math.floor(100 * Math.pow(level, 1.5)); }
+function checkLevelUp() {
+  const oldLevel = player.overall_level;
+  let newLevel = 1;
+  while (xpForLevel(newLevel + 1) <= player.total_xp) newLevel++;
+  if (newLevel > oldLevel) {
+    player.overall_level = newLevel;
+    MOCK_DATA.player.overall_level = newLevel;
+    updateHeader();
+    showLevelUpCelebration(newLevel);
+  }
+}
+function showLevelUpCelebration(level) {
+  const overlay = document.getElementById('levelUpOverlay');
+  overlay.style.display = 'flex';
+  document.getElementById('levelUpNumber').textContent = 'Level ' + level;
+  const nextXp = xpForLevel(level + 1);
+  document.getElementById('levelUpXpNeeded').textContent = nextXp.toLocaleString() + ' XP to reach Level ' + (level + 1);
+}
+function closeLevelUp() { document.getElementById('levelUpOverlay').style.display = 'none'; }
+
+// ============ DEMO MODE ============
+// Set to true for fully offline standalone demo (no backend required)
+const DEMO_MODE = (new URLSearchParams(window.location.search).get('demo') === 'true')
+  || (window.location.protocol === 'file:');
+
+const MOCK_DATA = {
+  player: {
+    id: 1, display_name: 'Demo Explorer', avatar_preset: 'default',
+    overall_level: 7, total_xp: 3240, premium_tier: 'free',
+    preferred_lang: 'en', onboarding_done: true, avatar_colors: {}
+  },
+  realms: [
+    {slug:'logic_fortress', name_en:'Logic Fortress', description_en:'Sharpen analytical thinking through patterns, puzzles, and deduction.', color_primary:'#0a3d62', color_secondary:'#3c6382', icon:'brain', unlock_level:1, is_active:true},
+    {slug:'emotion_ocean', name_en:'Emotion Ocean', description_en:'Develop emotional intelligence through empathy and self-awareness.', color_primary:'#6c5ce7', color_secondary:'#a29bfe', icon:'heart', unlock_level:1, is_active:true},
+    {slug:'creativity_nebula', name_en:'Creativity Nebula', description_en:'Unleash creative thinking with open-ended challenges.', color_primary:'#fdcb6e', color_secondary:'#e17055', icon:'sparkles', unlock_level:1, is_active:true},
+    {slug:'discipline_citadel', name_en:'Discipline Citadel', description_en:'Build habits, willpower, and self-regulation.', color_primary:'#2d3436', color_secondary:'#636e72', icon:'shield', unlock_level:3, is_active:true},
+    {slug:'knowledge_peaks', name_en:'Knowledge Peaks', description_en:'Explore curiosity through facts, trivia, and reasoning.', color_primary:'#0c2461', color_secondary:'#1e3799', icon:'book', unlock_level:3, is_active:true},
+    {slug:'social_bridge', name_en:'Social Bridge', description_en:'Improve communication and interpersonal skills.', color_primary:'#e55039', color_secondary:'#eb4d4b', icon:'users', unlock_level:5, is_active:true},
+    {slug:'wealth_garden', name_en:'Wealth Garden', description_en:'Learn financial literacy and practical decision-making.', color_primary:'#27ae60', color_secondary:'#2ecc71', icon:'coins', unlock_level:5, is_active:true},
+    {slug:'wellness_grove', name_en:'Wellness Grove', description_en:'Nurture mindfulness, resilience, and well-being.', color_primary:'#00b894', color_secondary:'#55efc4', icon:'leaf', unlock_level:5, is_active:true},
+  ],
+  realm_stats: {
+    logic_fortress:{realm_level:8,realm_xp:1200,visual_stage:2,challenges_completed:45,challenges_perfect:12},
+    emotion_ocean:{realm_level:5,realm_xp:700,visual_stage:1,challenges_completed:28,challenges_perfect:6},
+    creativity_nebula:{realm_level:6,realm_xp:850,visual_stage:2,challenges_completed:32,challenges_perfect:8},
+    discipline_citadel:{realm_level:4,realm_xp:480,visual_stage:1,challenges_completed:18,challenges_perfect:4},
+    knowledge_peaks:{realm_level:7,realm_xp:1050,visual_stage:2,challenges_completed:38,challenges_perfect:10},
+    social_bridge:{realm_level:3,realm_xp:320,visual_stage:1,challenges_completed:14,challenges_perfect:3},
+    wealth_garden:{realm_level:4,realm_xp:510,visual_stage:1,challenges_completed:20,challenges_perfect:5},
+    wellness_grove:{realm_level:5,realm_xp:680,visual_stage:1,challenges_completed:26,challenges_perfect:7},
+  },
+  challenges: {
+    logic_fortress: [
+      {id:1,slug:'lf-pattern-1',challenge_type:'multiple_choice',title_en:'Number Pattern',description_en:'Find the next number in the sequence.',content:{question_en:'What comes next: 2, 6, 18, 54, ?',options_en:['108','162','148','96'],correct_index:1,explanation_en:'Each number is multiplied by 3.'},difficulty:3,base_xp:25,bonus_xp:10,time_limit_secs:30},
+      {id:2,slug:'lf-logic-1',challenge_type:'multiple_choice',title_en:'Logical Deduction',description_en:'Use logic to find the answer.',content:{question_en:'If all roses are flowers, and some flowers fade quickly, which must be true?',options_en:['All roses fade quickly','Some roses fade quickly','Some roses may fade quickly','No roses fade quickly'],correct_index:2,explanation_en:'We can only conclude that some roses may fade quickly.'},difficulty:4,base_xp:30,bonus_xp:15,time_limit_secs:45},
+      {id:3,slug:'lf-math-1',challenge_type:'math_logic',title_en:'Quick Math',description_en:'Solve the math puzzle.',content:{question_en:'If x + 3 = 7 and y = 2x, what is y?',options_en:['6','8','10','4'],correct_index:1,explanation_en:'x = 4, so y = 2(4) = 8.'},difficulty:2,base_xp:20,bonus_xp:10,time_limit_secs:30},
+      {id:4,slug:'lf-pattern-2',challenge_type:'multiple_choice',title_en:'Prime Sequence',description_en:'Identify the prime pattern.',content:{question_en:'Which number is NOT prime? 17, 23, 27, 31',options_en:['17','23','27','31'],correct_index:2,explanation_en:'27 = 3 x 9. All others are prime numbers.'},difficulty:3,base_xp:25,bonus_xp:10,time_limit_secs:30},
+      {id:5,slug:'lf-spatial-1',challenge_type:'multiple_choice',title_en:'Spatial Reasoning',description_en:'Think in three dimensions.',content:{question_en:'If you fold a square piece of paper in half diagonally, then cut off the corner opposite the fold, what shape do you get when you unfold it?',options_en:['Triangle','Diamond/rhombus','Circle','Pentagon'],correct_index:1,explanation_en:'Cutting the opposite corner of a diagonal fold creates a triangle hole when unfolded.'},difficulty:5,base_xp:35,bonus_xp:15,time_limit_secs:45},
+      {id:6,slug:'lf-probability-1',challenge_type:'math_logic',title_en:'Probability Puzzle',description_en:'Calculate the odds.',content:{question_en:'You flip a fair coin 3 times. What is the probability of getting exactly 2 heads?',options_en:['1/4','3/8','1/2','1/3'],correct_index:1,explanation_en:'There are 8 possible outcomes (2^3). Exactly 2 heads: HHT, HTH, THH = 3/8.'},difficulty:4,base_xp:30,bonus_xp:15,time_limit_secs:45},
+    ],
+    emotion_ocean: [
+      {id:10,slug:'eo-scenario-1',challenge_type:'scenario_choice',title_en:'Empathy Check',description_en:'Choose the most empathetic response.',content:{question_en:'Your friend just failed an important exam. What do you say?',options_en:['You should have studied harder','I know how disappointing that feels. Want to talk about it?','Just forget about it','Better luck next time!'],correct_index:1,explanation_en:'Acknowledging feelings shows empathy.'},difficulty:3,base_xp:25,bonus_xp:10,time_limit_secs:45},
+      {id:11,slug:'eo-conflict-1',challenge_type:'scenario_choice',title_en:'Conflict Resolution',description_en:'Navigate an emotional conflict.',content:{question_en:'Your roommate ate your labeled food from the fridge. You feel angry. The healthiest first step is:',options_en:['Eat their food to make it even','Wait until you\'re calm, then explain how it made you feel','Post about it on social media','Give them the silent treatment'],correct_index:1,explanation_en:'Waiting until calm and using "I feel" statements leads to productive resolution.'},difficulty:3,base_xp:25,bonus_xp:10,time_limit_secs:45},
+      {id:12,slug:'eo-body-lang-1',challenge_type:'multiple_choice',title_en:'Body Language',description_en:'Read non-verbal cues.',content:{question_en:'Someone crosses their arms, avoids eye contact, and turns slightly away during a conversation. This most likely indicates:',options_en:['They are cold','They feel defensive or uncomfortable','They are bored','They are concentrating'],correct_index:1,explanation_en:'Crossed arms + averted gaze + turned body = classic defensive/uncomfortable posture.'},difficulty:2,base_xp:20,bonus_xp:10,time_limit_secs:30},
+      {id:13,slug:'eo-self-aware-1',challenge_type:'multiple_choice',title_en:'Self-Awareness',description_en:'Understand your own emotions.',content:{question_en:'You notice your heart racing and palms sweating before a presentation. This physical response is called:',options_en:['Emotional hijacking','Somatic marker','Fight-or-flight response','Cognitive dissonance'],correct_index:2,explanation_en:'The fight-or-flight response activates the sympathetic nervous system in perceived threat situations.'},difficulty:3,base_xp:25,bonus_xp:10,time_limit_secs:30},
+      {id:14,slug:'eo-boundary-1',challenge_type:'scenario_choice',title_en:'Setting Boundaries',description_en:'Practice healthy boundaries.',content:{question_en:'A coworker keeps asking you to cover their shifts. You\'ve helped 3 times this month. The best response is:',options_en:['Just keep helping — they need you','Say "I\'ve been glad to help, but I need my time off too. Let\'s find another solution."','Ignore their messages','Complain to your manager'],correct_index:1,explanation_en:'Assertive boundary-setting acknowledges the relationship while protecting your needs.'},difficulty:4,base_xp:30,bonus_xp:15,time_limit_secs:45},
+      {id:15,slug:'eo-emotion-vocab-1',challenge_type:'multiple_choice',title_en:'Emotion Vocabulary',description_en:'Expand your emotional vocabulary.',content:{question_en:'The feeling of joy when witnessing someone else\'s success is called:',options_en:['Schadenfreude','Compersion','Sympathy','Admiration'],correct_index:1,explanation_en:'Compersion is the opposite of jealousy — feeling happy about others\' happiness.'},difficulty:4,base_xp:30,bonus_xp:15,time_limit_secs:30},
+    ],
+    creativity_nebula: [
+      {id:20,slug:'cn-creative-1',challenge_type:'multiple_choice',title_en:'Creative Thinking',description_en:'Think outside the box.',content:{question_en:'A man walks into a bar and asks for water. The bartender pulls out a gun. The man says "thank you" and leaves. Why?',options_en:['The man was a robber','The man had hiccups','The bartender was confused','It was a joke'],correct_index:1,explanation_en:'The man had hiccups. The scare from the gun cured them.'},difficulty:4,base_xp:30,bonus_xp:15,time_limit_secs:60},
+      {id:21,slug:'cn-lateral-1',challenge_type:'multiple_choice',title_en:'Lateral Thinking',description_en:'Approach problems differently.',content:{question_en:'You have 8 balls. One is slightly heavier. Using a balance scale, what is the minimum weighings needed to find it?',options_en:['1','2','3','4'],correct_index:1,explanation_en:'Weigh 3 vs 3. If balanced, weigh remaining 2. If unbalanced, weigh 1 vs 1 from heavy side. Always 2 weighings.'},difficulty:5,base_xp:35,bonus_xp:15,time_limit_secs:60},
+      {id:22,slug:'cn-reframe-1',challenge_type:'scenario_choice',title_en:'Reframing Problems',description_en:'See challenges as opportunities.',content:{question_en:'Your startup\'s main product just failed in the market. A creative leader would first:',options_en:['Blame the marketing team','Interview customers who rejected it to discover unmet needs','Copy a competitor\'s successful product','Shut down and start over'],correct_index:1,explanation_en:'Talking to customers who rejected it reveals unmet needs — the foundation for innovation.'},difficulty:4,base_xp:30,bonus_xp:15,time_limit_secs:45},
+      {id:23,slug:'cn-divergent-1',challenge_type:'multiple_choice',title_en:'Divergent Thinking',description_en:'Generate multiple solutions.',content:{question_en:'In brainstorming, which rule is most important for generating creative ideas?',options_en:['Only share polished ideas','Defer judgment — no criticism during ideation','Vote on each idea immediately','The boss speaks first'],correct_index:1,explanation_en:'Deferring judgment encourages wild ideas, which often lead to breakthroughs.'},difficulty:2,base_xp:20,bonus_xp:10,time_limit_secs:30},
+      {id:24,slug:'cn-analogy-1',challenge_type:'multiple_choice',title_en:'Analogical Thinking',description_en:'Connect unrelated concepts.',content:{question_en:'Velcro was invented by observing what natural phenomenon?',options_en:['Spider webs','Burrs sticking to dog fur','Tree bark patterns','Bird feathers'],correct_index:1,explanation_en:'George de Mestral noticed burrs sticking to his dog\'s fur, inspiring the hook-and-loop design.'},difficulty:3,base_xp:25,bonus_xp:10,time_limit_secs:30},
+      {id:25,slug:'cn-improv-1',challenge_type:'scenario_choice',title_en:'Improvisation',description_en:'Think on your feet.',content:{question_en:'You\'re presenting to investors and your slides crash. The best creative response is:',options_en:['Apologize and reschedule','Use the whiteboard to draw your key points and engage them in conversation','Read from your notes','Ask someone to fix it while you wait'],correct_index:1,explanation_en:'Improvising with a whiteboard shows confidence, adaptability, and keeps engagement high.'},difficulty:4,base_xp:30,bonus_xp:15,time_limit_secs:45},
+    ],
+    discipline_citadel: [
+      {id:30,slug:'dc-habit-1',challenge_type:'multiple_choice',title_en:'Habit Formation',description_en:'Learn about building habits.',content:{question_en:'According to research, how long does it typically take to form a new habit?',options_en:['7 days','21 days','66 days','90 days'],correct_index:2,explanation_en:'A study by Phillippa Lally found it takes an average of 66 days.'},difficulty:2,base_xp:20,bonus_xp:10,time_limit_secs:30},
+      {id:31,slug:'dc-willpower-1',challenge_type:'multiple_choice',title_en:'Willpower Science',description_en:'Understand self-control.',content:{question_en:'The famous "marshmallow test" by Walter Mischel demonstrated that children who could delay gratification:',options_en:['Were less intelligent','Had better life outcomes decades later','Were more obedient','Had no advantage'],correct_index:1,explanation_en:'Children who delayed gratification showed better SAT scores, health, and career success.'},difficulty:3,base_xp:25,bonus_xp:10,time_limit_secs:30},
+      {id:32,slug:'dc-time-1',challenge_type:'scenario_choice',title_en:'Time Management',description_en:'Prioritize effectively.',content:{question_en:'You have 4 tasks: urgent email (10 min), big project due next week, social media break, and exercise. Using the Eisenhower Matrix, which do you do first?',options_en:['Social media break — you need a reset','Big project — it\'s the most important','Urgent email — it\'s both urgent and quick','Exercise — health comes first'],correct_index:2,explanation_en:'The urgent email is both urgent AND important. Quick tasks that are urgent+important should be done first.'},difficulty:3,base_xp:25,bonus_xp:10,time_limit_secs:45},
+      {id:33,slug:'dc-procrastination-1',challenge_type:'multiple_choice',title_en:'Beating Procrastination',description_en:'Overcome delay tactics.',content:{question_en:'The most effective technique to start a task you\'ve been procrastinating on is:',options_en:['Wait until you feel motivated','Commit to working on it for just 2 minutes','Set a distant deadline','Reward yourself before starting'],correct_index:1,explanation_en:'The 2-minute rule lowers the barrier to starting. Once begun, momentum often carries you forward.'},difficulty:2,base_xp:20,bonus_xp:10,time_limit_secs:30},
+      {id:34,slug:'dc-goals-1',challenge_type:'multiple_choice',title_en:'Goal Setting',description_en:'Set effective goals.',content:{question_en:'SMART goals are Specific, Measurable, Achievable, Relevant, and:',options_en:['Tactical','Time-bound','Trackable','Transformative'],correct_index:1,explanation_en:'Time-bound: every goal needs a deadline to create urgency and accountability.'},difficulty:2,base_xp:20,bonus_xp:10,time_limit_secs:30},
+      {id:35,slug:'dc-focus-1',challenge_type:'scenario_choice',title_en:'Deep Focus',description_en:'Master concentration.',content:{question_en:'You\'re doing deep work but keep checking your phone. Cal Newport would recommend:',options_en:['Use willpower to resist','Put your phone in another room and set a specific "phone break" time','Check phone only for important things','Turn off just social media notifications'],correct_index:1,explanation_en:'Physical separation + scheduled breaks is more effective than relying on willpower alone.'},difficulty:4,base_xp:30,bonus_xp:15,time_limit_secs:45},
+    ],
+    knowledge_peaks: [
+      {id:40,slug:'kp-trivia-1',challenge_type:'multiple_choice',title_en:'World Knowledge',description_en:'Test your general knowledge.',content:{question_en:'What phenomenon explains why we remember uncompleted tasks better?',options_en:['Dunning-Kruger Effect','Zeigarnik Effect','Baader-Meinhof Phenomenon','Mere Exposure Effect'],correct_index:1,explanation_en:'The Zeigarnik Effect: uncompleted tasks create cognitive tension.'},difficulty:4,base_xp:30,bonus_xp:15,time_limit_secs:30},
+      {id:41,slug:'kp-bias-1',challenge_type:'multiple_choice',title_en:'Cognitive Bias',description_en:'Spot the bias.',content:{question_en:'You see a stock rising for 5 days straight and assume it will keep rising. This is:',options_en:['Anchoring bias','Hot-hand fallacy','Confirmation bias','Recency bias'],correct_index:3,explanation_en:'Recency bias: overweighting recent events when predicting the future.'},difficulty:4,base_xp:30,bonus_xp:15,time_limit_secs:30},
+      {id:42,slug:'kp-memory-1',challenge_type:'multiple_choice',title_en:'Memory Techniques',description_en:'Learn how memory works.',content:{question_en:'The "Method of Loci" memory technique involves:',options_en:['Repeating information out loud','Associating items with locations in a familiar place','Writing things down multiple times','Using acronyms for lists'],correct_index:1,explanation_en:'The Method of Loci (memory palace) places items along a mental walk through a familiar space.'},difficulty:3,base_xp:25,bonus_xp:10,time_limit_secs:30},
+      {id:43,slug:'kp-psych-1',challenge_type:'multiple_choice',title_en:'Psychology Insight',description_en:'Understand human behavior.',content:{question_en:'Maslow\'s hierarchy places which need at the very top?',options_en:['Safety','Love and belonging','Self-actualization','Esteem'],correct_index:2,explanation_en:'Self-actualization — realizing your full potential — sits at the peak of Maslow\'s pyramid.'},difficulty:2,base_xp:20,bonus_xp:10,time_limit_secs:30},
+      {id:44,slug:'kp-science-1',challenge_type:'multiple_choice',title_en:'Brain Science',description_en:'Explore neuroscience basics.',content:{question_en:'Neuroplasticity refers to the brain\'s ability to:',options_en:['Store unlimited memories','Reorganize itself by forming new neural connections','Operate without sleep','Process multiple tasks simultaneously'],correct_index:1,explanation_en:'Neuroplasticity means the brain can rewire itself throughout life, adapting to new experiences and learning.'},difficulty:3,base_xp:25,bonus_xp:10,time_limit_secs:30},
+      {id:45,slug:'kp-critical-1',challenge_type:'scenario_choice',title_en:'Critical Thinking',description_en:'Evaluate claims carefully.',content:{question_en:'A news article claims "Study proves chocolate cures depression." The study had 12 participants. You should:',options_en:['Share it — studies don\'t lie','Note the tiny sample size makes the conclusion unreliable','Only trust it if it\'s from a famous university','Eat more chocolate just in case'],correct_index:1,explanation_en:'12 participants is far too small for generalizable conclusions. Critical thinking requires evaluating methodology.'},difficulty:4,base_xp:30,bonus_xp:15,time_limit_secs:45},
+    ],
+    social_bridge: [
+      {id:50,slug:'sb-comm-1',challenge_type:'scenario_choice',title_en:'Active Listening',description_en:'Practice communication skills.',content:{question_en:'During a disagreement, your colleague raises their voice. The best response is:',options_en:['Raise your voice too','Stay calm and say "I hear your concern. Let\'s discuss this."','Walk away silently','Tell them to calm down'],correct_index:1,explanation_en:'Acknowledging their feelings while maintaining composure de-escalates conflict.'},difficulty:3,base_xp:25,bonus_xp:10,time_limit_secs:45},
+      {id:51,slug:'sb-negotiation-1',challenge_type:'scenario_choice',title_en:'Negotiation Skills',description_en:'Find win-win solutions.',content:{question_en:'You and a coworker both want the same project. A skilled negotiator would:',options_en:['Compete aggressively for it','Propose splitting the project into complementary parts you each lead','Give up to avoid conflict','Ask your manager to decide'],correct_index:1,explanation_en:'Integrative negotiation creates value by finding ways both parties can achieve their core goals.'},difficulty:4,base_xp:30,bonus_xp:15,time_limit_secs:45},
+      {id:52,slug:'sb-feedback-1',challenge_type:'scenario_choice',title_en:'Giving Feedback',description_en:'Provide constructive feedback.',content:{question_en:'You need to tell a team member their report has errors. Using the SBI model, you would say:',options_en:['Your report was terrible','In Tuesday\'s meeting (S), when you presented the Q3 data (B), the client noticed two errors, which reduced our credibility (I).','You always make mistakes','Someone told me your report was bad'],correct_index:1,explanation_en:'SBI (Situation-Behavior-Impact) is specific and non-judgmental, making feedback actionable.'},difficulty:4,base_xp:30,bonus_xp:15,time_limit_secs:45},
+      {id:53,slug:'sb-persuasion-1',challenge_type:'multiple_choice',title_en:'Persuasion Principles',description_en:'Understand influence ethically.',content:{question_en:'According to Robert Cialdini, which principle explains why free samples increase sales?',options_en:['Scarcity','Reciprocity','Authority','Social proof'],correct_index:1,explanation_en:'Reciprocity: when someone gives us something, we feel obligated to give back — like buying after a free sample.'},difficulty:3,base_xp:25,bonus_xp:10,time_limit_secs:30},
+      {id:54,slug:'sb-empathy-comm-1',challenge_type:'multiple_choice',title_en:'Empathetic Communication',description_en:'Connect through understanding.',content:{question_en:'In Nonviolent Communication (NVC), the four components are:',options_en:['Think, Plan, Act, Reflect','Observe, Feel, Need, Request','Listen, Understand, Agree, Act','Question, Analyze, Suggest, Implement'],correct_index:1,explanation_en:'NVC by Marshall Rosenberg: Observation, Feeling, Need, Request — connecting through honest, empathetic communication.'},difficulty:4,base_xp:30,bonus_xp:15,time_limit_secs:30},
+      {id:55,slug:'sb-teamwork-1',challenge_type:'scenario_choice',title_en:'Team Dynamics',description_en:'Build effective teams.',content:{question_en:'In a group project, one person dominates every discussion. As a team leader, you should:',options_en:['Let them lead since they\'re enthusiastic','Privately acknowledge their input, then implement round-robin speaking turns','Tell them to talk less','Remove them from the team'],correct_index:1,explanation_en:'Acknowledging contribution + structural change (round-robin) empowers everyone without shaming the dominant speaker.'},difficulty:3,base_xp:25,bonus_xp:10,time_limit_secs:45},
+    ],
+    wealth_garden: [
+      {id:60,slug:'wg-finance-1',challenge_type:'multiple_choice',title_en:'Financial Basics',description_en:'Test your financial literacy.',content:{question_en:'What is the "50/30/20" rule in budgeting?',options_en:['Save 50%, spend 30%, invest 20%','Needs 50%, wants 30%, savings 20%','Income 50%, expenses 30%, debt 20%','Housing 50%, food 30%, other 20%'],correct_index:1,explanation_en:'The 50/30/20 rule allocates 50% to needs, 30% to wants, and 20% to savings.'},difficulty:2,base_xp:20,bonus_xp:10,time_limit_secs:30},
+      {id:61,slug:'wg-compound-1',challenge_type:'math_logic',title_en:'Compound Interest',description_en:'Understand the power of compounding.',content:{question_en:'You invest $1,000 at 10% annual return. Approximately how much will you have after 7 years (using the Rule of 72)?',options_en:['$1,700','$2,000','$1,500','$2,500'],correct_index:1,explanation_en:'Rule of 72: 72/10 = 7.2 years to double. After ~7 years, $1,000 becomes roughly $2,000.'},difficulty:3,base_xp:25,bonus_xp:10,time_limit_secs:45},
+      {id:62,slug:'wg-opportunity-1',challenge_type:'scenario_choice',title_en:'Opportunity Cost',description_en:'Think about what you give up.',content:{question_en:'You can spend $200 on a new gadget or invest it. If invested, it would grow to $400 in 7 years. The opportunity cost of buying the gadget is:',options_en:['$200','$400','$200 plus 7 years of growth','There is no cost — you wanted it'],correct_index:1,explanation_en:'Opportunity cost is the value of the best alternative foregone — $400 (what the money would have become).'},difficulty:4,base_xp:30,bonus_xp:15,time_limit_secs:45},
+      {id:63,slug:'wg-investing-1',challenge_type:'multiple_choice',title_en:'Investment Basics',description_en:'Learn the fundamentals.',content:{question_en:'Diversification in investing means:',options_en:['Buying only one high-performing stock','Spreading investments across different assets to reduce risk','Changing investments frequently','Investing only in your home country'],correct_index:1,explanation_en:'Diversification reduces risk by spreading investments. "Don\'t put all your eggs in one basket."'},difficulty:2,base_xp:20,bonus_xp:10,time_limit_secs:30},
+      {id:64,slug:'wg-debt-1',challenge_type:'multiple_choice',title_en:'Debt Management',description_en:'Manage debt wisely.',content:{question_en:'The "avalanche method" of debt repayment focuses on paying off:',options_en:['The smallest debt first','The highest interest rate debt first','All debts equally','The oldest debt first'],correct_index:1,explanation_en:'The avalanche method targets highest interest first, minimizing total interest paid over time.'},difficulty:3,base_xp:25,bonus_xp:10,time_limit_secs:30},
+      {id:65,slug:'wg-budget-scenario-1',challenge_type:'scenario_choice',title_en:'Budget Decision',description_en:'Make smart financial choices.',content:{question_en:'Your monthly income is $3,000. Rent is $1,200 (40%). Financial advisors would say:',options_en:['That\'s fine — spend what you want','You\'re overspending on housing — aim for 30% or less','Rent doesn\'t matter if you have income','Move to the most expensive place you can afford'],correct_index:1,explanation_en:'The 30% rule suggests housing should be at most 30% of gross income for financial stability.'},difficulty:3,base_xp:25,bonus_xp:10,time_limit_secs:45},
+    ],
+    wellness_grove: [
+      {id:70,slug:'wg-mind-1',challenge_type:'multiple_choice',title_en:'Mindfulness',description_en:'Learn about mental wellness.',content:{question_en:'Which technique is most effective for reducing acute stress in under 5 minutes?',options_en:['Journaling','Box breathing (4-4-4-4)','Running','Watching TV'],correct_index:1,explanation_en:'Box breathing activates the parasympathetic nervous system quickly.'},difficulty:2,base_xp:20,bonus_xp:10,time_limit_secs:30},
+      {id:71,slug:'wl-sleep-1',challenge_type:'multiple_choice',title_en:'Sleep Science',description_en:'Understand sleep hygiene.',content:{question_en:'Blue light from screens before bed is harmful because it:',options_en:['Damages your eyes permanently','Suppresses melatonin production, delaying sleep onset','Makes you more alert forever','Has no real effect'],correct_index:1,explanation_en:'Blue light suppresses melatonin, the hormone that signals your body to sleep. Avoid screens 1 hour before bed.'},difficulty:2,base_xp:20,bonus_xp:10,time_limit_secs:30},
+      {id:72,slug:'wl-exercise-1',challenge_type:'multiple_choice',title_en:'Exercise Benefits',description_en:'Learn about physical activity.',content:{question_en:'Exercise improves mental health primarily by:',options_en:['Building muscle mass','Releasing endorphins and increasing BDNF (brain growth factor)','Burning calories','Improving appearance'],correct_index:1,explanation_en:'Exercise releases endorphins and BDNF, which promotes neuroplasticity and reduces depression/anxiety.'},difficulty:3,base_xp:25,bonus_xp:10,time_limit_secs:30},
+      {id:73,slug:'wl-nutrition-1',challenge_type:'multiple_choice',title_en:'Brain Food',description_en:'Nourish your mind.',content:{question_en:'Which nutrient is most strongly linked to brain health and mood regulation?',options_en:['Vitamin C','Omega-3 fatty acids','Calcium','Iron'],correct_index:1,explanation_en:'Omega-3s (found in fish, walnuts, flaxseed) are crucial for brain cell membrane structure and reduce inflammation.'},difficulty:3,base_xp:25,bonus_xp:10,time_limit_secs:30},
+      {id:74,slug:'wl-stress-1',challenge_type:'scenario_choice',title_en:'Stress Management',description_en:'Handle pressure effectively.',content:{question_en:'You have a major deadline tomorrow and feel overwhelmed. The best approach is:',options_en:['Pull an all-nighter fueled by caffeine','Break the task into small steps, do 25-min focused sprints (Pomodoro), and get 6+ hours of sleep','Panic and complain','Ask someone else to do it'],correct_index:1,explanation_en:'Pomodoro technique + sleep preserves cognitive function. All-nighters reduce performance by 30-40%.'},difficulty:3,base_xp:25,bonus_xp:10,time_limit_secs:45},
+      {id:75,slug:'wl-resilience-1',challenge_type:'multiple_choice',title_en:'Building Resilience',description_en:'Bounce back from setbacks.',content:{question_en:'Research shows the #1 factor in psychological resilience is:',options_en:['Intelligence','Strong social connections','Financial stability','Physical fitness'],correct_index:1,explanation_en:'Social support is the strongest predictor of resilience. Having people to turn to buffers against stress.'},difficulty:4,base_xp:30,bonus_xp:15,time_limit_secs:30},
+    ],
+  },
+  feed_items: [
+    {id:1,content_type:'tip',realm:{slug:'discipline_citadel',name_en:'Discipline Citadel'},title_en:'The 2-Minute Rule',body_en:'If a task takes less than 2 minutes, do it immediately.',xp_value:5,is_premium:false},
+    {id:2,content_type:'fact',realm:{slug:'emotion_ocean',name_en:'Emotion Ocean'},title_en:'Mirror Neurons',body_en:'Your brain has mirror neurons that fire both when you act and when you observe others act, forming the basis of empathy.',xp_value:5,is_premium:false},
+    {id:3,content_type:'quote',realm:{slug:'creativity_nebula',name_en:'Creativity Nebula'},title_en:'Steve Jobs on Creativity',body_en:'"Creativity is just connecting things. When you ask creative people how they did something, they feel a little guilty because they didn\'t really do it, they just saw something."',xp_value:5,is_premium:false},
+    {id:4,content_type:'tip',realm:{slug:'logic_fortress',name_en:'Logic Fortress'},title_en:'Eisenhower Matrix',body_en:'Sort tasks by urgency and importance to focus on what truly matters.',xp_value:5,is_premium:false},
+    {id:5,content_type:'fact',realm:{slug:'social_bridge',name_en:'Social Bridge'},title_en:'Dunbar\'s Number',body_en:'Research suggests humans can maintain about 150 stable social relationships.',xp_value:5,is_premium:false},
+  ],
+  achievements: [
+    {achievement:{slug:'first-steps',title_en:'First Steps',icon:'flag',category:'onboarding'},earned_at:'2026-01-15T10:00:00Z'},
+    {achievement:{slug:'challenge-rookie',title_en:'Challenge Rookie',icon:'star',category:'challenges'},earned_at:'2026-01-20T14:30:00Z'},
+    {achievement:{slug:'streak-3',title_en:'Getting Started',icon:'flame',category:'streaks'},earned_at:'2026-01-22T09:00:00Z'},
+    {achievement:{slug:'streak-7',title_en:'Week Warrior',icon:'flame',category:'streaks'},earned_at:'2026-02-01T09:00:00Z'},
+    {achievement:{slug:'level-5',title_en:'Rising Star',icon:'arrow-up',category:'levels'},earned_at:'2026-02-05T16:00:00Z'},
+  ],
+  assessment_questions: [
+    {id:0,text_en:'I enjoy exploring new ideas and concepts.',trait:'openness'},
+    {id:1,text_en:'I always complete tasks on time.',trait:'conscientiousness'},
+    {id:2,text_en:'I feel energized around other people.',trait:'extraversion'},
+    {id:3,text_en:'I prioritize others\' needs over my own.',trait:'agreeableness'},
+    {id:4,text_en:'I often worry about things.',trait:'neuroticism'},
+    {id:5,text_en:'I like trying new experiences.',trait:'openness'},
+    {id:6,text_en:'I pay attention to details.',trait:'conscientiousness'},
+    {id:7,text_en:'I enjoy being the center of attention.',trait:'extraversion'},
+    {id:8,text_en:'I trust people easily.',trait:'agreeableness'},
+    {id:9,text_en:'I get stressed easily.',trait:'neuroticism'},
+  ],
+  arena_stats: {elo_rating:1150,matches_played:12,matches_won:8,matches_lost:4,win_streak:3,best_win_streak:5,total_correct:42,total_questions:60},
+  daily_challenges: [],
+  noor_responses: [
+    "That's a great question! In the Logic Fortress, we learn to break problems into smaller parts. What aspect of problem-solving interests you most?",
+    "I've noticed you've been making great progress in the Emotion Ocean. Your empathy scores are improving — keep it up!",
+    "Interesting thought! The best learners are those who stay curious. What realm would you like to explore next?",
+    "Remember, every challenge you complete makes you stronger. Your streak shows real dedication!",
+    "The Creativity Nebula is all about thinking differently. Sometimes the best ideas come when you least expect them.",
+    "Your balanced approach across realms shows real growth. The key to mastery is consistency.",
+    "Great to see you here! Would you like to work on your weakest realm or strengthen an existing one?",
+    "Self-awareness is a superpower. The fact that you're here shows you value personal growth.",
+  ],
+  leaderboard_xp: [
+    {display_name:'NeuralNova',overall_level:32,total_xp:68500},
+    {display_name:'MindMaster_X',overall_level:28,total_xp:52300},
+    {display_name:'BrainStorm_99',overall_level:25,total_xp:45000},
+    {display_name:'ThinkDeep',overall_level:22,total_xp:38200},
+    {display_name:'PuzzleQueen',overall_level:19,total_xp:29100},
+    {display_name:'LogicLord',overall_level:16,total_xp:22400},
+    {display_name:'EQWarrior',overall_level:14,total_xp:18900},
+    {display_name:'ZenMaster42',overall_level:5,total_xp:2100},
+    {display_name:'Newbie123',overall_level:3,total_xp:950},
+  ],
+  leaderboard_elo: [
+    {display_name:'PuzzleQueen',elo_rating:1620},
+    {display_name:'NeuralNova',elo_rating:1550},
+    {display_name:'MindMaster_X',elo_rating:1480},
+    {display_name:'BrainStorm_99',elo_rating:1410},
+    {display_name:'LogicLord',elo_rating:1350},
+    {display_name:'ThinkDeep',elo_rating:1290},
+    {display_name:'EQWarrior',elo_rating:1220},
+    {display_name:'ZenMaster42',elo_rating:1050},
+    {display_name:'Newbie123',elo_rating:980},
+  ],
+  _challenge_idx: {},
+  _noor_idx: 0,
+  _feed_idx: 0,
+};
+
+const MockAPI = {
+  handle(method, path, body) {
+    const p = path.replace(/\/$/, '');
+    // Auth
+    if (p.includes('/accounts/login')) return this._ok({access:'demo-token',refresh:'demo-refresh'});
+    if (p.includes('/accounts/register')) return this._ok({tokens:{access:'demo-token',refresh:'demo-refresh'},player:MOCK_DATA.player});
+    if (p.includes('/accounts/profile')) return method === 'PATCH' ? this._ok(MOCK_DATA.player) : this._ok(MOCK_DATA.player);
+    if (p.includes('/accounts/search')) return this._ok({results:[]});
+    // Assessment
+    if (p.includes('/assessment/questions')) return this._ok({questions:MOCK_DATA.assessment_questions,total:MOCK_DATA.assessment_questions.length});
+    if (p.includes('/assessment/submit')) { MOCK_DATA.player.onboarding_done=true; return this._ok({traits:{openness:72,conscientiousness:65,extraversion:58,agreeableness:70,neuroticism:35},realm_scores:{logic_fortress:68,emotion_ocean:62,creativity_nebula:71,discipline_citadel:60,knowledge_peaks:65,social_bridge:55,wealth_garden:58,wellness_grove:63}}); }
+    if (p.includes('/assessment/result')) return this._ok({openness:72,conscientiousness:65,extraversion:58});
+    // Realms
+    if (p.match(/\/realms\/[\w_]+\/challenges/)) { const s=p.match(/\/realms\/([\w_]+)\/challenges/)[1]; return this._ok(MOCK_DATA.challenges[s]||[]); }
+    if (p.match(/\/realms\/challenges\/\d+\/submit/)) { const cid=parseInt(p.match(/\/challenges\/(\d+)/)[1]); return this._submitChallenge(body, cid); }
+    if (p.match(/\/realms\/challenges\/\d+/)) { const id=parseInt(p.match(/\/challenges\/(\d+)/)[1]); for(const cs of Object.values(MOCK_DATA.challenges)){const c=cs.find(x=>x.id===id);if(c)return this._ok(c);} return this._ok({}); }
+    if (p.match(/\/realms\/challenges\/?$/)) { let all=[]; Object.values(MOCK_DATA.challenges).forEach(cs=>all=all.concat(cs)); return this._ok(all); }
+    if (p.match(/\/realms\/?$/)) return this._ok(MOCK_DATA.realms);
+    if (p.match(/\/realms\/[\w_]+\/?$/)) { const s=p.match(/\/realms\/([\w_]+)/)[1]; const r=MOCK_DATA.realms.find(x=>x.slug===s); return this._ok(r||{}); }
+    // Progression
+    if (p.includes('/progression/stats')) return this._ok({overall_level:MOCK_DATA.player.overall_level,total_xp:MOCK_DATA.player.total_xp,realm_stats:Object.entries(MOCK_DATA.realm_stats).map(([slug,s])=>({realm_slug:slug,realm_name:(MOCK_DATA.realms.find(r=>r.slug===slug)||{}).name_en||slug,...s})),streak:{current_streak:7,longest_streak:14,last_active_date:new Date().toISOString().split('T')[0]}});
+    if (p.includes('/progression/history')) return this._ok({results:[]});
+    if (p.includes('/progression/daily-challenge')) return this._dailyChallenge();
+    if (p.includes('/progression/achievements/earned')) return this._ok(MOCK_DATA.achievements);
+    if (p.includes('/progression/achievements')) return this._ok({results:MOCK_DATA.achievements.map(a=>a.achievement)});
+    if (p.includes('/progression/leaderboard')) return this._ok({leaderboard:[{rank:1,display_name:'MindMaster',overall_level:25,total_xp:45000},{rank:2,display_name:'BrainWave',overall_level:20,total_xp:32000},{rank:3,display_name:MOCK_DATA.player.display_name,overall_level:MOCK_DATA.player.overall_level,total_xp:MOCK_DATA.player.total_xp}],my_rank:3});
+    // Feed
+    if (p.match(/\/feed\/\d+\/interact/)) return this._ok({success:true});
+    if (p.match(/\/feed\/?$/)) { const items=MOCK_DATA.feed_items; const i=MOCK_DATA._feed_idx%items.length; MOCK_DATA._feed_idx++; return this._ok({results:[items[i]],count:items.length}); }
+    // Companion
+    if (p.includes('/companion/chat')) return this._noorChat(body);
+    if (p.includes('/companion/conversations')) return this._ok({conversations:[]});
+    // Arena
+    if (p.includes('/arena/stats')) return this._ok(MOCK_DATA.arena_stats);
+    if (p.includes('/arena/status')) return this._ok({status:'active',match_types:[{slug:'speed',name:'Speed Duel',players:2},{slug:'strategic',name:'Strategic Battle',players:2}]});
+    if (p.includes('/arena/leaderboard')) return this._ok({leaderboard:[],player_rank:null,player_stats:MOCK_DATA.arena_stats});
+    if (p.includes('/arena/matches/create')) return this._ok({id:99,status:'waiting',match_type:'speed',total_rounds:5,current_round:0});
+    if (p.includes('/arena/matches/find')) return this._ok({match:null,message:'No open matches found.'});
+    if (p.includes('/arena/submit')) { const c=Math.random()>0.4; return this._ok({result:{is_correct:c,correct_answer:1,score_earned:c?120:0},match:{status:'in_progress',current_round:2}}); }
+    // Notifications
+    if (p.includes('/notifications')) return this._ok({results:[],count:0});
+    // Friends
+    if (p.includes('/friends/requests')) return this._ok({requests:[]});
+    if (p.includes('/friends')) return this._ok({friends:[]});
+    // AI engine endpoints
+    if (p.includes('/ai/knowledge-state')) return this._ok({skills:[{name:'Pattern Recognition',mastery:0.87},{name:'Emotional Vocabulary',mastery:0.62},{name:'Creative Thinking',mastery:0.75},{name:'Financial Literacy',mastery:0.45},{name:'Communication',mastery:0.68}]});
+    if (p.includes('/ai/insights')) return this._ok({insights:['Strong analytical thinking','Improving emotional awareness','Consistent daily engagement'],player_type:'Achiever'});
+    if (p.includes('/ai/difficulty')) return this._ok({theta:0.72,recommended_difficulty:4,confidence:0.85});
+    if (p.includes('/ai/engagement')) return this._ok({engagement_score:78,churn_risk:'low',daily_minutes:[23,18,31,45,12,38,27],challenge_completion_rate:0.73});
+    if (p.includes('/ai/recommendations')) return this._ok({recommendations:[{realm:'emotion_ocean',reason:'Below average — needs focus'},{realm:'logic_fortress',reason:'Your strongest — keep building'}]});
+    if (p.includes('/ai/learning-path')) return this._ok({path:[{skill:'Emotional Regulation',status:'in_progress'},{skill:'Active Listening',status:'next'},{skill:'Conflict Resolution',status:'locked'}]});
+    if (p.includes('/ai/weekly-plan')) return this._ok({plan:MOCK_DATA.realms.slice(0,7).map((r,i)=>({day:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i],realm:r.name_en,focus:'Practice challenges'}))});
+    if (p.includes('/ai/srs-due')) return this._ok({due_count:5,cards:[]});
+    if (p.includes('/ai/next-challenge')) return this._ok({challenge:MOCK_DATA.challenges.logic_fortress[0]});
+    if (p.includes('/ai/session/start')) return this._ok({session_id:1,status:'started'});
+    if (p.includes('/ai/companion/smart-chat')) return this._noorChat(body);
+    // Default
+    return this._ok({});
+  },
+  _ok(data) { return data; },
+  _submitChallenge(body, challengeId) {
+    const b = body || {};
+    const answer = (b.answer_data||{}).selected_index;
+    // Find challenge by ID from URL path
+    let challenge = null;
+    for (const cs of Object.values(MOCK_DATA.challenges)) {
+      const c = cs.find(x => x.id === challengeId);
+      if (c) { challenge = c; break; }
+    }
+    const correct = challenge ? answer === challenge.content.correct_index : false;
+    const xp = correct ? (challenge ? challenge.base_xp + challenge.bonus_xp : 30) : 5;
+    if (correct) { MOCK_DATA.player.total_xp += xp; }
+    return {
+      score: correct ? 100 : 0, is_correct: correct,
+      explanation: challenge ? challenge.content.explanation_en : '',
+      base_xp: correct ? (challenge?challenge.base_xp:25) : 5,
+      bonus_xp: correct ? (challenge?challenge.bonus_xp:10) : 0,
+      bonus: correct, trait_points: {},
+    };
+  },
+  _noorChat(body) {
+    const responses = MOCK_DATA.noor_responses;
+    const msg = (body && body.message) ? body.message.toLowerCase() : '';
+    let reply = responses[MOCK_DATA._noor_idx % responses.length];
+    MOCK_DATA._noor_idx++;
+    if (msg.includes('logic') || msg.includes('math')) reply = responses[0];
+    else if (msg.includes('emotion') || msg.includes('feel')) reply = responses[1];
+    else if (msg.includes('creat')) reply = responses[4];
+    else if (msg.includes('streak') || msg.includes('progress')) reply = responses[3];
+    return { conversation_id: 1, reply: reply };
+  },
+  _dailyChallenge() {
+    const challenges = [];
+    for (const realm of MOCK_DATA.realms) {
+      const rc = MOCK_DATA.challenges[realm.slug];
+      if (rc && rc.length > 0) {
+        challenges.push({realm_slug:realm.slug,realm_name_en:realm.name_en,challenge_id:rc[0].id,color:realm.color_primary,completed_today:false});
+      }
+    }
+    return {date:new Date().toISOString().split('T')[0],challenges};
+  },
+  reset() {
+    MOCK_DATA.player.total_xp = 3240;
+    MOCK_DATA.player.overall_level = 7;
+    MOCK_DATA.player.onboarding_done = true;
+    MOCK_DATA._challenge_idx = {};
+    MOCK_DATA._noor_idx = 0;
+    MOCK_DATA._feed_idx = 0;
+    location.reload();
+  }
+};
+
+// Demo mode banner
+if (DEMO_MODE) {
+  document.addEventListener('DOMContentLoaded', () => {
+    const b = document.createElement('div');
+    b.style.cssText = 'position:fixed;top:0;left:0;right:0;background:linear-gradient(90deg,#7c3aed,#6d28d9);color:#fff;text-align:center;padding:6px 12px;font-weight:600;z-index:9999;font-size:13px;';
+    b.innerHTML = 'DEMO MODE \u2014 No backend required. All data is local. <a href="#" onclick="MockAPI.reset();return false;" style="color:#fbbf24;text-decoration:underline;margin-left:8px;">Reset Demo</a>';
+    document.body.prepend(b);
+    document.body.style.paddingTop = '32px';
+    // Auto-login in demo mode
+    token = 'demo-token';
+    refreshToken = 'demo-refresh';
+    localStorage.setItem('ma_token', token);
+    localStorage.setItem('ma_refresh', refreshToken);
+  });
+}
 
 // ============ AUTH ============
 function headers() {
@@ -964,6 +1489,7 @@ function headers() {
 }
 
 async function api(method, path, body) {
+  if (DEMO_MODE) return MockAPI.handle(method, path, body);
   const opts = { method, headers: headers() };
   if (body) opts.body = JSON.stringify(body);
   const r = await fetch(BASE + path, opts);
@@ -985,11 +1511,7 @@ async function login() {
   const u = document.getElementById('loginUser').value;
   const p = document.getElementById('loginPass').value;
   try {
-    const data = await fetch(BASE + '/accounts/login/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: u, password: p })
-    }).then(r => r.json());
+    const data = await api('POST', '/accounts/login/', { username: u, password: p });
     if (data.access) {
       token = data.access;
       refreshToken = data.refresh || '';
@@ -1011,11 +1533,7 @@ async function register() {
     preferred_language: 'en'
   };
   try {
-    const data = await fetch(BASE + '/accounts/register/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    }).then(r => r.json());
+    const data = await api('POST', '/accounts/register/', body);
     if (data.tokens) {
       token = data.tokens.access;
       refreshToken = data.tokens.refresh || '';
@@ -1065,6 +1583,7 @@ async function loadApp() {
 function showMainApp() {
   document.getElementById('assessmentScreen').style.display = 'none';
   document.getElementById('appScreen').style.display = 'block';
+  sessionTracker.startSession();
   updateHeader();
   loadDashboard();
   loadRealms();
@@ -1245,16 +1764,20 @@ async function loadRealms() {
     const realms = data.results || data;
     const grid = document.getElementById('realmGrid');
     const selectGrid = document.getElementById('challengeRealmSelect');
-    const html = realms.map(r => `
-      <div class="realm-card" onclick="selectRealm('${r.slug}')">
-        <div class="color-bar" style="background:${r.color || '#7c3aed'}"></div>
+    const html = realms.map(r => {
+      const done = completedChallenges[r.slug] ? completedChallenges[r.slug].size : 0;
+      const total = (MOCK_DATA.challenges[r.slug] || []).length;
+      const mastered = total > 0 && done >= total;
+      return `
+      <div class="realm-card" onclick="selectRealm('${r.slug}')" style="${mastered ? 'border-color:var(--gold)' : ''}">
+        <div class="color-bar" style="background:${r.color || r.color_primary || '#7c3aed'}"></div>
         <h3>${REALM_EMOJIS[r.slug] || ''} ${r.name_en}</h3>
         <p class="desc">${(r.description_en || '').substring(0, 100)}...</p>
         <div class="stats-row">
-          <span>Lv.${r.max_level || 50}</span>
+          <span style="color:${mastered ? 'var(--gold)' : done > 0 ? 'var(--green)' : 'var(--muted)'}">${done}/${total} done${mastered ? ' &#x2B50;' : ''}</span>
         </div>
-      </div>
-    `).join('');
+      </div>`;
+    }).join('');
     grid.innerHTML = html;
     selectGrid.innerHTML = html;
   } catch(e) { console.error('Realms error:', e); }
@@ -1319,7 +1842,7 @@ function loadChallenge(ch) {
 
 function pickOption(idx) {
   selectedOption = idx;
-  document.querySelectorAll('.option-btn').forEach((b, i) => {
+  document.querySelectorAll('#optionsList .option-btn').forEach((b, i) => {
     b.classList.toggle('selected', i === idx);
   });
   document.getElementById('submitBtn').disabled = false;
@@ -1367,7 +1890,7 @@ async function submitAnswer() {
 
     // Highlight correct/wrong
     const correctIdx = currentChallenge.content.correct_index;
-    document.querySelectorAll('.option-btn').forEach((b, i) => {
+    document.querySelectorAll('#optionsList .option-btn').forEach((b, i) => {
       b.onclick = null;
       if (i === correctIdx) b.classList.add('correct');
       if (i === selectedOption && selectedOption !== correctIdx) b.classList.add('wrong');
@@ -1384,9 +1907,22 @@ async function submitAnswer() {
       <p style="font-size:0.85rem;color:var(--muted);margin-top:4px">Score: ${result.score}/100 &middot; Time: ${timeTaken.toFixed(1)}s</p>
     `;
 
-    // Update header XP
+    // Update header XP and check level-up
     player.total_xp += result.base_xp + (result.bonus_xp || 0);
+    MOCK_DATA.player.total_xp = player.total_xp;
     updateHeader();
+    checkLevelUp();
+
+    // Track completion
+    if (!completedChallenges[currentRealmSlug]) completedChallenges[currentRealmSlug] = new Set();
+    completedChallenges[currentRealmSlug].add(currentChallenge.id);
+
+    // Session analytics tracking
+    sessionTracker.recordAnswer(
+      currentRealmSlug, currentChallenge.id, result.is_correct,
+      timeTaken, currentChallenge.difficulty || 3,
+      result.base_xp + (result.bonus_xp || 0)
+    );
 
     document.getElementById('challengeActions').style.display = 'none';
     document.getElementById('nextBtn').style.display = 'block';
@@ -1406,22 +1942,41 @@ function loadNextChallenge() {
   if (nextIdx < challenges.length) {
     loadChallenge(challenges[nextIdx]);
   } else {
-    toast('All challenges completed in this realm!', 'success');
+    const done = completedChallenges[currentRealmSlug] ? completedChallenges[currentRealmSlug].size : 0;
+    const total = challenges.length;
+    if (done >= total) {
+      toast('Realm Mastered! All ' + total + ' challenges completed!', 'success');
+    } else {
+      toast('All challenges played! ' + done + '/' + total + ' completed.', 'success');
+    }
+    // Show deep session analysis
+    showSessionSummary(currentRealmSlug);
     showChallengeSelect();
+    loadRealms(); // refresh completion badges
   }
 }
 
 // ============ ARENA ============
+function showArenaView(view) {
+  ['arena-lobby','arena-searching','arena-found','arena-playing','arena-result']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+  const el = document.getElementById('arena-' + view);
+  if (el) el.style.display = 'block';
+}
+
 async function loadArena() {
+  showArenaView('lobby');
+  selectedMatchType = null;
+  document.getElementById('arenaFindBtn').disabled = true;
   try {
     const status = await api('GET', '/arena/status/');
     document.getElementById('arenaStatus').innerHTML =
-      `<p style="color:var(--green);margin-bottom:16px">&#x2694; ${status.message}</p>`;
+      `<p style="color:var(--green);margin-bottom:16px">&#x2694; ${status.message || 'The Arena is open!'}</p>`;
 
     const types = status.match_types || [];
     const emojis = { speed: '&#x26A1;', strategic: '&#x1F9E0;', team: '&#x1F91D;' };
     document.getElementById('matchTypes').innerHTML = types.map(t =>
-      `<div class="match-type-card" onclick="createMatch('${t.slug}')">
+      `<div class="match-type-card" onclick="selectMatchType('${t.slug}',this)" style="cursor:pointer">
         <div class="emoji">${emojis[t.slug] || '&#x2694;'}</div>
         <h4>${t.name}</h4>
         <p>${t.players} players</p>
@@ -1438,8 +1993,187 @@ async function loadArena() {
   } catch(e) { console.error('Arena error:', e); }
 }
 
-async function createMatch(matchType) {
-  toast('Creating ' + matchType + ' match... (Need another player to join)', 'success');
+function selectMatchType(slug, el) {
+  selectedMatchType = slug;
+  document.querySelectorAll('.match-type-card').forEach(c => c.style.borderColor = 'var(--border)');
+  if (el) el.style.borderColor = 'var(--accent)';
+  document.getElementById('arenaFindBtn').disabled = false;
+}
+
+let arenaSearchTimer = null;
+let arenaSearchSeconds = 0;
+
+function startArenaSearch() {
+  if (!selectedMatchType) return;
+  showArenaView('searching');
+  arenaSearchSeconds = 0;
+  arenaSearchTimer = setInterval(() => {
+    arenaSearchSeconds++;
+    document.getElementById('arenaSearchTime').textContent = arenaSearchSeconds + 's';
+  }, 1000);
+  setTimeout(() => opponentFound(), 2000 + Math.random() * 2500);
+}
+
+function cancelArenaSearch() {
+  clearInterval(arenaSearchTimer);
+  showArenaView('lobby');
+}
+
+function opponentFound() {
+  clearInterval(arenaSearchTimer);
+  const opp = ARENA_OPPONENTS[Math.floor(Math.random() * ARENA_OPPONENTS.length)];
+  const allChallenges = [];
+  Object.values(MOCK_DATA.challenges).forEach(cs => allChallenges.push(...cs));
+  const shuffled = allChallenges.sort(() => Math.random() - 0.5);
+
+  arenaMatch = {
+    id: Date.now(), type: selectedMatchType, totalRounds: 5, currentRound: 0,
+    playerScore: 0, opponentScore: 0, opponentName: opp.name, opponentElo: opp.elo,
+    challenges: shuffled.slice(0, 5), results: [],
+  };
+
+  showArenaView('found');
+  document.getElementById('arenaPlayerName').textContent = player.display_name || 'You';
+  document.getElementById('arenaPlayerElo').textContent = (MOCK_DATA.arena_stats.elo_rating || 1150) + ' ELO';
+  document.getElementById('arenaOpponentName').textContent = opp.name;
+  document.getElementById('arenaOpponentElo').textContent = opp.elo + ' ELO';
+
+  let countdown = 3;
+  document.getElementById('arenaCountdown').textContent = countdown;
+  const cdInt = setInterval(() => {
+    countdown--;
+    if (countdown <= 0) { clearInterval(cdInt); startArenaRound(); }
+    else document.getElementById('arenaCountdown').textContent = countdown;
+  }, 1000);
+}
+
+function startArenaRound() {
+  arenaMatch.currentRound++;
+  arenaSelectedOption = null;
+  showArenaView('playing');
+
+  const ch = arenaMatch.challenges[arenaMatch.currentRound - 1];
+  document.getElementById('arenaRound').textContent = arenaMatch.currentRound + '/' + arenaMatch.totalRounds;
+  document.getElementById('arenaPlayerScore').textContent = arenaMatch.playerScore;
+  document.getElementById('arenaOpponentScore').textContent = arenaMatch.opponentScore;
+  document.getElementById('arenaOppLabel').textContent = arenaMatch.opponentName;
+
+  document.getElementById('arenaQuestionBox').textContent = ch.content.question_en;
+  const opts = ch.content.options_en || [];
+  document.getElementById('arenaOptionsList').innerHTML = opts.map((opt, i) =>
+    `<button class="option-btn" onclick="arenaPickOption(${i})" id="arena-opt-${i}">${String.fromCharCode(65+i)}. ${opt}</button>`
+  ).join('');
+
+  document.getElementById('arenaRoundResult').style.display = 'none';
+  document.getElementById('arenaSubmitBtn').style.display = 'block';
+  document.getElementById('arenaSubmitBtn').disabled = true;
+
+  const timeLimit = 20;
+  const startMs = Date.now();
+  if (arenaTimerInterval) clearInterval(arenaTimerInterval);
+  arenaTimerInterval = setInterval(() => {
+    const elapsed = (Date.now() - startMs) / 1000;
+    const remaining = Math.max(0, timeLimit - elapsed);
+    const pct = (remaining / timeLimit) * 100;
+    document.getElementById('arenaTimerFill').style.width = pct + '%';
+    document.getElementById('arenaTimerText').textContent = Math.ceil(remaining) + 's';
+    document.getElementById('arenaTimerFill').style.background = pct < 30 ? 'var(--red)' : pct < 60 ? 'var(--gold)' : 'var(--accent)';
+    if (remaining <= 0) { clearInterval(arenaTimerInterval); arenaSubmitAnswer(); }
+  }, 100);
+}
+
+function arenaPickOption(idx) {
+  arenaSelectedOption = idx;
+  document.querySelectorAll('#arenaOptionsList .option-btn').forEach((b, i) => {
+    b.classList.toggle('selected', i === idx);
+  });
+  document.getElementById('arenaSubmitBtn').disabled = false;
+}
+
+function arenaSubmitAnswer() {
+  if (arenaTimerInterval) { clearInterval(arenaTimerInterval); arenaTimerInterval = null; }
+  document.getElementById('arenaSubmitBtn').disabled = true;
+  document.getElementById('arenaSubmitBtn').style.display = 'none';
+
+  const ch = arenaMatch.challenges[arenaMatch.currentRound - 1];
+  const correctIdx = ch.content.correct_index;
+  const playerCorrect = arenaSelectedOption === correctIdx;
+  const opponentCorrect = Math.random() < 0.65;
+
+  const playerPts = playerCorrect ? 100 : 0;
+  const opponentPts = opponentCorrect ? 100 : 0;
+  arenaMatch.playerScore += playerPts;
+  arenaMatch.opponentScore += opponentPts;
+  arenaMatch.results.push({ playerCorrect, opponentCorrect, challengeId: ch.id });
+
+  document.querySelectorAll('#arenaOptionsList .option-btn').forEach((b, i) => {
+    b.onclick = null;
+    if (i === correctIdx) b.classList.add('correct');
+    if (i === arenaSelectedOption && arenaSelectedOption !== correctIdx) b.classList.add('wrong');
+  });
+
+  const rb = document.getElementById('arenaRoundResult');
+  rb.style.display = 'block';
+  rb.style.background = 'var(--bg)';
+  rb.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div><strong style="color:${playerCorrect ? 'var(--green)' : 'var(--red)'}">${playerCorrect ? 'Correct! +100' : 'Wrong'}</strong></div>
+      <div style="color:${opponentCorrect ? 'var(--red)' : 'var(--green)'}">${arenaMatch.opponentName}: ${opponentCorrect ? 'Correct +100' : 'Wrong'}</div>
+    </div>
+    <p style="color:var(--muted);font-size:0.85rem;margin-top:8px">${ch.content.explanation_en}</p>
+  `;
+
+  document.getElementById('arenaPlayerScore').textContent = arenaMatch.playerScore;
+  document.getElementById('arenaOpponentScore').textContent = arenaMatch.opponentScore;
+
+  setTimeout(() => {
+    if (arenaMatch.currentRound < arenaMatch.totalRounds) startArenaRound();
+    else showArenaResult();
+  }, 2500);
+}
+
+function showArenaResult() {
+  showArenaView('result');
+  const won = arenaMatch.playerScore > arenaMatch.opponentScore;
+  const tied = arenaMatch.playerScore === arenaMatch.opponentScore;
+
+  document.getElementById('arenaResultIcon').textContent = won ? '\u{1F3C6}' : tied ? '\u{1F91D}' : '\u{1F614}';
+  document.getElementById('arenaResultTitle').textContent = won ? 'Victory!' : tied ? 'Draw!' : 'Defeat';
+  document.getElementById('arenaResultTitle').style.color = won ? 'var(--gold)' : tied ? 'var(--muted)' : 'var(--red)';
+  document.getElementById('arenaResultSubtitle').textContent =
+    `Final Score: ${arenaMatch.playerScore} - ${arenaMatch.opponentScore} vs ${arenaMatch.opponentName}`;
+
+  const pc = arenaMatch.results.filter(r => r.playerCorrect).length;
+  const oc = arenaMatch.results.filter(r => r.opponentCorrect).length;
+  document.getElementById('arenaResultStats').innerHTML = `
+    <div class="stat-card"><div class="value">${arenaMatch.playerScore}</div><div class="label">Your Score</div></div>
+    <div class="stat-card"><div class="value">${arenaMatch.opponentScore}</div><div class="label">Opponent</div></div>
+    <div class="stat-card"><div class="value">${pc}/${arenaMatch.totalRounds}</div><div class="label">Your Accuracy</div></div>
+    <div class="stat-card"><div class="value">${oc}/${arenaMatch.totalRounds}</div><div class="label">Opp. Accuracy</div></div>
+  `;
+
+  const K = 32;
+  const pElo = MOCK_DATA.arena_stats.elo_rating || 1150;
+  const oElo = arenaMatch.opponentElo;
+  const expected = 1 / (1 + Math.pow(10, (oElo - pElo) / 400));
+  const actual = won ? 1 : tied ? 0.5 : 0;
+  const eloChange = Math.round(K * (actual - expected));
+
+  document.getElementById('arenaEloChange').textContent = (eloChange >= 0 ? '+' : '') + eloChange;
+  document.getElementById('arenaEloChange').style.color = eloChange >= 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('arenaNewElo').textContent = pElo + eloChange;
+
+  MOCK_DATA.arena_stats.elo_rating = pElo + eloChange;
+  MOCK_DATA.arena_stats.matches_played++;
+  if (won) { MOCK_DATA.arena_stats.matches_won++; MOCK_DATA.arena_stats.win_streak++; }
+  else { MOCK_DATA.arena_stats.matches_lost++; MOCK_DATA.arena_stats.win_streak = 0; }
+
+  const arenaXp = won ? 50 : tied ? 20 : 10;
+  player.total_xp += arenaXp;
+  MOCK_DATA.player.total_xp = player.total_xp;
+  updateHeader();
+  checkLevelUp();
+  toast((won ? 'Victory!' : tied ? 'Draw!' : 'Defeat') + ' +' + arenaXp + ' XP', won ? 'success' : '');
 }
 
 // ============ FEED ============
@@ -1543,7 +2277,109 @@ function showPanel(name) {
   if (name === 'challenge') showChallengeSelect();
   if (name === 'dashboard') loadDashboard();
   if (name === 'ai') loadAIDashboard();
+  if (name === 'profile') loadProfile();
+  if (name === 'leaderboard') loadLeaderboard();
+  if (name === 'arena') loadArena();
+  if (name === 'world3d') init3DWorld();
 }
+
+// ============ PROFILE ============
+let profileRadarChart = null;
+function loadProfile() {
+  document.getElementById('profileName').textContent = player.display_name || 'Explorer';
+  document.getElementById('profileLevel').textContent = player.overall_level;
+  const nextXp = xpForLevel(player.overall_level + 1);
+  const currXp = xpForLevel(player.overall_level);
+  const pct = Math.min(100, Math.max(0, ((player.total_xp - currXp) / (nextXp - currXp)) * 100));
+  document.getElementById('profileXpCurrent').textContent = player.total_xp.toLocaleString();
+  document.getElementById('profileXpNext').textContent = nextXp.toLocaleString();
+  document.getElementById('profileXpBar').style.width = pct + '%';
+
+  const totalChallenges = Object.values(MOCK_DATA.realm_stats).reduce((s,r) => s + r.challenges_completed, 0);
+  const totalPerfect = Object.values(MOCK_DATA.realm_stats).reduce((s,r) => s + r.challenges_perfect, 0);
+  const accuracy = totalChallenges > 0 ? Math.round((totalPerfect / totalChallenges) * 100) : 0;
+  document.getElementById('profileStats').innerHTML = `
+    <div class="stat-card"><div class="value">${player.total_xp.toLocaleString()}</div><div class="label">Total XP</div></div>
+    <div class="stat-card"><div class="value">${totalChallenges}</div><div class="label">Challenges</div></div>
+    <div class="stat-card"><div class="value">${accuracy}%</div><div class="label">Accuracy</div></div>
+    <div class="stat-card"><div class="value">${MOCK_DATA.arena_stats.elo_rating}</div><div class="label">Arena ELO</div></div>
+    <div class="stat-card"><div class="value">${MOCK_DATA.arena_stats.matches_played}</div><div class="label">Matches</div></div>
+    <div class="stat-card"><div class="value">${MOCK_DATA.achievements.length}</div><div class="label">Achievements</div></div>
+  `;
+
+  // Radar chart of realm levels
+  const realmNames = MOCK_DATA.realms.map(r => r.name_en.split(' ')[0]);
+  const realmLevels = MOCK_DATA.realms.map(r => (MOCK_DATA.realm_stats[r.slug] || {}).realm_level || 0);
+  const ctx = document.getElementById('profileRadar').getContext('2d');
+  if (profileRadarChart) profileRadarChart.destroy();
+  profileRadarChart = new Chart(ctx, {
+    type: 'radar',
+    data: { labels: realmNames, datasets: [{
+      label: 'Realm Level', data: realmLevels,
+      backgroundColor: 'rgba(124,58,237,0.2)', borderColor: '#a78bfa', borderWidth: 2,
+      pointBackgroundColor: '#7c3aed', pointRadius: 4,
+    }]},
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      scales: { r: { beginAtZero: true, max: 20,
+        ticks: { display: false },
+        grid: { color: 'rgba(148,163,184,0.15)' },
+        angleLines: { color: 'rgba(148,163,184,0.15)' },
+        pointLabels: { color: '#94a3b8', font: { size: 10 } }
+      }},
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  // Recent achievements
+  document.getElementById('profileAchievements').innerHTML =
+    MOCK_DATA.achievements.slice(-4).reverse().map(a => `
+      <div class="realm-card" style="border-color:var(--gold)">
+        <div class="color-bar" style="background:var(--gold)"></div>
+        <h3>&#x1F3C6; ${a.achievement.title_en}</h3>
+        <p class="desc" style="font-size:0.8rem;color:var(--muted)">${new Date(a.earned_at).toLocaleDateString()}</p>
+      </div>
+    `).join('') || '<p style="color:var(--muted)">No achievements yet.</p>';
+}
+
+// ============ LEADERBOARD ============
+let currentLbTab = 'xp';
+function switchLeaderboard(tab) {
+  currentLbTab = tab;
+  document.getElementById('lbTabXp').className = 'btn btn-sm ' + (tab === 'xp' ? 'btn-primary' : 'btn-outline');
+  document.getElementById('lbTabElo').className = 'btn btn-sm ' + (tab === 'elo' ? 'btn-primary' : 'btn-outline');
+  document.getElementById('lbTabWeekly').className = 'btn btn-sm ' + (tab === 'weekly' ? 'btn-primary' : 'btn-outline');
+  renderLeaderboard();
+}
+function renderLeaderboard() {
+  let entries; let valueKey; let valueLabel;
+  if (currentLbTab === 'elo') {
+    entries = [...MOCK_DATA.leaderboard_elo];
+    valueKey = 'elo_rating'; valueLabel = 'ELO';
+    entries.push({display_name:player.display_name, elo_rating:MOCK_DATA.arena_stats.elo_rating, isPlayer:true});
+    entries.sort((a,b) => b.elo_rating - a.elo_rating);
+  } else {
+    entries = [...MOCK_DATA.leaderboard_xp];
+    valueKey = 'total_xp'; valueLabel = 'XP';
+    entries.push({display_name:player.display_name, overall_level:player.overall_level, total_xp:player.total_xp, isPlayer:true});
+    entries.sort((a,b) => b.total_xp - a.total_xp);
+    if (currentLbTab === 'weekly') {
+      entries = entries.map(e => ({...e, [valueKey]: Math.round(e[valueKey] * (0.05 + Math.random() * 0.1))}));
+      entries.sort((a,b) => b[valueKey] - a[valueKey]);
+      valueLabel = 'XP this week';
+    }
+  }
+  entries.forEach((e,i) => e.rank = i + 1);
+  const rc = r => r === 1 ? 'gold' : r === 2 ? 'silver' : r === 3 ? 'bronze' : '';
+  document.getElementById('leaderboardList').innerHTML = entries.slice(0,10).map(e => `
+    <div class="lb-row ${e.isPlayer ? 'me' : ''}">
+      <div class="lb-rank ${rc(e.rank)}">#${e.rank}</div>
+      <div class="lb-name">${e.display_name}${e.isPlayer ? ' (You)' : ''}</div>
+      <div class="lb-value">${(e[valueKey] || 0).toLocaleString()} ${valueLabel}</div>
+    </div>
+  `).join('');
+}
+function loadLeaderboard() { currentLbTab = 'xp'; switchLeaderboard('xp'); }
 
 // ============ TOAST ============
 function toast(msg, type) {
@@ -1937,8 +2773,749 @@ function quickSmartChat(text) {
   sendSmartChat();
 }
 
+// ============ SESSION ANALYTICS ============
+const sessionTracker = {
+  answers: [],        // { realm, challengeId, correct, timeTaken, difficulty, xpEarned }
+  startedAt: null,
+  realmSessions: {},  // { realmSlug: { answers: [], startedAt } }
+
+  startSession() {
+    this.startedAt = Date.now();
+  },
+
+  recordAnswer(realm, challengeId, correct, timeTaken, difficulty, xpEarned) {
+    const entry = { realm, challengeId, correct, timeTaken, difficulty, xpEarned, timestamp: Date.now() };
+    this.answers.push(entry);
+    if (!this.realmSessions[realm]) this.realmSessions[realm] = { answers: [], startedAt: Date.now() };
+    this.realmSessions[realm].answers.push(entry);
+  },
+
+  getSessionAnalysis() {
+    const a = this.answers;
+    if (a.length === 0) return null;
+    const correct = a.filter(x => x.correct).length;
+    const total = a.length;
+    const accuracy = correct / total;
+    const avgTime = a.reduce((s, x) => s + x.timeTaken, 0) / total;
+    const totalXp = a.reduce((s, x) => s + x.xpEarned, 0);
+    const avgDifficulty = a.reduce((s, x) => s + (x.difficulty || 3), 0) / total;
+    const durationMins = this.startedAt ? (Date.now() - this.startedAt) / 60000 : 0;
+
+    // Streak analysis
+    let currentStreak = 0, bestStreak = 0, streak = 0;
+    a.forEach(x => { if (x.correct) { streak++; bestStreak = Math.max(bestStreak, streak); } else streak = 0; });
+    currentStreak = streak;
+
+    // Speed trend (first half vs second half)
+    const half = Math.floor(total / 2) || 1;
+    const firstHalfTime = a.slice(0, half).reduce((s, x) => s + x.timeTaken, 0) / half;
+    const secondHalfTime = a.slice(half).reduce((s, x) => s + x.timeTaken, 0) / (total - half || 1);
+    const speedImproved = secondHalfTime < firstHalfTime;
+
+    // Accuracy trend
+    const firstHalfAcc = a.slice(0, half).filter(x => x.correct).length / half;
+    const secondHalfAcc = a.slice(half).filter(x => x.correct).length / (total - half || 1);
+    const accuracyImproved = secondHalfAcc > firstHalfAcc;
+
+    // Per-realm breakdown
+    const realmBreakdown = {};
+    a.forEach(x => {
+      if (!realmBreakdown[x.realm]) realmBreakdown[x.realm] = { correct: 0, total: 0, totalTime: 0 };
+      realmBreakdown[x.realm].total++;
+      realmBreakdown[x.realm].totalTime += x.timeTaken;
+      if (x.correct) realmBreakdown[x.realm].correct++;
+    });
+
+    // Strongest & weakest realm
+    const realmAccuracies = Object.entries(realmBreakdown).map(([slug, d]) => ({
+      slug, accuracy: d.correct / d.total, total: d.total,
+      avgTime: d.totalTime / d.total
+    }));
+    realmAccuracies.sort((a, b) => b.accuracy - a.accuracy);
+    const strongest = realmAccuracies[0] || null;
+    const weakest = realmAccuracies[realmAccuracies.length - 1] || null;
+
+    // Difficulty handling
+    const hardCorrect = a.filter(x => x.difficulty >= 4 && x.correct).length;
+    const hardTotal = a.filter(x => x.difficulty >= 4).length;
+    const hardAccuracy = hardTotal > 0 ? hardCorrect / hardTotal : null;
+
+    return {
+      correct, total, accuracy, avgTime, totalXp, avgDifficulty, durationMins,
+      currentStreak, bestStreak, speedImproved, accuracyImproved,
+      firstHalfAcc, secondHalfAcc, firstHalfTime, secondHalfTime,
+      realmBreakdown, realmAccuracies, strongest, weakest,
+      hardAccuracy, hardTotal,
+    };
+  },
+
+  getRealmAnalysis(realmSlug) {
+    const rs = this.realmSessions[realmSlug];
+    if (!rs || rs.answers.length === 0) return null;
+    const a = rs.answers;
+    const correct = a.filter(x => x.correct).length;
+    const total = a.length;
+    return {
+      correct, total, accuracy: correct / total,
+      avgTime: a.reduce((s, x) => s + x.timeTaken, 0) / total,
+      totalXp: a.reduce((s, x) => s + x.xpEarned, 0),
+      perfectRun: correct === total,
+    };
+  },
+
+  generateNoorMessage(analysis) {
+    if (!analysis) return "Keep playing to unlock personalized insights!";
+    const a = analysis;
+    const parts = [];
+
+    // Opening based on accuracy
+    if (a.accuracy >= 0.9) parts.push("Outstanding session! You're demonstrating mastery-level understanding.");
+    else if (a.accuracy >= 0.7) parts.push("Great session! You showed solid knowledge across the board.");
+    else if (a.accuracy >= 0.5) parts.push("Good effort this session. There's clear room for growth, and that's exciting.");
+    else parts.push("This was a challenging session, but every mistake is a learning opportunity.");
+
+    // Trend insight
+    if (a.total >= 4) {
+      if (a.accuracyImproved && a.speedImproved)
+        parts.push("Impressive — your accuracy AND speed improved as the session went on. That's a sign of entering a flow state.");
+      else if (a.accuracyImproved)
+        parts.push("Your accuracy improved through the session — your brain was warming up and making stronger connections.");
+      else if (a.speedImproved)
+        parts.push("You got faster as you went — your pattern recognition is sharpening.");
+    }
+
+    // Streak
+    if (a.bestStreak >= 4)
+      parts.push("A " + a.bestStreak + "-answer streak! Consistency like that builds deep neural pathways.");
+    else if (a.bestStreak >= 2 && a.accuracy < 0.7)
+      parts.push("You had a " + a.bestStreak + "-streak in there — build on those moments of clarity.");
+
+    // Difficulty insight
+    if (a.hardAccuracy !== null && a.hardTotal >= 2) {
+      if (a.hardAccuracy >= 0.7)
+        parts.push("You handled " + a.hardTotal + " hard questions with " + Math.round(a.hardAccuracy * 100) + "% accuracy — you're ready for even tougher challenges.");
+      else
+        parts.push("The harder questions pushed you. That productive struggle is exactly where the most learning happens.");
+    }
+
+    // Realm-specific
+    if (a.strongest && a.weakest && a.strongest.slug !== a.weakest.slug) {
+      const sName = MOCK_DATA.realms.find(r => r.slug === a.strongest.slug);
+      const wName = MOCK_DATA.realms.find(r => r.slug === a.weakest.slug);
+      if (sName && wName && a.realmAccuracies.length > 1) {
+        parts.push("Your strongest realm this session was " + sName.name_en + " (" + Math.round(a.strongest.accuracy * 100) + "%). Consider spending more time in " + wName.name_en + " to balance your growth.");
+      }
+    }
+
+    // Speed insight
+    if (a.avgTime < 8) parts.push("Average response time of " + a.avgTime.toFixed(1) + "s — quick and decisive!");
+    else if (a.avgTime > 20) parts.push("You're taking your time to think carefully. For some questions, trust your instincts more.");
+
+    // Closing
+    if (a.accuracy >= 0.8) parts.push("Keep this momentum going — you're building something remarkable.");
+    else parts.push("Come back tomorrow and you'll see the difference. Your brain consolidates learning during rest.");
+
+    return parts.join(' ');
+  },
+
+  generateNextSteps(analysis) {
+    if (!analysis) return [];
+    const steps = [];
+    const a = analysis;
+
+    if (a.weakest && a.accuracy < 0.9) {
+      const rName = MOCK_DATA.realms.find(r => r.slug === a.weakest.slug);
+      if (rName) steps.push({ icon: '&#x1F3AF;', text: 'Focus on ' + rName.name_en + ' — ' + Math.round((1 - a.weakest.accuracy) * 100) + '% improvement potential' });
+    }
+    if (a.hardAccuracy !== null && a.hardAccuracy < 0.5) {
+      steps.push({ icon: '&#x1F4AA;', text: 'Review the hard questions you missed — they target your growth edge' });
+    }
+    if (a.accuracy >= 0.85) {
+      steps.push({ icon: '&#x2694;', text: 'Ready for Arena PvP — test your skills against other players' });
+    }
+    if (a.total < 10) {
+      steps.push({ icon: '&#x1F525;', text: 'Play ' + (10 - a.total) + ' more challenges to build your daily streak' });
+    }
+    if (a.accuracy >= 0.7) {
+      steps.push({ icon: '&#x1F9E0;', text: 'Check AI Intelligence for personalized recommendations' });
+    }
+    steps.push({ icon: '&#x1F4AC;', text: 'Chat with Noor for coaching advice on your weakest areas' });
+
+    return steps.slice(0, 4);
+  },
+};
+
+function showSessionSummary(realmSlug) {
+  const analysis = sessionTracker.getSessionAnalysis();
+  if (!analysis || analysis.total < 2) return; // Don't show for < 2 answers
+
+  const realmData = sessionTracker.getRealmAnalysis(realmSlug);
+  const realm = MOCK_DATA.realms.find(r => r.slug === realmSlug);
+  const realmName = realm ? realm.name_en : realmSlug;
+
+  // Icon based on performance
+  const icon = analysis.accuracy >= 0.9 ? '&#x1F31F;' : analysis.accuracy >= 0.7 ? '&#x1F3C6;' :
+               analysis.accuracy >= 0.5 ? '&#x1F4AA;' : '&#x1F4D6;';
+  const title = analysis.accuracy >= 0.9 ? 'Exceptional Performance!' :
+                analysis.accuracy >= 0.7 ? 'Well Done!' :
+                analysis.accuracy >= 0.5 ? 'Solid Effort!' : 'Keep Growing!';
+
+  document.getElementById('sessionIcon').innerHTML = icon;
+  document.getElementById('sessionTitle').textContent = title;
+  document.getElementById('sessionSubtitle').textContent = realmName + ' — ' + analysis.total + ' challenges completed';
+
+  // Stats grid
+  document.getElementById('sessionStats').innerHTML = `
+    <div class="stat-card"><div class="value" style="color:${analysis.accuracy >= 0.7 ? 'var(--green)' : analysis.accuracy >= 0.5 ? 'var(--gold)' : 'var(--red)'}">${Math.round(analysis.accuracy * 100)}%</div><div class="label">Accuracy</div></div>
+    <div class="stat-card"><div class="value">${analysis.correct}/${analysis.total}</div><div class="label">Correct</div></div>
+    <div class="stat-card"><div class="value" style="color:var(--gold)">${analysis.totalXp}</div><div class="label">XP Earned</div></div>
+    <div class="stat-card"><div class="value">${analysis.avgTime.toFixed(1)}s</div><div class="label">Avg Speed</div></div>
+    <div class="stat-card"><div class="value" style="color:var(--accent-light)">${analysis.bestStreak}</div><div class="label">Best Streak</div></div>
+    <div class="stat-card"><div class="value">${analysis.durationMins.toFixed(0)}m</div><div class="label">Duration</div></div>
+  `;
+
+  // Performance breakdown
+  let breakdownHtml = '';
+  // Accuracy trend bar
+  if (analysis.total >= 4) {
+    const trendIcon = analysis.accuracyImproved ? '&#x2B06;' : analysis.firstHalfAcc === analysis.secondHalfAcc ? '&#x27A1;' : '&#x2B07;';
+    const trendColor = analysis.accuracyImproved ? 'var(--green)' : analysis.firstHalfAcc === analysis.secondHalfAcc ? 'var(--muted)' : 'var(--red)';
+    breakdownHtml += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:10px;background:var(--bg);border-radius:8px">
+      <span style="font-size:0.85rem">Accuracy Trend</span>
+      <span style="font-size:0.85rem">${Math.round(analysis.firstHalfAcc * 100)}% <span style="color:${trendColor}">${trendIcon}</span> ${Math.round(analysis.secondHalfAcc * 100)}%</span>
+    </div>`;
+    const speedIcon = analysis.speedImproved ? '&#x2B06;' : '&#x27A1;';
+    const speedColor = analysis.speedImproved ? 'var(--green)' : 'var(--muted)';
+    breakdownHtml += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:10px;background:var(--bg);border-radius:8px">
+      <span style="font-size:0.85rem">Speed Trend</span>
+      <span style="font-size:0.85rem">${analysis.firstHalfTime.toFixed(1)}s <span style="color:${speedColor}">${speedIcon}</span> ${analysis.secondHalfTime.toFixed(1)}s</span>
+    </div>`;
+  }
+  // Per-realm accuracy
+  if (analysis.realmAccuracies.length > 0) {
+    breakdownHtml += '<div style="margin-top:8px">';
+    analysis.realmAccuracies.forEach(r => {
+      const rInfo = MOCK_DATA.realms.find(x => x.slug === r.slug);
+      const pct = Math.round(r.accuracy * 100);
+      const color = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--gold)' : 'var(--red)';
+      breakdownHtml += `<div style="margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:3px">
+          <span>${rInfo ? rInfo.name_en : r.slug}</span>
+          <span style="color:${color}">${pct}% (${r.total} Qs, avg ${r.avgTime.toFixed(1)}s)</span>
+        </div>
+        <div class="xp-bar"><div class="xp-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+      </div>`;
+    });
+    breakdownHtml += '</div>';
+  }
+  document.getElementById('sessionBreakdown').innerHTML = breakdownHtml;
+
+  // Noor's message
+  document.getElementById('sessionNoorMessage').textContent = sessionTracker.generateNoorMessage(analysis);
+
+  // Next steps
+  const steps = sessionTracker.generateNextSteps(analysis);
+  document.getElementById('sessionNextSteps').innerHTML = steps.map(s =>
+    `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:1.2rem">${s.icon}</span>
+      <span style="font-size:0.9rem">${s.text}</span>
+    </div>`
+  ).join('');
+
+  document.getElementById('sessionOverlay').style.display = 'block';
+}
+
+function closeSessionSummary() {
+  document.getElementById('sessionOverlay').style.display = 'none';
+}
+
+// ============ 3D WORLD (THREE.JS) ============
+let scene3D, camera3D, renderer3D, clock3D;
+let terrain3D, portals3D = [], noorOrb3D, particleSystem3D;
+let is3DInitialized = false;
+let frameCount3D = 0, lastFpsTime3D = 0;
+const mouse3D = new THREE.Vector2();
+const raycaster3D = new THREE.Raycaster();
+let hoveredPortal3D = null;
+
+const REALM_3D = [
+  { slug: 'logic_fortress', name: 'Logic Fortress', color: 0x0a3d62, emissive: 0x3c6382, angle: 0 },
+  { slug: 'emotion_ocean', name: 'Emotion Ocean', color: 0x6c5ce7, emissive: 0xa29bfe, angle: Math.PI * 0.25 },
+  { slug: 'creativity_nebula', name: 'Creativity Nebula', color: 0xfdcb6e, emissive: 0xe17055, angle: Math.PI * 0.5 },
+  { slug: 'discipline_citadel', name: 'Discipline Citadel', color: 0x636e72, emissive: 0x95a5a6, angle: Math.PI * 0.75 },
+  { slug: 'knowledge_peaks', name: 'Knowledge Peaks', color: 0x0c2461, emissive: 0x1e3799, angle: Math.PI },
+  { slug: 'social_bridge', name: 'Social Bridge', color: 0xe55039, emissive: 0xeb4d4b, angle: Math.PI * 1.25 },
+  { slug: 'wealth_garden', name: 'Wealth Garden', color: 0x27ae60, emissive: 0x2ecc71, angle: Math.PI * 1.5 },
+  { slug: 'wellness_grove', name: 'Wellness Grove', color: 0x00b894, emissive: 0x55efc4, angle: Math.PI * 1.75 },
+];
+
+// Story data
+const STORY_LINES = [
+  { speaker: 'Narrator', text: 'Your mind has shattered into eight fragments after a catalyzing event. Each piece scattered across the vast Mindscape — your subconscious realm.' },
+  { speaker: 'Noor', text: 'I survived the shattering. I am Noor — a manifestation of your inner wisdom. I\'ve been waiting for you to find your way here.' },
+  { speaker: 'Noor', text: 'This floating island is your hub — the center of your consciousness. From here, you can reach all eight realms of growth.' },
+  { speaker: 'Narrator', text: 'Each realm holds a fragment of your complete self. Master their challenges to reclaim what was lost.' },
+  { speaker: 'Noor', text: 'The Logic Fortress will sharpen your analytical mind. The Emotion Ocean will teach you empathy and self-awareness.' },
+  { speaker: 'Noor', text: 'The Creativity Nebula unleashes imagination. The Discipline Citadel builds your willpower and habits.' },
+  { speaker: 'Noor', text: 'Knowledge Peaks expands your curiosity. Social Bridge strengthens connection. Wealth Garden teaches financial wisdom. Wellness Grove nurtures your spirit.' },
+  { speaker: 'Narrator', text: 'As you master each realm, this hub world will heal and come alive. The journey to reassemble your mind begins now.' },
+];
+let storyIdx = 0;
+
+function storyNext() {
+  storyIdx = Math.min(storyIdx + 1, STORY_LINES.length - 1);
+  renderStory();
+}
+function storyPrev() {
+  storyIdx = Math.max(storyIdx - 1, 0);
+  renderStory();
+}
+function renderStory() {
+  const line = STORY_LINES[storyIdx];
+  document.getElementById('storyContent').innerHTML =
+    `<div class="story-line"><span class="speaker">${line.speaker}:</span> ${line.text}</div>`;
+  document.getElementById('storyProgress').textContent = (storyIdx + 1) + ' / ' + STORY_LINES.length;
+  document.getElementById('storyPrevBtn').disabled = storyIdx === 0;
+  document.getElementById('storyNextBtn').disabled = storyIdx === STORY_LINES.length - 1;
+  document.getElementById('storyNextBtn').textContent = storyIdx === STORY_LINES.length - 1 ? 'Begin' : 'Next';
+}
+
+// Simple noise function for terrain
+function simplex2D(x, y) {
+  const s = (x + y) * 0.3660254;
+  const i = Math.floor(x + s), j = Math.floor(y + s);
+  const t = (i + j) * 0.2113249;
+  const X0 = i - t, Y0 = j - t;
+  const x0 = x - X0, y0 = y - Y0;
+  return (Math.sin(x0 * 12.9898 + y0 * 78.233) * 43758.5453 % 1 + 1) % 1 - 0.5;
+}
+function noise2D(x, y) {
+  let val = 0, amp = 1, freq = 1, max = 0;
+  for (let o = 0; o < 4; o++) {
+    val += simplex2D(x * freq, y * freq) * amp;
+    max += amp;
+    amp *= 0.5;
+    freq *= 2;
+  }
+  return val / max;
+}
+
+function init3DWorld() {
+  if (is3DInitialized) return;
+  is3DInitialized = true;
+
+  const container = document.getElementById('world3dContainer');
+  const w = container.clientWidth, h = container.clientHeight;
+
+  // Scene
+  scene3D = new THREE.Scene();
+  scene3D.fog = new THREE.FogExp2(0x0a0a18, 0.012);
+
+  // Camera
+  camera3D = new THREE.PerspectiveCamera(60, w / h, 0.1, 200);
+  camera3D.position.set(0, 18, 28);
+  camera3D.lookAt(0, 0, 0);
+
+  // Renderer
+  renderer3D = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+  renderer3D.setSize(w, h);
+  renderer3D.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer3D.setClearColor(0x0a0a18);
+  renderer3D.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer3D.toneMappingExposure = 1.2;
+  container.appendChild(renderer3D.domElement);
+
+  clock3D = new THREE.Clock();
+
+  // Lights
+  const ambient = new THREE.AmbientLight(0x404060, 0.6);
+  scene3D.add(ambient);
+  const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  dirLight.position.set(10, 20, 10);
+  scene3D.add(dirLight);
+  const pointLight = new THREE.PointLight(0x7c3aed, 2, 50);
+  pointLight.position.set(0, 8, 0);
+  scene3D.add(pointLight);
+
+  // Build world
+  createTerrain3D();
+  createPortals3D();
+  createNoorOrb3D();
+  createParticles3D();
+  createSkybox3D();
+  buildPortalLegend();
+
+  // Controls (simple orbit via mouse)
+  let isDragging = false, prevX = 0, prevY = 0;
+  let orbitAngle = 0, orbitHeight = 18, orbitDist = 28;
+  container.addEventListener('mousedown', e => { isDragging = true; prevX = e.clientX; prevY = e.clientY; });
+  container.addEventListener('mousemove', e => {
+    const rect = container.getBoundingClientRect();
+    mouse3D.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse3D.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    if (isDragging) {
+      orbitAngle += (e.clientX - prevX) * 0.01;
+      orbitHeight = Math.max(4, Math.min(35, orbitHeight - (e.clientY - prevY) * 0.1));
+      prevX = e.clientX; prevY = e.clientY;
+    }
+  });
+  container.addEventListener('mouseup', () => isDragging = false);
+  container.addEventListener('mouseleave', () => isDragging = false);
+  container.addEventListener('wheel', e => {
+    orbitDist = Math.max(10, Math.min(60, orbitDist + e.deltaY * 0.03));
+    e.preventDefault();
+  }, { passive: false });
+  container.addEventListener('click', e => {
+    if (hoveredPortal3D) {
+      const slug = hoveredPortal3D.userData.slug;
+      selectRealm(slug);
+      showPanel('challenge');
+    }
+  });
+
+  // Animation loop
+  function animate() {
+    requestAnimationFrame(animate);
+    const t = clock3D.getElapsedTime();
+    const dt = clock3D.getDelta();
+
+    // Update orbit camera
+    camera3D.position.x = Math.sin(orbitAngle) * orbitDist;
+    camera3D.position.z = Math.cos(orbitAngle) * orbitDist;
+    camera3D.position.y = orbitHeight;
+    camera3D.lookAt(0, 2, 0);
+
+    // Animate portals
+    portals3D.forEach((p, i) => {
+      p.rotation.y += 0.02;
+      p.children.forEach(c => {
+        if (c.userData.isRing) c.rotation.z = t * 0.5 + i;
+      });
+      // Pulse light
+      const light = p.userData.light;
+      if (light) light.intensity = 1.5 + Math.sin(t * 2 + i * 0.8) * 0.8;
+    });
+
+    // Animate Noor orb
+    if (noorOrb3D) {
+      noorOrb3D.position.y = 5 + Math.sin(t * 1.5) * 0.4;
+      noorOrb3D.position.x = Math.sin(t * 0.3) * 2;
+      noorOrb3D.position.z = Math.cos(t * 0.3) * 2;
+      const nMat = noorOrb3D.children[0];
+      if (nMat && nMat.material) {
+        nMat.material.emissiveIntensity = 1.5 + Math.sin(t * 3) * 0.5;
+      }
+    }
+
+    // Animate particles
+    if (particleSystem3D) {
+      particleSystem3D.rotation.y += 0.001;
+      const positions = particleSystem3D.geometry.attributes.position.array;
+      for (let i = 1; i < positions.length; i += 3) {
+        positions[i] += Math.sin(t + i) * 0.003;
+      }
+      particleSystem3D.geometry.attributes.position.needsUpdate = true;
+    }
+
+    // Raycasting for portal hover
+    raycaster3D.setFromCamera(mouse3D, camera3D);
+    const intersects = raycaster3D.intersectObjects(portals3D, true);
+    const tooltip = document.getElementById('w3dTooltip');
+    if (intersects.length > 0) {
+      let obj = intersects[0].object;
+      while (obj.parent && !obj.userData.slug) obj = obj.parent;
+      if (obj.userData.slug) {
+        hoveredPortal3D = obj;
+        tooltip.textContent = obj.userData.name + ' — Click to enter';
+        tooltip.classList.add('visible');
+        container.style.cursor = 'pointer';
+      }
+    } else {
+      hoveredPortal3D = null;
+      tooltip.classList.remove('visible');
+      container.style.cursor = 'grab';
+    }
+
+    // FPS counter
+    frameCount3D++;
+    if (t - lastFpsTime3D >= 1) {
+      document.getElementById('w3dFps').textContent = frameCount3D + ' FPS';
+      frameCount3D = 0;
+      lastFpsTime3D = t;
+    }
+
+    renderer3D.render(scene3D, camera3D);
+  }
+  animate();
+
+  // Resize handler
+  const resizeObs = new ResizeObserver(() => {
+    const nw = container.clientWidth, nh = container.clientHeight;
+    camera3D.aspect = nw / nh;
+    camera3D.updateProjectionMatrix();
+    renderer3D.setSize(nw, nh);
+  });
+  resizeObs.observe(container);
+}
+
+function createTerrain3D() {
+  // Floating island — displaced plane geometry
+  const geo = new THREE.PlaneGeometry(40, 40, 80, 80);
+  geo.rotateX(-Math.PI / 2);
+  const positions = geo.attributes.position.array;
+  const colors = new Float32Array(positions.length);
+
+  for (let i = 0; i < positions.length; i += 3) {
+    const x = positions[i], z = positions[i + 2];
+    const dist = Math.sqrt(x * x + z * z);
+    const maxR = 18;
+
+    // Island shape: high center, cliff edges
+    let height = 0;
+    if (dist < maxR) {
+      const falloff = 1 - Math.pow(dist / maxR, 2);
+      height = falloff * 3;
+      height += noise2D(x * 0.15, z * 0.15) * 2 * falloff;
+      height += noise2D(x * 0.4, z * 0.4) * 0.5 * falloff;
+      // Cliff edge lip
+      if (dist > maxR * 0.8) {
+        height -= (dist - maxR * 0.8) * 0.5;
+      }
+    } else {
+      height = -2 - (dist - maxR) * 0.8; // Drop off
+    }
+    positions[i + 1] = height;
+
+    // Vertex colors: green top, brown middle, stone edge
+    const normH = Math.max(0, Math.min(1, (height + 2) / 5));
+    if (height > 1.5) {
+      colors[i] = 0.15; colors[i+1] = 0.6; colors[i+2] = 0.15; // Green
+    } else if (height > 0) {
+      colors[i] = 0.45; colors[i+1] = 0.35; colors[i+2] = 0.2; // Brown
+    } else {
+      colors[i] = 0.35; colors[i+1] = 0.3; colors[i+2] = 0.3; // Stone
+    }
+  }
+
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  geo.computeVertexNormals();
+
+  const mat = new THREE.MeshStandardMaterial({
+    vertexColors: true,
+    roughness: 0.85,
+    metalness: 0.05,
+    flatShading: true,
+  });
+
+  terrain3D = new THREE.Mesh(geo, mat);
+  scene3D.add(terrain3D);
+
+  // Crystal decorations on terrain
+  for (let i = 0; i < 8; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const r = 4 + Math.random() * 10;
+    const x = Math.cos(angle) * r;
+    const z = Math.sin(angle) * r;
+    const h = getTerrainHeight(x, z);
+    if (h < 0.2) continue;
+
+    const crystalGeo = new THREE.ConeGeometry(0.15 + Math.random() * 0.2, 0.6 + Math.random() * 0.8, 6);
+    const crystalMat = new THREE.MeshStandardMaterial({
+      color: 0x7c3aed, emissive: 0x7c3aed, emissiveIntensity: 0.8,
+      transparent: true, opacity: 0.85, roughness: 0.1, metalness: 0.6,
+    });
+    const crystal = new THREE.Mesh(crystalGeo, crystalMat);
+    crystal.position.set(x, h + 0.3, z);
+    crystal.rotation.x = (Math.random() - 0.5) * 0.3;
+    scene3D.add(crystal);
+  }
+}
+
+function getTerrainHeight(x, z) {
+  const dist = Math.sqrt(x * x + z * z);
+  const maxR = 18;
+  if (dist >= maxR) return -2;
+  const falloff = 1 - Math.pow(dist / maxR, 2);
+  let h = falloff * 3;
+  h += noise2D(x * 0.15, z * 0.15) * 2 * falloff;
+  h += noise2D(x * 0.4, z * 0.4) * 0.5 * falloff;
+  if (dist > maxR * 0.8) h -= (dist - maxR * 0.8) * 0.5;
+  return h;
+}
+
+function createPortals3D() {
+  const portalRadius = 12;
+  REALM_3D.forEach((realm, i) => {
+    const group = new THREE.Group();
+    group.userData = { slug: realm.slug, name: realm.name };
+
+    const x = Math.cos(realm.angle) * portalRadius;
+    const z = Math.sin(realm.angle) * portalRadius;
+    const h = getTerrainHeight(x, z);
+    group.position.set(x, Math.max(h + 1.5, 2), z);
+
+    // Torus ring
+    const torusGeo = new THREE.TorusGeometry(1.2, 0.1, 12, 36);
+    const torusMat = new THREE.MeshStandardMaterial({
+      color: realm.color, emissive: realm.emissive, emissiveIntensity: 1.2,
+      roughness: 0.2, metalness: 0.8,
+    });
+    const torus = new THREE.Mesh(torusGeo, torusMat);
+    torus.rotation.x = Math.PI / 2;
+    torus.userData.isRing = true;
+    group.add(torus);
+
+    // Inner vortex plane
+    const vortexGeo = new THREE.CircleGeometry(1.0, 24);
+    const vortexMat = new THREE.MeshBasicMaterial({
+      color: realm.emissive, transparent: true, opacity: 0.4, side: THREE.DoubleSide,
+    });
+    const vortex = new THREE.Mesh(vortexGeo, vortexMat);
+    vortex.rotation.x = Math.PI / 2;
+    group.add(vortex);
+
+    // Point light at portal
+    const light = new THREE.PointLight(realm.emissive, 2, 8);
+    light.position.set(0, 0.5, 0);
+    group.add(light);
+    group.userData.light = light;
+
+    // Label above portal (using sprite)
+    const canvas = document.createElement('canvas');
+    canvas.width = 256; canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 24px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(realm.name, 128, 40);
+    const texture = new THREE.CanvasTexture(canvas);
+    const spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true, opacity: 0.8 });
+    const sprite = new THREE.Sprite(spriteMat);
+    sprite.position.set(0, 2.2, 0);
+    sprite.scale.set(3, 0.75, 1);
+    group.add(sprite);
+
+    scene3D.add(group);
+    portals3D.push(group);
+  });
+}
+
+function createNoorOrb3D() {
+  noorOrb3D = new THREE.Group();
+
+  // Outer orb
+  const orbGeo = new THREE.SphereGeometry(0.35, 24, 24);
+  const orbMat = new THREE.MeshStandardMaterial({
+    color: 0x00bcd4, emissive: 0x00bcd4, emissiveIntensity: 2.0,
+    transparent: true, opacity: 0.75, roughness: 0.1, metalness: 0.3,
+  });
+  const orb = new THREE.Mesh(orbGeo, orbMat);
+  noorOrb3D.add(orb);
+
+  // Inner core
+  const coreGeo = new THREE.SphereGeometry(0.15, 16, 16);
+  const coreMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9 });
+  noorOrb3D.add(new THREE.Mesh(coreGeo, coreMat));
+
+  // Light
+  const noorLight = new THREE.PointLight(0x00bcd4, 3, 12);
+  noorOrb3D.add(noorLight);
+
+  noorOrb3D.position.set(0, 5, 0);
+  scene3D.add(noorOrb3D);
+}
+
+function createParticles3D() {
+  const count = 500;
+  const positions = new Float32Array(count * 3);
+  const colors = new Float32Array(count * 3);
+
+  for (let i = 0; i < count; i++) {
+    const i3 = i * 3;
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.random() * Math.PI;
+    const r = 5 + Math.random() * 25;
+    positions[i3] = Math.sin(phi) * Math.cos(theta) * r;
+    positions[i3 + 1] = Math.cos(phi) * r * 0.4 + 5;
+    positions[i3 + 2] = Math.sin(phi) * Math.sin(theta) * r;
+
+    // Random soft colors
+    colors[i3] = 0.5 + Math.random() * 0.5;
+    colors[i3 + 1] = 0.3 + Math.random() * 0.5;
+    colors[i3 + 2] = 0.7 + Math.random() * 0.3;
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+  const mat = new THREE.PointsMaterial({
+    size: 0.12,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.7,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+
+  particleSystem3D = new THREE.Points(geo, mat);
+  scene3D.add(particleSystem3D);
+}
+
+function createSkybox3D() {
+  // Gradient sky sphere
+  const skyGeo = new THREE.SphereGeometry(100, 32, 15);
+  const skyVertices = skyGeo.attributes.position.array;
+  const skyColors = new Float32Array(skyVertices.length);
+  for (let i = 0; i < skyVertices.length; i += 3) {
+    const y = skyVertices[i + 1];
+    const t = (y + 100) / 200; // 0=bottom, 1=top
+    // Deep space purple gradient
+    skyColors[i] = 0.04 + t * 0.06;     // R
+    skyColors[i + 1] = 0.03 + t * 0.02; // G
+    skyColors[i + 2] = 0.12 + t * 0.08; // B
+  }
+  skyGeo.setAttribute('color', new THREE.BufferAttribute(skyColors, 3));
+  const skyMat = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide });
+  scene3D.add(new THREE.Mesh(skyGeo, skyMat));
+
+  // Stars
+  const starCount = 200;
+  const starPos = new Float32Array(starCount * 3);
+  for (let i = 0; i < starCount * 3; i += 3) {
+    const th = Math.random() * Math.PI * 2;
+    const ph = Math.random() * Math.PI * 0.6; // Upper hemisphere mostly
+    const r = 90;
+    starPos[i] = Math.sin(ph) * Math.cos(th) * r;
+    starPos[i + 1] = Math.cos(ph) * r;
+    starPos[i + 2] = Math.sin(ph) * Math.sin(th) * r;
+  }
+  const starGeo = new THREE.BufferGeometry();
+  starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+  const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.3, transparent: true, opacity: 0.8 });
+  scene3D.add(new THREE.Points(starGeo, starMat));
+}
+
+function buildPortalLegend() {
+  const legend = document.getElementById('portalLegend');
+  legend.innerHTML = REALM_3D.map(r =>
+    `<div class="portal-legend-item" onclick="selectRealm('${r.slug}');showPanel('challenge')">
+      <span class="pl-dot" style="background:#${r.emissive.toString(16).padStart(6,'0')}"></span>
+      <span>${r.name}</span>
+    </div>`
+  ).join('');
+}
+
 // ============ INIT ============
-if (token) {
+if (DEMO_MODE) {
+  // In demo mode, token is set in DOMContentLoaded — also trigger loadApp from there
+  document.addEventListener('DOMContentLoaded', () => {
+    loadApp().catch(() => {
+      document.getElementById('authScreen').style.display = 'block';
+      document.getElementById('appScreen').style.display = 'none';
+    });
+  });
+} else if (token) {
   loadApp().catch(() => {
     document.getElementById('authScreen').style.display = 'block';
     document.getElementById('appScreen').style.display = 'none';

@@ -114,6 +114,26 @@ def cleanup_expired_tokens():
 
 
 @shared_task
+def expire_stale_arena_matches():
+    """Periodic: cancel arena matches in 'waiting' status for more than 10 minutes."""
+    from datetime import timedelta
+    from django.utils import timezone
+    from apps.arena.models import ArenaMatch
+
+    cutoff = timezone.now() - timedelta(minutes=10)
+    stale = ArenaMatch.objects.filter(
+        status='waiting',
+        is_active=True,
+        created_at__lt=cutoff,
+    )
+    count = stale.count()
+    stale.update(status='cancelled', is_active=False)
+    if count:
+        logger.info("Expired %d stale arena matches", count)
+    return count
+
+
+@shared_task
 def generate_daily_stats():
     """Periodic: log daily activity stats."""
     from datetime import timedelta

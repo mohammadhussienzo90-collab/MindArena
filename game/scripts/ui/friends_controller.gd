@@ -19,8 +19,17 @@ func _ready() -> void:
 	_load_requests()
 	if search_input:
 		search_input.text_submitted.connect(_on_search)
+		search_input.visible = false  # Only show on Search tab
+	if tab_container:
+		tab_container.tab_changed.connect(_on_tab_changed)
 	if back_button:
 		back_button.pressed.connect(_on_back_pressed)
+
+
+func _on_tab_changed(tab_idx: int) -> void:
+	# Show search input only on the Search tab (index 2)
+	if search_input:
+		search_input.visible = (tab_idx == 2)
 
 
 func _load_friends() -> void:

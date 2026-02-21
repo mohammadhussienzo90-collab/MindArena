@@ -1,6 +1,7 @@
 from rest_framework import views, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from apps.core.throttles import CompanionRateThrottle
 from .models import CompanionConversation
 from .serializers import CompanionChatSerializer, CompanionMessageSerializer
 from .services import CompanionService
@@ -8,6 +9,7 @@ from .services import CompanionService
 
 class CompanionChatView(views.APIView):
     permission_classes = [IsAuthenticated]
+    throttle_classes = [CompanionRateThrottle]
 
     def post(self, request):
         serializer = CompanionChatSerializer(data=request.data)
@@ -40,6 +42,29 @@ class CompanionChatView(views.APIView):
             result['new_achievements'] = new_achievements
 
         return Response(result)
+
+
+class CompanionConversationListView(views.APIView):
+    """List all conversations for the authenticated player."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        conversations = CompanionConversation.objects.filter(
+            player=request.user.player,
+        ).order_by('-started_at')[:20]
+
+        data = []
+        for conv in conversations:
+            last_msg = conv.messages.order_by('-created_at').first()
+            data.append({
+                'id': conv.id,
+                'context_type': conv.context_type,
+                'started_at': conv.started_at.isoformat(),
+                'message_count': conv.messages.count(),
+                'last_message': last_msg.content[:100] if last_msg else '',
+                'last_message_at': last_msg.created_at.isoformat() if last_msg else None,
+            })
+        return Response({'conversations': data})
 
 
 class CompanionHistoryView(views.APIView):

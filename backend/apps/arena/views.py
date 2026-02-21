@@ -5,6 +5,7 @@ from rest_framework import views, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
+from apps.core.permissions import IsOnboarded
 from apps.arena.models import ArenaMatch, PlayerArenaStats
 from apps.arena.serializers import (
     ArenaMatchListSerializer,
@@ -81,7 +82,7 @@ class ArenaMatchDetailView(views.APIView):
 
 class ArenaCreateMatchView(views.APIView):
     """Create a new arena match."""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOnboarded]
 
     def post(self, request):
         serializer = ArenaMatchCreateSerializer(data=request.data)
@@ -106,7 +107,7 @@ class ArenaCreateMatchView(views.APIView):
 
 class ArenaJoinMatchView(views.APIView):
     """Join an existing waiting match."""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOnboarded]
 
     def post(self, request, match_id):
         try:
@@ -227,6 +228,39 @@ class ArenaCurrentChallengeView(views.APIView):
                 'difficulty': challenge.difficulty,
             },
         })
+
+
+class ArenaCancelMatchView(views.APIView):
+    """Cancel a waiting match the player created."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, match_id):
+        try:
+            match = ArenaMatch.objects.get(id=match_id)
+        except ArenaMatch.DoesNotExist:
+            return Response(
+                {'error': 'Match not found.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Only the participant can cancel, and only if still waiting
+        if match.status != 'waiting':
+            return Response(
+                {'error': 'Only waiting matches can be cancelled.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not match.participants.filter(player=request.user.player).exists():
+            return Response(
+                {'error': 'You are not a participant in this match.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        match.status = 'cancelled'
+        match.is_active = False
+        match.save(update_fields=['status', 'is_active'])
+
+        return Response({'detail': 'Match cancelled.'})
 
 
 class ArenaStatsView(views.APIView):
