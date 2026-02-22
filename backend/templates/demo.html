@@ -536,6 +536,142 @@ body {
   font-size: 0.85rem;
 }
 .smart-chat-input button:hover { background: #6d28d9; }
+
+/* ============ MIND CLASH ============ */
+.mc-element-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 20px 0; }
+.mc-element-card {
+  background: var(--bg); border: 2px solid var(--border); border-radius: var(--radius); padding: 20px; cursor: pointer;
+  transition: all 0.3s; text-align: center; position: relative; overflow: hidden;
+}
+.mc-element-card:hover { transform: translateY(-4px); }
+.mc-element-card.selected { border-width: 3px; transform: scale(1.02); }
+.mc-element-card[data-el="ignis"] { --el-color: #ef4444; }
+.mc-element-card[data-el="aqua"] { --el-color: #06b6d4; }
+.mc-element-card[data-el="terra"] { --el-color: #22c55e; }
+.mc-element-card[data-el="ventus"] { --el-color: #a78bfa; }
+.mc-element-card.selected { border-color: var(--el-color); box-shadow: 0 0 30px color-mix(in srgb, var(--el-color) 30%, transparent); }
+.mc-element-card .el-icon { font-size: 3rem; margin-bottom: 8px; }
+.mc-element-card .el-name { font-size: 1.2rem; font-weight: 700; color: var(--el-color); }
+.mc-element-card .el-desc { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+.mc-element-card .el-stats { display: flex; justify-content: center; gap: 12px; margin-top: 10px; font-size: 0.75rem; }
+.mc-element-card .el-stats span { background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 6px; }
+
+/* Mindborn Preview */
+.mc-preview { display: flex; align-items: center; justify-content: center; gap: 40px; margin: 24px 0; }
+.mc-avatar-display {
+  width: 200px; height: 260px; background: radial-gradient(ellipse, rgba(124,58,237,0.15), transparent 70%);
+  border-radius: var(--radius); display: flex; align-items: center; justify-content: center;
+  position: relative; border: 1px solid var(--border);
+}
+.mc-avatar-canvas { border-radius: var(--radius); }
+.mc-info-panel { flex: 1; max-width: 300px; }
+.mc-info-panel .stat-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+.mc-info-panel .stat-row .label { color: var(--muted); }
+.mc-info-panel .stat-row .value { font-weight: 600; }
+
+/* Battle Arena */
+.battle-screen { position: relative; min-height: 500px; }
+.battle-hud {
+  display: flex; justify-content: space-between; align-items: center; padding: 12px 16px;
+  background: var(--bg); border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 16px;
+}
+.battle-fighter { text-align: center; flex: 1; }
+.battle-fighter .name { font-weight: 700; font-size: 1rem; }
+.battle-fighter .hp-bar {
+  width: 100%; height: 10px; background: var(--border); border-radius: 5px; margin: 6px 0; overflow: hidden;
+}
+.battle-fighter .hp-fill { height: 100%; border-radius: 5px; transition: width 0.5s ease; }
+.battle-fighter.player .hp-fill { background: linear-gradient(90deg, #10b981, #34d399); }
+.battle-fighter.enemy .hp-fill { background: linear-gradient(90deg, #ef4444, #f87171); }
+.battle-fighter .hp-text { font-size: 0.75rem; color: var(--muted); }
+.battle-vs { font-size: 1.5rem; font-weight: 700; color: var(--gold); padding: 0 16px; }
+.battle-field {
+  position: relative; min-height: 320px; background: var(--bg);
+  border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px;
+}
+.battle-field canvas { width: 100%; height: 320px; display: block; }
+.battle-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.battle-actions .battle-btn {
+  padding: 12px 24px; border-radius: 8px; border: 2px solid var(--border); background: var(--card);
+  color: var(--text); cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: all 0.2s;
+}
+.battle-actions .battle-btn:hover { border-color: var(--accent); background: var(--card-hover); }
+.battle-actions .battle-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.battle-actions .battle-btn.attack { border-color: #ef4444; }
+.battle-actions .battle-btn.defend { border-color: #3b82f6; }
+.battle-actions .battle-btn.special { border-color: #f59e0b; }
+
+/* Battle animations */
+@keyframes mcShake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+@keyframes mcFlash { 0%{opacity:1} 50%{opacity:0.3} 100%{opacity:1} }
+@keyframes mcSlash { 0%{transform:translateX(0) scale(1)} 40%{transform:translateX(60px) scale(1.1)} 60%{transform:translateX(60px) scale(1.1)} 100%{transform:translateX(0) scale(1)} }
+@keyframes mcHeal { 0%{box-shadow:0 0 0 rgba(16,185,129,0)} 50%{box-shadow:0 0 40px rgba(16,185,129,0.6)} 100%{box-shadow:0 0 0 rgba(16,185,129,0)} }
+@keyframes mcFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+@keyframes mcPulse { 0%,100%{opacity:0.6} 50%{opacity:1} }
+.mc-shake { animation: mcShake 0.4s ease; }
+.mc-flash { animation: mcFlash 0.3s ease 3; }
+.mc-heal { animation: mcHeal 1s ease; }
+
+/* Battle log */
+.battle-log {
+  max-height: 120px; overflow-y: auto; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px; margin-top: 12px; font-size: 0.8rem; font-family: 'Courier New', monospace;
+}
+.battle-log .log-entry { padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+.battle-log .log-dmg { color: #ef4444; }
+.battle-log .log-heal { color: #10b981; }
+.battle-log .log-info { color: var(--muted); }
+.battle-log .log-crit { color: #f59e0b; font-weight: 600; }
+
+/* Reflex Clash */
+.reflex-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 20px auto; max-width: 400px; }
+.reflex-cell {
+  aspect-ratio: 1; border-radius: 12px; border: 2px solid var(--border); background: var(--card);
+  display: flex; align-items: center; justify-content: center; font-size: 2rem; cursor: pointer;
+  transition: all 0.15s; user-select: none;
+}
+.reflex-cell:hover { border-color: var(--accent); }
+.reflex-cell.correct { background: rgba(16,185,129,0.3); border-color: #10b981; animation: mcPulse 0.3s; }
+.reflex-cell.wrong { background: rgba(239,68,68,0.3); border-color: #ef4444; }
+
+/* Mind Siege Grid */
+.siege-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 16px auto; max-width: 320px; }
+.siege-cell {
+  aspect-ratio: 1; border-radius: 8px; border: 2px solid var(--border); background: var(--card);
+  display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer;
+  transition: all 0.2s;
+}
+.siege-cell.atk { background: rgba(239,68,68,0.2); border-color: #ef4444; }
+.siege-cell.def { background: rgba(59,130,246,0.2); border-color: #3b82f6; }
+.siege-cell.trap { background: rgba(245,158,11,0.2); border-color: #f59e0b; }
+.siege-cell.hit { animation: mcShake 0.3s ease; }
+
+/* Chrono Trial */
+.chrono-tasks { display: flex; flex-direction: column; gap: 10px; margin: 16px 0; }
+.chrono-task {
+  display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--bg);
+  border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.2s;
+}
+.chrono-task:hover { border-color: var(--accent); }
+.chrono-task.active { border-color: var(--gold); background: rgba(245,158,11,0.05); }
+.chrono-task.done { opacity: 0.5; border-color: var(--green); }
+.chrono-task .ct-pts { font-size: 1.2rem; font-weight: 700; color: var(--gold); min-width: 40px; }
+.chrono-task .ct-q { flex: 1; font-size: 0.9rem; }
+
+/* Music visualizer */
+.mc-music-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; height: 40px; background: rgba(15,15,26,0.95);
+  border-top: 1px solid var(--border); display: none; align-items: center; padding: 0 16px; gap: 12px;
+  z-index: 9000; font-size: 0.8rem;
+}
+.mc-music-bar.active { display: flex; }
+.mc-music-viz { display: flex; align-items: flex-end; gap: 2px; height: 20px; }
+.mc-music-viz .bar { width: 3px; background: var(--accent); border-radius: 1px; animation: mcFloat 0.8s ease infinite; }
+.mc-vol-slider { width: 80px; accent-color: var(--accent); }
+
+/* 3D Arena */
+.arena3d-container { width: 100%; height: 350px; position: relative; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); margin: 16px 0; }
+.arena3d-container canvas { width: 100% !important; height: 100% !important; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
@@ -659,6 +795,9 @@ body {
         </button>
         <button class="nav-btn" onclick="showPanel('world3d')" data-panel="world3d" style="background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(59,130,246,0.15));border-color:var(--green)">
           <span class="icon">&#x1F30C;</span> 3D World
+        </button>
+        <button class="nav-btn" onclick="showPanel('mindclash')" data-panel="mindclash" style="background:linear-gradient(135deg,rgba(239,68,68,0.15),rgba(245,158,11,0.15));border-color:#ef4444">
+          <span class="icon">&#x1F525;</span> Mind Clash
         </button>
       </div>
       <div class="main">
@@ -1100,9 +1239,177 @@ body {
           </div>
         </div>
 
+        <!-- Mind Clash -->
+        <div class="panel" id="panel-mindclash">
+          <h2 style="display:flex;align-items:center;gap:10px">
+            Mind Clash
+            <span class="ai-badge" style="font-size:0.7rem;background:linear-gradient(135deg,#ef4444,#f59e0b);padding:3px 10px;border-radius:10px;color:white;font-weight:700">BATTLE</span>
+          </h2>
+
+          <!-- Phase: AI Demo Battle -->
+          <div id="mc-demo">
+            <div style="text-align:center;margin-bottom:16px">
+              <div style="font-size:1.1rem;color:var(--gold);font-weight:700;margin-bottom:4px">LIVE DEMONSTRATION</div>
+              <p style="color:var(--muted);font-size:0.9rem">Watch two AI Mindborn warriors clash before you enter the arena</p>
+            </div>
+            <div class="battle-hud" id="demoHud">
+              <div class="battle-fighter player">
+                <div class="name" id="demoP1Name">---</div>
+                <div class="hp-bar"><div class="hp-fill" id="demoP1Hp" style="width:100%"></div></div>
+                <div class="hp-text"><span id="demoP1HpText">100</span> / 100 HP</div>
+              </div>
+              <div class="battle-vs">VS</div>
+              <div class="battle-fighter enemy">
+                <div class="name" id="demoP2Name">---</div>
+                <div class="hp-bar"><div class="hp-fill" id="demoP2Hp" style="width:100%"></div></div>
+                <div class="hp-text"><span id="demoP2HpText">100</span> / 100 HP</div>
+              </div>
+            </div>
+            <div class="arena3d-container" id="demoArena3d" style="margin:12px 0"></div>
+            <div id="demoNarration" style="background:linear-gradient(135deg,rgba(124,58,237,0.1),rgba(236,72,153,0.1));border:1px solid var(--accent);border-radius:var(--radius);padding:16px;margin:12px 0;min-height:60px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                <span style="font-size:1.2rem">&#x1F9E0;</span>
+                <span style="font-weight:600;color:var(--accent-light)">Noor</span>
+                <span class="ai-badge" style="font-size:0.6rem">COMMENTATOR</span>
+              </div>
+              <p id="demoNarText" style="font-size:0.9rem;line-height:1.6;color:var(--text)">Preparing the arena...</p>
+            </div>
+            <div class="battle-log" id="demoBattleLog" style="max-height:150px"></div>
+            <div style="text-align:center;margin-top:16px;display:flex;gap:12px;justify-content:center">
+              <button class="btn btn-primary" id="demoSkipBtn" onclick="mcSkipDemo()" style="padding:12px 32px">Skip &amp; Play Now</button>
+              <button class="btn btn-outline" id="demoWatchBtn" style="padding:12px 24px;display:none" onclick="mcSkipDemo()">Enter Arena</button>
+            </div>
+          </div>
+
+          <!-- Phase: Element Selection -->
+          <div id="mc-select" style="display:none">
+            <p style="color:var(--muted);margin-bottom:8px">Choose your Mind Nature to awaken your Mindborn warrior.</p>
+            <div class="mc-element-grid">
+              <div class="mc-element-card" data-el="ignis" onclick="mcSelectElement('ignis')">
+                <div class="el-icon">&#x1F525;</div>
+                <div class="el-name">IGNIS</div>
+                <div class="el-desc">Aggression &amp; Speed — Fast strikes, burst damage</div>
+                <div class="el-stats"><span>ATK &#9733;&#9733;&#9733;</span><span>DEF &#9733;</span><span>SPD &#9733;&#9733;&#9733;</span></div>
+              </div>
+              <div class="mc-element-card" data-el="aqua" onclick="mcSelectElement('aqua')">
+                <div class="el-icon">&#x1F30A;</div>
+                <div class="el-name">AQUA</div>
+                <div class="el-desc">Adaptation &amp; Healing — Recovery, counter-attacks</div>
+                <div class="el-stats"><span>ATK &#9733;&#9733;</span><span>DEF &#9733;&#9733;</span><span>SPD &#9733;&#9733;</span></div>
+              </div>
+              <div class="mc-element-card" data-el="terra" onclick="mcSelectElement('terra')">
+                <div class="el-icon">&#x26F0;&#xFE0F;</div>
+                <div class="el-name">TERRA</div>
+                <div class="el-desc">Defense &amp; Strategy — Shields, traps, endurance</div>
+                <div class="el-stats"><span>ATK &#9733;&#9733;</span><span>DEF &#9733;&#9733;&#9733;</span><span>SPD &#9733;</span></div>
+              </div>
+              <div class="mc-element-card" data-el="ventus" onclick="mcSelectElement('ventus')">
+                <div class="el-icon">&#x1F32A;&#xFE0F;</div>
+                <div class="el-name">VENTUS</div>
+                <div class="el-desc">Deception &amp; Agility — Evasion, combo chains</div>
+                <div class="el-stats"><span>ATK &#9733;&#9733;</span><span>DEF &#9733;</span><span>SPD &#9733;&#9733;&#9733;</span></div>
+              </div>
+            </div>
+            <div class="mc-preview" id="mcPreview" style="display:none">
+              <div class="mc-avatar-display">
+                <canvas class="mc-avatar-canvas" id="mcAvatarCanvas" width="180" height="240"></canvas>
+              </div>
+              <div class="mc-info-panel" id="mcInfoPanel"></div>
+            </div>
+            <div style="text-align:center;margin-top:16px">
+              <button class="btn btn-primary" id="mcAwakeBtn" onclick="mcAwaken()" disabled style="padding:14px 40px;font-size:1.1rem">Awaken Mindborn</button>
+            </div>
+          </div>
+
+          <!-- Phase: Battle Mode Select -->
+          <div id="mc-mode" style="display:none">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+              <div style="font-size:2.5rem" id="mcPlayerIcon"></div>
+              <div>
+                <div style="font-weight:700;font-size:1.1rem" id="mcPlayerName"></div>
+                <div style="color:var(--muted);font-size:0.85rem" id="mcPlayerEl"></div>
+              </div>
+              <div style="margin-left:auto;font-size:0.85rem;color:var(--gold)" id="mcPlayerRecord"></div>
+            </div>
+            <h3>Choose Battle Mode</h3>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0">
+              <div class="mc-element-card" style="--el-color:var(--red)" onclick="mcStartBattle('reflex')">
+                <div class="el-icon">&#x26A1;</div>
+                <div class="el-name" style="font-size:1rem">Reflex Clash</div>
+                <div class="el-desc">Speed &amp; Alert — Tap symbols fastest</div>
+              </div>
+              <div class="mc-element-card" style="--el-color:var(--accent)" onclick="mcStartBattle('siege')">
+                <div class="el-icon">&#x265F;&#xFE0F;</div>
+                <div class="el-name" style="font-size:1rem">Mind Siege</div>
+                <div class="el-desc">Strategy — Place attack &amp; defense tiles</div>
+              </div>
+              <div class="mc-element-card" style="--el-color:var(--gold)" onclick="mcStartBattle('chrono')">
+                <div class="el-icon">&#x23F1;&#xFE0F;</div>
+                <div class="el-name" style="font-size:1rem">Chrono Trial</div>
+                <div class="el-desc">Time Management — Solve under pressure</div>
+              </div>
+            </div>
+            <div style="text-align:center;margin-top:8px">
+              <button class="btn btn-outline" onclick="mcBackToSelect()" style="font-size:0.85rem">Change Element</button>
+            </div>
+          </div>
+
+          <!-- Phase: Battle Arena -->
+          <div id="mc-battle" style="display:none">
+            <div class="battle-screen">
+              <div class="battle-hud">
+                <div class="battle-fighter player">
+                  <div class="name" id="mcBattlePlayerName">You</div>
+                  <div class="hp-bar"><div class="hp-fill" id="mcPlayerHp" style="width:100%"></div></div>
+                  <div class="hp-text"><span id="mcPlayerHpText">100</span> / 100 HP</div>
+                </div>
+                <div class="battle-vs">VS</div>
+                <div class="battle-fighter enemy">
+                  <div class="name" id="mcBattleEnemyName">Shadow</div>
+                  <div class="hp-bar"><div class="hp-fill" id="mcEnemyHp" style="width:100%"></div></div>
+                  <div class="hp-text"><span id="mcEnemyHpText">100</span> / 100 HP</div>
+                </div>
+              </div>
+              <div id="mcBattleMode"></div>
+              <div class="battle-actions" id="mcActions" style="display:none">
+                <button class="battle-btn attack" onclick="mcAction('attack')">&#x2694; Attack</button>
+                <button class="battle-btn defend" onclick="mcAction('defend')">&#x1F6E1; Defend</button>
+                <button class="battle-btn special" onclick="mcAction('special')" id="mcSpecialBtn">&#x2B50; Special</button>
+              </div>
+              <div class="battle-log" id="mcBattleLog"></div>
+            </div>
+          </div>
+
+          <!-- Phase: Battle Result -->
+          <div id="mc-result" style="display:none;text-align:center;padding:30px">
+            <div id="mcResultIcon" style="font-size:5rem;margin-bottom:12px"></div>
+            <h2 id="mcResultTitle" style="margin-bottom:8px"></h2>
+            <p id="mcResultSub" style="color:var(--muted);margin-bottom:20px"></p>
+            <div class="stat-grid" id="mcResultStats"></div>
+            <div style="margin-top:20px;display:flex;gap:12px;justify-content:center">
+              <button class="btn btn-primary" onclick="mcShowMode()">Battle Again</button>
+              <button class="btn btn-outline" onclick="showPanel('dashboard')">Dashboard</button>
+            </div>
+          </div>
+
+          <!-- 3D Arena viewport -->
+          <div class="arena3d-container" id="arena3dContainer" style="display:none">
+            <canvas id="arena3dCanvas"></canvas>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
+</div>
+
+<!-- Music Bar -->
+<div class="mc-music-bar" id="mcMusicBar">
+  <span style="color:var(--accent-light);font-weight:600">&#x266B;</span>
+  <span id="mcTrackName">Menu Theme</span>
+  <div class="mc-music-viz" id="mcMusicViz"></div>
+  <input type="range" class="mc-vol-slider" id="mcVolume" min="0" max="100" value="40" oninput="mcSetVolume(this.value)">
+  <button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem" onclick="mcToggleMusic()" id="mcMusicToggle">&#x23F8;</button>
 </div>
 
 <!-- Level-up celebration overlay -->
@@ -2281,6 +2588,7 @@ function showPanel(name) {
   if (name === 'leaderboard') loadLeaderboard();
   if (name === 'arena') loadArena();
   if (name === 'world3d') init3DWorld();
+  if (name === 'mindclash') mcInit();
 }
 
 // ============ PROFILE ============
@@ -3520,6 +3828,1350 @@ if (DEMO_MODE) {
     document.getElementById('authScreen').style.display = 'block';
     document.getElementById('appScreen').style.display = 'none';
   });
+}
+
+// ╔══════════════════════════════════════════════════════════════════╗
+// ║                    MIND CLASH — FULL ENGINE                     ║
+// ╚══════════════════════════════════════════════════════════════════╝
+
+const MC = {
+  elements: {
+    ignis:  { name:'Ignis',  icon:'\u{1F525}', color:'#ef4444', atk:90, def:40, spd:85, beats:'ventus', weak:'aqua',
+              desc:'Fire consumes air', particles:'flame' },
+    aqua:   { name:'Aqua',   icon:'\u{1F30A}', color:'#06b6d4', atk:65, def:70, spd:65, beats:'ignis', weak:'terra',
+              desc:'Water quenches fire', particles:'drops' },
+    terra:  { name:'Terra',  icon:'\u26F0\uFE0F', color:'#22c55e', atk:60, def:90, spd:45, beats:'aqua', weak:'ventus',
+              desc:'Earth absorbs water', particles:'rocks' },
+    ventus: { name:'Ventus', icon:'\u{1F32A}\uFE0F', color:'#a78bfa', atk:70, def:35, spd:90, beats:'terra', weak:'ignis',
+              desc:'Wind erodes earth', particles:'wisps' },
+  },
+  enemyNames: ['Shadow Echo','Dark Fragment','Mind Wraith','Void Specter','Chaos Shard',
+               'Dream Phantom','Night Surge','Rift Walker','Storm Shade','Abyss Flame'],
+  player: null, enemy: null, battleMode: null, battleActive: false,
+  wins: 0, losses: 0, musicPlaying: false, musicCtx: null, musicGain: null, musicNodes: [],
+  voiceSynth: window.speechSynthesis || null,
+  specialCharges: 0, maxSpecial: 3,
+};
+
+function mcInit() {
+  if (MC.player) { mcShowMode(); return; }
+  if (!MC.demoPlayed) { mcRunDemo(); return; }
+  // Show element selection
+  document.getElementById('mc-demo').style.display = 'none';
+  document.getElementById('mc-select').style.display = 'block';
+}
+
+// ╔══════════════════════════════════════════════════════════════════╗
+// ║                AI vs AI DEMONSTRATION BATTLE                    ║
+// ╚══════════════════════════════════════════════════════════════════╝
+
+function mcRunDemo() {
+  MC.demoPlayed = true;
+  MC.demoActive = true;
+  // Hide all phases, show demo
+  ['mc-select','mc-mode','mc-battle','mc-result'].forEach(id => document.getElementById(id).style.display = 'none');
+  document.getElementById('mc-demo').style.display = 'block';
+  document.getElementById('demoSkipBtn').style.display = '';
+  document.getElementById('demoWatchBtn').style.display = 'none';
+
+  // Pick two random different elements
+  const elKeys = Object.keys(MC.elements);
+  const el1 = elKeys[Math.floor(Math.random() * elKeys.length)];
+  let el2;
+  do { el2 = elKeys[Math.floor(Math.random() * elKeys.length)]; } while (el2 === el1);
+
+  const e1 = MC.elements[el1], e2 = MC.elements[el2];
+  const names1 = ['Phoenix Knight','Storm Caller','Crystal Sage','Wind Dancer','Flame Warden','Frost Mage','Stone Guardian','Gale Runner'];
+  const names2 = ['Shadow Reaper','Dark Titan','Void Mancer','Chaos Serpent','Night Stalker','Doom Weaver','Iron Wraith','Blood Oracle'];
+
+  const p1 = {
+    element: el1, name: names1[Math.floor(Math.random() * names1.length)],
+    hp: 100, maxHp: 100, atk: e1.atk, def: e1.def, spd: e1.spd
+  };
+  const p2 = {
+    element: el2, name: names2[Math.floor(Math.random() * names2.length)],
+    hp: 100, maxHp: 100, atk: e2.atk, def: e2.def, spd: e2.spd
+  };
+
+  // Setup HUD
+  document.getElementById('demoP1Name').innerHTML = `${e1.icon} ${p1.name}`;
+  document.getElementById('demoP2Name').innerHTML = `${e2.icon} ${p2.name}`;
+  document.getElementById('demoP1Name').style.color = e1.color;
+  document.getElementById('demoP2Name').style.color = e2.color;
+  document.getElementById('demoBattleLog').innerHTML = '';
+
+  // Init 3D arena for demo
+  mcInitDemo3D(el1, el2);
+
+  const narration = document.getElementById('demoNarText');
+  const log = document.getElementById('demoBattleLog');
+
+  function dLog(text, type = 'info') {
+    log.innerHTML += `<div class="log-entry log-${type}">${text}</div>`;
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function dUpdateHp() {
+    const p1Pct = Math.max(0, p1.hp / p1.maxHp * 100);
+    const p2Pct = Math.max(0, p2.hp / p2.maxHp * 100);
+    document.getElementById('demoP1Hp').style.width = p1Pct + '%';
+    document.getElementById('demoP2Hp').style.width = p2Pct + '%';
+    document.getElementById('demoP1HpText').textContent = Math.max(0, Math.round(p1.hp));
+    document.getElementById('demoP2HpText').textContent = Math.max(0, Math.round(p2.hp));
+  }
+
+  function dCalcDmg(atk, def, atkEl, defEl, isSpecial = false) {
+    const base = atk.atk * (isSpecial ? 1.8 : 1);
+    const reduced = base * (100 / (100 + def.def));
+    const aInfo = MC.elements[atkEl];
+    let mult = 1;
+    if (aInfo.beats === defEl) mult = 1.3;
+    if (aInfo.weak === defEl) mult = 0.7;
+    const variance = 0.9 + Math.random() * 0.2;
+    const crit = Math.random() < 0.15 ? 1.5 : 1;
+    return { dmg: Math.round(reduced * mult * variance * crit / 4), isCrit: crit > 1, mult };
+  }
+
+  // Build the battle script — a sequence of timed events
+  const script = [];
+  let t = 0;
+
+  // ── Introduction ──
+  script.push({ t: t += 500, fn: () => {
+    narration.textContent = `Welcome to Mind Clash! Two Mindborn warriors are about to face off in the arena.`;
+    mcVoice('Welcome to Mind Clash! Two warriors are about to face off.');
+  }});
+  script.push({ t: t += 3000, fn: () => {
+    narration.textContent = `On the left: ${p1.name}, a ${e1.name} type — ${e1.desc}. ATK ${p1.atk}, DEF ${p1.def}, SPD ${p1.spd}.`;
+    dLog(`${e1.icon} ${p1.name} enters the arena [${e1.name}]`, 'info');
+    if (MC.demoP1Mesh) MC.demoP1Mesh.position.y = 0.5;
+  }});
+  script.push({ t: t += 3000, fn: () => {
+    narration.textContent = `On the right: ${p2.name}, a ${e2.name} type — ${e2.desc}. ATK ${p2.atk}, DEF ${p2.def}, SPD ${p2.spd}.`;
+    dLog(`${e2.icon} ${p2.name} enters the arena [${e2.name}]`, 'info');
+    if (MC.demoP2Mesh) MC.demoP2Mesh.position.y = 0.5;
+  }});
+
+  // Check type advantage
+  const p1Adv = e1.beats === el2;
+  const p2Adv = e2.beats === el1;
+  script.push({ t: t += 2500, fn: () => {
+    if (p1Adv) {
+      narration.textContent = `${p1.name} has type advantage! ${e1.name} beats ${e2.name} — ${e1.desc}. This will be interesting...`;
+      dLog(`Type advantage: ${e1.icon} ${e1.name} > ${e2.icon} ${e2.name} (+30% damage)`, 'crit');
+    } else if (p2Adv) {
+      narration.textContent = `${p2.name} has type advantage! ${e2.name} beats ${e1.name} — ${e2.desc}. ${p1.name} must be careful.`;
+      dLog(`Type advantage: ${e2.icon} ${e2.name} > ${e1.icon} ${e1.name} (+30% damage)`, 'crit');
+    } else {
+      narration.textContent = `No type advantage — this is an even matchup. It comes down to pure skill and strategy!`;
+      dLog('Even matchup — no type advantages', 'info');
+    }
+  }});
+
+  script.push({ t: t += 2500, fn: () => {
+    narration.textContent = `The battle begins! Let's see how these warriors handle three rounds of combat.`;
+    dLog('═══════ BATTLE START ═══════', 'info');
+    mcStartMusic('battle');
+  }});
+
+  // ── Round 1: Reflex-style (simulated) ──
+  script.push({ t: t += 2000, fn: () => {
+    narration.textContent = `Round 1: Reflex Clash! Both warriors must react to flashing symbols. Speed is everything here.`;
+    dLog('── Round 1: Reflex Clash ──', 'info');
+  }});
+
+  const p1ReflexScore = Math.floor(Math.random() * 3) + 2;
+  const p2ReflexScore = Math.floor(Math.random() * 3) + 2;
+  // Simulate 5 quick reflex rounds
+  for (let r = 1; r <= 5; r++) {
+    const p1Wins = (r <= p1ReflexScore);
+    const p2Wins = (r <= p2ReflexScore) && !p1Wins;
+    script.push({ t: t += 1200, fn: () => {
+      const sym = ['\u{1F525}','\u{1F30A}','\u26F0\uFE0F','\u{1F32A}\uFE0F','\u2B50','\u{1F4A0}'][Math.floor(Math.random()*6)];
+      if (p1Wins && !p2Wins) {
+        dLog(`  Flash ${r}: ${sym} — ${p1.name} reacts first! (${(0.4+Math.random()*0.8).toFixed(2)}s)`, 'info');
+      } else if (p2Wins) {
+        dLog(`  Flash ${r}: ${sym} — ${p2.name} was faster! (${(0.4+Math.random()*0.8).toFixed(2)}s)`, 'dmg');
+      } else {
+        dLog(`  Flash ${r}: ${sym} — Both miss! Symbols too tricky`, 'info');
+      }
+    }});
+  }
+
+  const reflexWinner = p1ReflexScore >= p2ReflexScore ? p1 : p2;
+  const reflexLoser = reflexWinner === p1 ? p2 : p1;
+  script.push({ t: t += 1500, fn: () => {
+    const dmg = dCalcDmg(reflexWinner, reflexLoser, reflexWinner.element, reflexLoser.element);
+    reflexLoser.hp -= dmg.dmg;
+    dUpdateHp();
+    const we = MC.elements[reflexWinner.element];
+    narration.textContent = `${reflexWinner.name} wins Reflex Clash ${p1ReflexScore}-${p2ReflexScore}! Deals ${dmg.dmg} damage${dmg.isCrit ? ' — CRITICAL HIT!' : ''}.`;
+    dLog(`${we.icon} ${reflexWinner.name} wins reflex! ${dmg.dmg} damage${dmg.isCrit ? ' CRIT!' : ''} to ${reflexLoser.name}`, dmg.isCrit ? 'crit' : 'info');
+    mcVoice(`${reflexWinner.name} wins the reflex round!`);
+    // 3D attack anim
+    mcDemoAttackAnim(reflexWinner === p1 ? 'p1' : 'p2');
+  }});
+
+  // ── Round 2: Strategic exchange ──
+  script.push({ t: t += 3000, fn: () => {
+    narration.textContent = `Round 2: Mind Siege! Each warrior places attack and defense tiles on a 4x4 grid. Strategy over speed.`;
+    dLog('── Round 2: Mind Siege ──', 'info');
+  }});
+
+  script.push({ t: t += 2000, fn: () => {
+    narration.textContent = `${p1.name} places two attack tiles, one defense, and sets a trap... ${p2.name} goes defensive with double shields.`;
+    dLog(`  ${p1.name}: 2 ATK, 1 DEF, 1 TRAP`, 'info');
+    dLog(`  ${p2.name}: 1 ATK, 2 DEF, 1 TRAP`, 'info');
+  }});
+
+  script.push({ t: t += 2500, fn: () => {
+    const p1SiegeDmg = 12 + Math.floor(Math.random() * 15);
+    const p2SiegeDmg = 8 + Math.floor(Math.random() * 12);
+    const d1 = dCalcDmg(p1, p2, el1, el2);
+    const d2 = dCalcDmg(p2, p1, el2, el1);
+    const finalP1 = Math.round(p1SiegeDmg * d1.mult);
+    const finalP2 = Math.round(p2SiegeDmg * d2.mult);
+    p2.hp -= finalP1;
+    p1.hp -= finalP2;
+    dUpdateHp();
+    narration.textContent = `Tiles revealed! ${p1.name}'s attacks land for ${finalP1} damage. ${p2.name} retaliates with ${finalP2}. ${p1.name}'s trap catches an attack!`;
+    dLog(`  REVEAL: ${p1.name} deals ${finalP1}, takes ${finalP2}`, finalP1 > finalP2 ? 'info' : 'dmg');
+    mcDemoAttackAnim('p1');
+    setTimeout(() => mcDemoAttackAnim('p2'), 400);
+  }});
+
+  // ── Round 3: Special attacks ──
+  script.push({ t: t += 3000, fn: () => {
+    narration.textContent = `Round 3: Both warriors have charged their special abilities! This will decide the battle.`;
+    dLog('── Round 3: Special Attacks ──', 'crit');
+    mcVoice('Special abilities charged! This is the final round.');
+  }});
+
+  // Determine who goes first based on speed
+  const faster = p1.spd >= p2.spd ? p1 : p2;
+  const slower = faster === p1 ? p2 : p1;
+  const fasterEl = faster === p1 ? el1 : el2;
+  const slowerEl = slower === p1 ? el1 : el2;
+
+  script.push({ t: t += 2000, fn: () => {
+    const fe = MC.elements[fasterEl];
+    narration.textContent = `${faster.name} moves first with SPD ${faster.spd}! Unleashes a devastating ${fe.name} special attack!`;
+    const dmg = dCalcDmg(faster, slower, fasterEl, slowerEl, true);
+    slower.hp -= dmg.dmg;
+    dUpdateHp();
+    dLog(`${fe.icon} ${faster.name} SPECIAL: ${dmg.dmg} damage!${dmg.isCrit ? ' CRITICAL!' : ''}`, 'crit');
+    mcDemoSpecialAnim();
+  }});
+
+  script.push({ t: t += 2500, fn: () => {
+    if (slower.hp <= 0) {
+      // Slower is KO'd before they can attack
+      narration.textContent = `${slower.name} is down! Knocked out before they could counter-attack. What a finish!`;
+      dLog(`${slower.name} is KO'd!`, 'dmg');
+    } else {
+      const se = MC.elements[slowerEl];
+      narration.textContent = `${slower.name} still standing at ${Math.round(slower.hp)} HP! Retaliates with ${se.name} special!`;
+      const dmg = dCalcDmg(slower, faster, slowerEl, fasterEl, true);
+      faster.hp -= dmg.dmg;
+      dUpdateHp();
+      dLog(`${se.icon} ${slower.name} SPECIAL: ${dmg.dmg} damage!${dmg.isCrit ? ' CRITICAL!' : ''}`, 'crit');
+      mcDemoAttackAnim(slower === p1 ? 'p1' : 'p2');
+    }
+  }});
+
+  // ── Sudden death / Final result ──
+  script.push({ t: t += 2500, fn: () => {
+    if (p1.hp > 0 && p2.hp > 0) {
+      // Both alive — one more exchange
+      narration.textContent = `Both warriors still standing! A final desperate exchange...`;
+      const d1 = dCalcDmg(p1, p2, el1, el2);
+      const d2 = dCalcDmg(p2, p1, el2, el1);
+      p2.hp -= d1.dmg;
+      p1.hp -= d2.dmg;
+      dUpdateHp();
+      dLog(`Final clash! ${p1.name}: ${d1.dmg} dmg, ${p2.name}: ${d2.dmg} dmg`, 'info');
+      mcDemoAttackAnim('p1');
+      setTimeout(() => mcDemoAttackAnim('p2'), 300);
+    }
+  }});
+
+  script.push({ t: t += 2500, fn: () => {
+    // Determine winner
+    let winner, loser;
+    if (p1.hp > p2.hp) { winner = p1; loser = p2; }
+    else if (p2.hp > p1.hp) { winner = p2; loser = p1; }
+    else { winner = faster; loser = slower; } // tie goes to faster
+    const we = MC.elements[winner.element];
+    const le = MC.elements[loser.element];
+    mcStopMusic();
+    mcStartMusic('victory');
+    narration.textContent = `${we.icon} ${winner.name} WINS with ${Math.max(0, Math.round(winner.hp))} HP remaining! ${loser.name} falls. What an incredible battle!`;
+    dLog(`═══════ ${winner.name.toUpperCase()} WINS! ═══════`, 'crit');
+    mcVoice(`${winner.name} wins the demonstration! Now its your turn. Choose your element and enter the arena.`);
+  }});
+
+  // Show "Enter Arena" button
+  script.push({ t: t += 4000, fn: () => {
+    narration.textContent = `That was just a taste of Mind Clash. Now it's YOUR turn! Choose your element and awaken your Mindborn.`;
+    document.getElementById('demoSkipBtn').style.display = 'none';
+    document.getElementById('demoWatchBtn').style.display = '';
+    MC.demoActive = false;
+  }});
+
+  // Execute all scripted events
+  MC.demoTimers = [];
+  script.forEach(s => {
+    const timer = setTimeout(() => { if (MC.demoActive || s === script[script.length - 1]) s.fn(); }, s.t);
+    MC.demoTimers.push(timer);
+  });
+}
+
+function mcSkipDemo() {
+  MC.demoActive = false;
+  if (MC.demoTimers) MC.demoTimers.forEach(t => clearTimeout(t));
+  mcStopMusic();
+  document.getElementById('mc-demo').style.display = 'none';
+  document.getElementById('mc-select').style.display = 'block';
+}
+
+// ── Demo 3D Arena ──
+function mcInitDemo3D(el1, el2) {
+  if (!window.THREE) return;
+  const container = document.getElementById('demoArena3d');
+  const e1 = MC.elements[el1], e2 = MC.elements[el2];
+
+  // Clear previous
+  container.innerHTML = '';
+  if (MC.demoAnimId) cancelAnimationFrame(MC.demoAnimId);
+
+  const w = container.clientWidth || 600, h = 350;
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x080818);
+  scene.fog = new THREE.FogExp2(0x080818, 0.04);
+
+  const camera = new THREE.PerspectiveCamera(50, w / h, 0.1, 100);
+  camera.position.set(0, 7, 14);
+  camera.lookAt(0, 1, 0);
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+  renderer.setSize(w, h);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  container.appendChild(renderer.domElement);
+
+  // Arena floor — hexagonal with glow edge
+  const floorGeo = new THREE.CylinderGeometry(9, 9, 0.2, 6);
+  const floorMat = new THREE.MeshStandardMaterial({ color: 0x12122a, metalness: 0.4, roughness: 0.7 });
+  const floor = new THREE.Mesh(floorGeo, floorMat);
+  floor.position.y = -0.1;
+  scene.add(floor);
+
+  // Inner ring
+  const ringGeo = new THREE.TorusGeometry(9, 0.12, 8, 6);
+  const ringMat = new THREE.MeshStandardMaterial({ color: 0x7c3aed, emissive: 0x7c3aed, emissiveIntensity: 0.8, transparent: true, opacity: 0.7 });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.rotation.x = Math.PI / 2;
+  ring.position.y = 0.15;
+  scene.add(ring);
+
+  // Divider line
+  const divGeo = new THREE.BoxGeometry(0.05, 0.1, 18);
+  const divMat = new THREE.MeshStandardMaterial({ color: 0x334155, emissive: 0x334155, emissiveIntensity: 0.3 });
+  scene.add(new THREE.Mesh(divGeo, divMat));
+
+  // Player 1 (left)
+  const p1Group = mcCreateFighter(e1.color, scene);
+  p1Group.position.set(-4, 0, 0);
+  scene.add(p1Group);
+
+  // Player 2 (right)
+  const p2Group = mcCreateFighter(e2.color, scene);
+  p2Group.position.set(4, 0, 0);
+  p2Group.rotation.y = Math.PI;
+  scene.add(p2Group);
+
+  // Element aura particles for each fighter
+  mcAddAuraParticles(scene, -4, e1.color);
+  mcAddAuraParticles(scene, 4, e2.color);
+
+  // Lights
+  scene.add(new THREE.AmbientLight(0x303050, 0.6));
+  const l1 = new THREE.PointLight(new THREE.Color(e1.color), 3, 25);
+  l1.position.set(-5, 6, 4);
+  scene.add(l1);
+  const l2 = new THREE.PointLight(new THREE.Color(e2.color), 3, 25);
+  l2.position.set(5, 6, -4);
+  scene.add(l2);
+  const topLight = new THREE.PointLight(0x7c3aed, 1.5, 30);
+  topLight.position.set(0, 10, 0);
+  scene.add(topLight);
+
+  // Ambient particles
+  const pCount = 150;
+  const pGeo = new THREE.BufferGeometry();
+  const pPos = new Float32Array(pCount * 3);
+  const pCol = new Float32Array(pCount * 3);
+  for (let i = 0; i < pCount; i++) {
+    pPos[i*3] = (Math.random() - 0.5) * 24;
+    pPos[i*3+1] = Math.random() * 12;
+    pPos[i*3+2] = (Math.random() - 0.5) * 24;
+    const c = new THREE.Color(Math.random() > 0.5 ? e1.color : e2.color);
+    pCol[i*3] = c.r; pCol[i*3+1] = c.g; pCol[i*3+2] = c.b;
+  }
+  pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+  pGeo.setAttribute('color', new THREE.BufferAttribute(pCol, 3));
+  const pMat = new THREE.PointsMaterial({ size: 0.1, vertexColors: true, transparent: true, opacity: 0.5 });
+  const particles = new THREE.Points(pGeo, pMat);
+  scene.add(particles);
+
+  MC.demoP1Mesh = p1Group;
+  MC.demoP2Mesh = p2Group;
+  MC.demoScene = scene;
+
+  function animate() {
+    MC.demoAnimId = requestAnimationFrame(animate);
+    const t = Date.now() * 0.001;
+    // Idle float
+    p1Group.position.y = Math.sin(t * 1.5) * 0.15;
+    p2Group.position.y = Math.sin(t * 1.5 + 1) * 0.15;
+    // Ring pulse
+    ring.material.emissiveIntensity = 0.5 + Math.sin(t * 2) * 0.3;
+    // Particles drift up
+    const pos = particles.geometry.attributes.position;
+    for (let i = 0; i < pCount; i++) {
+      pos.array[i*3+1] += 0.008;
+      if (pos.array[i*3+1] > 12) pos.array[i*3+1] = 0;
+    }
+    pos.needsUpdate = true;
+    // Slow camera
+    camera.position.x = Math.sin(t * 0.15) * 3;
+    camera.position.z = 12 + Math.sin(t * 0.1) * 2;
+    camera.lookAt(0, 1.5, 0);
+    renderer.render(scene, camera);
+  }
+  animate();
+}
+
+function mcCreateFighter(color, scene) {
+  const group = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({ color: new THREE.Color(color), emissive: new THREE.Color(color), emissiveIntensity: 0.4 });
+  // Body
+  const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.45, 1.2, 8, 16), mat);
+  body.position.y = 1.1;
+  group.add(body);
+  // Head
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.38, 16, 16), mat);
+  head.position.y = 2.2;
+  group.add(head);
+  // Eyes
+  const eyeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 1 });
+  const eyeGeo = new THREE.SphereGeometry(0.07, 8, 8);
+  const eye1 = new THREE.Mesh(eyeGeo, eyeMat);
+  eye1.position.set(-0.14, 2.25, 0.32);
+  group.add(eye1);
+  const eye2 = new THREE.Mesh(eyeGeo, eyeMat);
+  eye2.position.set(0.14, 2.25, 0.32);
+  group.add(eye2);
+  // Core
+  const coreMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: new THREE.Color(color), emissiveIntensity: 3 });
+  const core = new THREE.Mesh(new THREE.SphereGeometry(0.18, 8, 8), coreMat);
+  core.position.y = 1.3;
+  group.add(core);
+  // Arms
+  const armMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(color), emissive: new THREE.Color(color), emissiveIntensity: 0.2 });
+  const armGeo = new THREE.CapsuleGeometry(0.12, 0.7, 4, 8);
+  const arm1 = new THREE.Mesh(armGeo, armMat);
+  arm1.position.set(-0.65, 1.2, 0);
+  arm1.rotation.z = 0.3;
+  group.add(arm1);
+  const arm2 = new THREE.Mesh(armGeo, armMat);
+  arm2.position.set(0.65, 1.2, 0);
+  arm2.rotation.z = -0.3;
+  group.add(arm2);
+  return group;
+}
+
+function mcAddAuraParticles(scene, x, color) {
+  const count = 30;
+  const geo = new THREE.BufferGeometry();
+  const pos = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    pos[i*3] = x + (Math.random() - 0.5) * 2;
+    pos[i*3+1] = Math.random() * 3;
+    pos[i*3+2] = (Math.random() - 0.5) * 2;
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const mat = new THREE.PointsMaterial({ size: 0.15, color: new THREE.Color(color), transparent: true, opacity: 0.7 });
+  scene.add(new THREE.Points(geo, mat));
+}
+
+function mcDemoAttackAnim(who) {
+  const mesh = who === 'p1' ? MC.demoP1Mesh : MC.demoP2Mesh;
+  const target = who === 'p1' ? MC.demoP2Mesh : MC.demoP1Mesh;
+  if (!mesh || !target) return;
+  const origX = mesh.position.x;
+  const dir = who === 'p1' ? 1 : -1;
+  let step = 0;
+  const anim = setInterval(() => {
+    step++;
+    if (step <= 8) mesh.position.x += dir * 0.3;
+    else if (step === 9) {
+      target.children.forEach(c => { if (c.material) { c.material.emissiveIntensity = 3; } });
+      // Shake target
+      target.position.z = (Math.random() - 0.5) * 0.4;
+    }
+    else if (step <= 18) mesh.position.x -= dir * 0.3;
+    else {
+      clearInterval(anim);
+      mesh.position.x = origX;
+      target.position.z = 0;
+      target.children.forEach(c => { if (c.material && c.material.emissiveIntensity > 1) c.material.emissiveIntensity = 0.4; });
+    }
+  }, 35);
+}
+
+function mcDemoSpecialAnim() {
+  if (!MC.demoScene) return;
+  const flash = new THREE.PointLight(0xffffff, 15, 40);
+  flash.position.set(0, 5, 0);
+  MC.demoScene.add(flash);
+  let intensity = 15;
+  const fade = setInterval(() => {
+    intensity -= 0.7;
+    flash.intensity = Math.max(0, intensity);
+    if (intensity <= 0) { clearInterval(fade); MC.demoScene.remove(flash); }
+  }, 30);
+}
+
+// ──── ELEMENT SELECTION ────
+function mcSelectElement(el) {
+  document.querySelectorAll('.mc-element-card').forEach(c => c.classList.remove('selected'));
+  const card = document.querySelector(`.mc-element-card[data-el="${el}"]`);
+  if (card) card.classList.add('selected');
+  document.getElementById('mcAwakeBtn').disabled = false;
+  MC.selectedElement = el;
+  mcDrawPreview(el);
+}
+
+function mcDrawPreview(el) {
+  const e = MC.elements[el];
+  document.getElementById('mcPreview').style.display = 'flex';
+  // Draw avatar on canvas
+  const canvas = document.getElementById('mcAvatarCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, 180, 240);
+  // Body glow
+  const grd = ctx.createRadialGradient(90, 120, 10, 90, 120, 90);
+  grd.addColorStop(0, e.color + '40');
+  grd.addColorStop(1, 'transparent');
+  ctx.fillStyle = grd;
+  ctx.fillRect(0, 0, 180, 240);
+  // Body
+  ctx.fillStyle = e.color + 'cc';
+  ctx.beginPath();
+  ctx.ellipse(90, 150, 30, 50, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Head
+  ctx.fillStyle = e.color;
+  ctx.beginPath();
+  ctx.arc(90, 85, 25, 0, Math.PI * 2);
+  ctx.fill();
+  // Eyes
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.arc(80, 82, 5, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(100, 82, 5, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#111';
+  ctx.beginPath(); ctx.arc(81, 83, 2.5, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(101, 83, 2.5, 0, Math.PI * 2); ctx.fill();
+  // Core glow
+  ctx.fillStyle = e.color;
+  ctx.shadowColor = e.color;
+  ctx.shadowBlur = 20;
+  ctx.beginPath(); ctx.arc(90, 140, 8, 0, Math.PI * 2); ctx.fill();
+  ctx.shadowBlur = 0;
+  // Arms
+  ctx.strokeStyle = e.color + 'cc';
+  ctx.lineWidth = 8;
+  ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(60, 130); ctx.lineTo(40, 160); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(120, 130); ctx.lineTo(140, 160); ctx.stroke();
+  // Element symbol text
+  ctx.font = '28px serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(e.icon, 90, 40);
+
+  // Info panel
+  document.getElementById('mcInfoPanel').innerHTML = `
+    <h3 style="color:${e.color};margin-bottom:12px">${e.icon} ${e.name} Mindborn</h3>
+    <div class="stat-row"><span class="label">Attack</span><span class="value" style="color:#ef4444">${e.atk}</span></div>
+    <div class="stat-row"><span class="label">Defense</span><span class="value" style="color:#3b82f6">${e.def}</span></div>
+    <div class="stat-row"><span class="label">Speed</span><span class="value" style="color:#f59e0b">${e.spd}</span></div>
+    <div class="stat-row"><span class="label">Strong vs</span><span class="value" style="color:var(--green)">${MC.elements[e.beats].icon} ${MC.elements[e.beats].name}</span></div>
+    <div class="stat-row"><span class="label">Weak vs</span><span class="value" style="color:var(--red)">${MC.elements[e.weak].icon} ${MC.elements[e.weak].name}</span></div>
+    <div class="stat-row"><span class="label">Ability</span><span class="value">${e.desc}</span></div>
+  `;
+}
+
+function mcAwaken() {
+  if (!MC.selectedElement) return;
+  const e = MC.elements[MC.selectedElement];
+  MC.player = {
+    element: MC.selectedElement, name: (player?.display_name || 'Explorer'),
+    hp: 100, maxHp: 100, atk: e.atk, def: e.def, spd: e.spd,
+  };
+  mcVoice(`Your ${e.name} Mindborn has awakened. Choose your battle mode.`);
+  mcShowMode();
+  mcStartMusic('menu');
+}
+
+function mcShowMode() {
+  ['mc-select','mc-battle','mc-result'].forEach(id => document.getElementById(id).style.display = 'none');
+  document.getElementById('mc-mode').style.display = 'block';
+  document.getElementById('arena3dContainer').style.display = 'none';
+  const e = MC.elements[MC.player.element];
+  document.getElementById('mcPlayerIcon').textContent = e.icon;
+  document.getElementById('mcPlayerName').textContent = MC.player.name;
+  document.getElementById('mcPlayerEl').textContent = `${e.name} Mindborn — ATK ${MC.player.atk} | DEF ${MC.player.def} | SPD ${MC.player.spd}`;
+  document.getElementById('mcPlayerRecord').textContent = `${MC.wins}W / ${MC.losses}L`;
+}
+
+function mcBackToSelect() {
+  MC.player = null;
+  ['mc-mode','mc-battle','mc-result'].forEach(id => document.getElementById(id).style.display = 'none');
+  document.getElementById('mc-select').style.display = 'block';
+}
+
+// ──── ENEMY GENERATION ────
+function mcGenerateEnemy() {
+  const elKeys = Object.keys(MC.elements);
+  const elKey = elKeys[Math.floor(Math.random() * elKeys.length)];
+  const e = MC.elements[elKey];
+  const lvlMod = 0.85 + Math.random() * 0.3;
+  return {
+    element: elKey, name: MC.enemyNames[Math.floor(Math.random() * MC.enemyNames.length)],
+    hp: 100, maxHp: 100, atk: Math.round(e.atk * lvlMod), def: Math.round(e.def * lvlMod), spd: Math.round(e.spd * lvlMod),
+  };
+}
+
+// ──── START BATTLE ────
+function mcStartBattle(mode) {
+  MC.battleMode = mode;
+  MC.enemy = mcGenerateEnemy();
+  MC.player.hp = MC.player.maxHp;
+  MC.battleActive = true;
+  MC.specialCharges = 0;
+  ['mc-select','mc-mode','mc-result'].forEach(id => document.getElementById(id).style.display = 'none');
+  document.getElementById('mc-battle').style.display = 'block';
+  // Init 3D arena
+  document.getElementById('arena3dContainer').style.display = 'block';
+  mcInit3DArena();
+
+  const pe = MC.elements[MC.player.element];
+  const ee = MC.elements[MC.enemy.element];
+  document.getElementById('mcBattlePlayerName').innerHTML = `${pe.icon} ${MC.player.name}`;
+  document.getElementById('mcBattleEnemyName').innerHTML = `${ee.icon} ${MC.enemy.name}`;
+  mcUpdateHp();
+  document.getElementById('mcBattleLog').innerHTML = '';
+  mcLog(`Battle begins! ${pe.name} vs ${ee.name}`, 'info');
+
+  // Element advantage check
+  if (pe.beats === MC.enemy.element) mcLog(`Type advantage! ${pe.desc} — you deal +30% damage`, 'crit');
+  else if (pe.weak === MC.enemy.element) mcLog(`Type disadvantage! ${ee.name} is strong against ${pe.name}`, 'dmg');
+
+  mcStartMusic('battle');
+  mcVoice(`Battle started. ${MC.enemy.name}, a ${ee.name} type, stands before you.`);
+  mcRunBattleMode(mode);
+}
+
+function mcUpdateHp() {
+  const pPct = Math.max(0, MC.player.hp / MC.player.maxHp * 100);
+  const ePct = Math.max(0, MC.enemy.hp / MC.enemy.maxHp * 100);
+  document.getElementById('mcPlayerHp').style.width = pPct + '%';
+  document.getElementById('mcEnemyHp').style.width = ePct + '%';
+  document.getElementById('mcPlayerHpText').textContent = Math.max(0, MC.player.hp);
+  document.getElementById('mcEnemyHpText').textContent = Math.max(0, MC.enemy.hp);
+}
+
+function mcLog(text, type = 'info') {
+  const log = document.getElementById('mcBattleLog');
+  log.innerHTML += `<div class="log-entry log-${type}">${text}</div>`;
+  log.scrollTop = log.scrollHeight;
+}
+
+// ──── DAMAGE CALC ────
+function mcCalcDamage(attacker, defender, isSpecial = false) {
+  const base = attacker.atk * (isSpecial ? 1.8 : 1);
+  const reduced = base * (100 / (100 + defender.def));
+  const aEl = MC.elements[attacker.element];
+  let mult = 1;
+  if (aEl.beats === defender.element) mult = 1.3;
+  if (aEl.weak === defender.element) mult = 0.7;
+  const variance = 0.9 + Math.random() * 0.2;
+  const crit = Math.random() < 0.15 ? 1.5 : 1;
+  return { dmg: Math.round(reduced * mult * variance * crit / 4), isCrit: crit > 1, mult };
+}
+
+// ──── BATTLE MODES ────
+function mcRunBattleMode(mode) {
+  const area = document.getElementById('mcBattleMode');
+  document.getElementById('mcActions').style.display = 'none';
+
+  if (mode === 'reflex') mcReflexClash(area);
+  else if (mode === 'siege') mcMindSiege(area);
+  else if (mode === 'chrono') mcChronoTrial(area);
+}
+
+// ─── REFLEX CLASH ───
+function mcReflexClash(area) {
+  const symbols = ['\u{1F525}','\u{1F30A}','\u26F0\uFE0F','\u{1F32A}\uFE0F','\u2B50','\u{1F4A0}','\u2764\uFE0F','\u{1F300}','\u26A1','\u{1F48E}','\u{1F52E}','\u{1F319}'];
+  let round = 0, maxRounds = 5, playerScore = 0, enemyScore = 0;
+
+  function nextRound() {
+    if (round >= maxRounds || !MC.battleActive) {
+      mcReflexDone(playerScore, enemyScore);
+      return;
+    }
+    round++;
+    const target = symbols[Math.floor(Math.random() * symbols.length)];
+    const cells = [];
+    // Fill 16 cells with random symbols, one is target
+    for (let i = 0; i < 16; i++) cells.push(symbols[Math.floor(Math.random() * symbols.length)]);
+    const targetIdx = Math.floor(Math.random() * 16);
+    cells[targetIdx] = target;
+    // Also add 1-2 more targets
+    const extra = 1 + Math.floor(Math.random() * 2);
+    for (let i = 0; i < extra; i++) {
+      let idx;
+      do { idx = Math.floor(Math.random() * 16); } while (idx === targetIdx);
+      cells[idx] = target;
+    }
+
+    area.innerHTML = `
+      <div style="text-align:center;margin-bottom:12px">
+        <span style="color:var(--muted)">Round ${round}/${maxRounds} — Find:</span>
+        <span style="font-size:2rem;margin-left:8px">${target}</span>
+        <div style="margin-top:6px;font-size:0.85rem">Score: <span style="color:var(--green)">${playerScore}</span> - <span style="color:var(--red)">${enemyScore}</span></div>
+      </div>
+      <div class="reflex-grid" id="reflexGrid"></div>
+      <div style="text-align:center;margin-top:8px"><div class="bar" style="width:200px;height:6px;margin:0 auto"><div class="bar-fill" id="reflexTimer" style="width:100%;background:var(--gold)"></div></div></div>
+    `;
+    const grid = document.getElementById('reflexGrid');
+    let answered = false;
+    const startTime = Date.now();
+
+    cells.forEach((sym, i) => {
+      const cell = document.createElement('div');
+      cell.className = 'reflex-cell';
+      cell.textContent = sym;
+      cell.onclick = () => {
+        if (answered) return;
+        answered = true;
+        if (sym === target) {
+          cell.classList.add('correct');
+          const speed = (Date.now() - startTime) / 1000;
+          playerScore++;
+          mcLog(`Reflex round ${round}: Hit in ${speed.toFixed(2)}s`, 'info');
+          mcVoice(round === 1 ? 'Nice reflexes!' : '');
+        } else {
+          cell.classList.add('wrong');
+          enemyScore++;
+          mcLog(`Reflex round ${round}: Miss! Enemy scores`, 'dmg');
+        }
+        setTimeout(nextRound, 800);
+      };
+      grid.appendChild(cell);
+    });
+
+    // Enemy auto-answer after 1-3s
+    const enemyTime = 1000 + Math.random() * 2000;
+    setTimeout(() => {
+      if (!answered && MC.battleActive) {
+        answered = true;
+        enemyScore++;
+        mcLog(`Reflex round ${round}: Too slow! Enemy scores`, 'dmg');
+        const tc = grid.children[targetIdx];
+        if (tc) tc.classList.add('correct');
+        setTimeout(nextRound, 800);
+      }
+    }, enemyTime);
+
+    // Timer bar
+    let elapsed = 0;
+    const timerInterval = setInterval(() => {
+      elapsed += 50;
+      const fill = document.getElementById('reflexTimer');
+      if (fill) fill.style.width = Math.max(0, 100 - (elapsed / enemyTime * 100)) + '%';
+      if (answered || elapsed > enemyTime + 500) clearInterval(timerInterval);
+    }, 50);
+  }
+  nextRound();
+}
+
+function mcReflexDone(ps, es) {
+  const won = ps > es;
+  const dmg = mcCalcDamage(won ? MC.player : MC.enemy, won ? MC.enemy : MC.player);
+  if (won) {
+    MC.enemy.hp -= dmg.dmg;
+    mcLog(`Reflex victory! You deal ${dmg.dmg} damage${dmg.isCrit ? ' CRITICAL!' : ''}`, dmg.isCrit ? 'crit' : 'info');
+    MC.specialCharges = Math.min(MC.maxSpecial, MC.specialCharges + 1);
+  } else {
+    MC.player.hp -= dmg.dmg;
+    mcLog(`Reflex defeat. Enemy deals ${dmg.dmg} damage`, 'dmg');
+  }
+  mcUpdateHp();
+  mcAfterRound();
+}
+
+// ─── MIND SIEGE ───
+function mcMindSiege(area) {
+  const grid = Array(16).fill(null);
+  let placesLeft = 4;
+  const pieces = ['atk','atk','def','trap'];
+  let currentPiece = 0;
+
+  function render() {
+    area.innerHTML = `
+      <div style="text-align:center;margin-bottom:12px">
+        <span style="color:var(--muted)">Place your pieces (${placesLeft} left):</span>
+        <span style="margin-left:8px;font-size:1.2rem">${currentPiece < pieces.length ? {atk:'\u2694 Attack',def:'\u{1F6E1} Defense',trap:'\u{1F4A3} Trap'}[pieces[currentPiece]] : 'Done'}</span>
+      </div>
+      <div class="siege-board" id="siegeBoard"></div>
+      <div style="text-align:center;margin-top:12px">
+        <button class="btn btn-primary" id="siegeGoBtn" onclick="mcSiegeResolve()" ${placesLeft > 0 ? 'disabled' : ''} style="padding:10px 30px">Battle!</button>
+      </div>
+    `;
+    const board = document.getElementById('siegeBoard');
+    for (let i = 0; i < 16; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'siege-cell' + (grid[i] ? ' ' + grid[i] : '');
+      cell.textContent = grid[i] === 'atk' ? '\u2694' : grid[i] === 'def' ? '\u{1F6E1}' : grid[i] === 'trap' ? '\u{1F4A3}' : '';
+      cell.onclick = () => {
+        if (grid[i] || placesLeft <= 0) return;
+        grid[i] = pieces[currentPiece];
+        placesLeft--;
+        currentPiece++;
+        render();
+      };
+      board.appendChild(cell);
+    }
+  }
+  render();
+
+  // Store for resolve
+  MC._siegeGrid = grid;
+}
+
+window.mcSiegeResolve = function() {
+  const grid = MC._siegeGrid;
+  // Enemy places randomly
+  const enemyGrid = Array(16).fill(null);
+  const ep = ['atk','atk','def','trap'];
+  ep.forEach(p => {
+    let idx;
+    do { idx = Math.floor(Math.random() * 16); } while (enemyGrid[idx]);
+    enemyGrid[idx] = p;
+  });
+
+  let playerDmg = 0, enemyDmg = 0;
+  const area = document.getElementById('mcBattleMode');
+
+  // Calculate hits
+  for (let i = 0; i < 16; i++) {
+    if (grid[i] === 'atk' && enemyGrid[i] !== 'def') playerDmg += (enemyGrid[i] === 'trap' ? 5 : 15);
+    if (grid[i] === 'trap' && enemyGrid[i] === 'atk') playerDmg += 20;
+    if (enemyGrid[i] === 'atk' && grid[i] !== 'def') enemyDmg += (grid[i] === 'trap' ? 5 : 15);
+    if (enemyGrid[i] === 'trap' && grid[i] === 'atk') enemyDmg += 20;
+  }
+
+  // Show result grid
+  let html = '<div style="text-align:center;margin-bottom:12px"><span style="color:var(--gold)">Battle resolved!</span></div>';
+  html += '<div class="siege-board">';
+  for (let i = 0; i < 16; i++) {
+    const yours = grid[i];
+    const theirs = enemyGrid[i];
+    let display = '', cls = '';
+    if (yours && theirs) { display = '\u{1F4A5}'; cls = 'hit'; }
+    else if (yours) { display = yours === 'atk' ? '\u2694' : yours === 'def' ? '\u{1F6E1}' : '\u{1F4A3}'; cls = yours; }
+    else if (theirs) { display = theirs === 'atk' ? '\u2620' : theirs === 'def' ? '\u{1F7E6}' : '\u{1F7E1}'; cls = 'atk'; }
+    html += `<div class="siege-cell ${cls}">${display}</div>`;
+  }
+  html += '</div>';
+  area.innerHTML = html;
+
+  const dmgResult = mcCalcDamage(MC.player, MC.enemy);
+  const eDmgResult = mcCalcDamage(MC.enemy, MC.player);
+  const finalPlayerDmg = Math.round(playerDmg * dmgResult.mult);
+  const finalEnemyDmg = Math.round(enemyDmg * eDmgResult.mult);
+  MC.enemy.hp -= finalPlayerDmg;
+  MC.player.hp -= finalEnemyDmg;
+  mcLog(`Siege: You dealt ${finalPlayerDmg} dmg, took ${finalEnemyDmg} dmg`, finalPlayerDmg > finalEnemyDmg ? 'info' : 'dmg');
+  if (finalPlayerDmg > finalEnemyDmg) MC.specialCharges = Math.min(MC.maxSpecial, MC.specialCharges + 1);
+  mcUpdateHp();
+  setTimeout(mcAfterRound, 1500);
+};
+
+// ─── CHRONO TRIAL ───
+function mcChronoTrial(area) {
+  const questions = [
+    { q: 'What is 17 x 13?', a: '221', pts: 30 },
+    { q: 'Capital of Japan?', a: 'tokyo', pts: 10 },
+    { q: 'Solve: 2x + 5 = 19', a: '7', pts: 25 },
+    { q: 'Opposite of "benevolent"?', a: 'malevolent', pts: 20 },
+    { q: 'Square root of 144?', a: '12', pts: 15 },
+    { q: 'H2O is the formula for?', a: 'water', pts: 10 },
+    { q: 'What comes next: 2, 6, 18, ...?', a: '54', pts: 25 },
+    { q: 'Largest planet in our solar system?', a: 'jupiter', pts: 15 },
+  ];
+  // Pick 5 random
+  const picked = questions.sort(() => Math.random() - 0.5).slice(0, 5);
+  let score = 0, timeLeft = 60, current = -1, done = new Set();
+
+  function render() {
+    area.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <span style="color:var(--muted)">Solve as many as you can!</span>
+        <span style="font-size:1.2rem;font-weight:700;color:${timeLeft < 15 ? 'var(--red)' : 'var(--gold)'}">${timeLeft}s</span>
+        <span style="color:var(--green);font-weight:600">Score: ${score}</span>
+      </div>
+      <div class="chrono-tasks" id="chronoTasks"></div>
+      <div id="chronoInput" style="display:none;margin-top:12px">
+        <div style="margin-bottom:8px;font-weight:600" id="chronoQ"></div>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="chronoAnswer" style="flex:1;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:1rem" placeholder="Your answer..." onkeydown="if(event.key==='Enter')mcChronoSubmit()">
+          <button class="btn btn-primary" onclick="mcChronoSubmit()">Submit</button>
+        </div>
+      </div>
+    `;
+    const list = document.getElementById('chronoTasks');
+    picked.forEach((q, i) => {
+      const el = document.createElement('div');
+      el.className = 'chrono-task' + (done.has(i) ? ' done' : '') + (current === i ? ' active' : '');
+      el.innerHTML = `<span class="ct-pts">${q.pts}pt</span><span class="ct-q">${done.has(i) ? '\u2705 ' : ''}${q.q}</span>`;
+      if (!done.has(i)) el.onclick = () => { current = i; showInput(i); };
+      list.appendChild(el);
+    });
+  }
+
+  function showInput(idx) {
+    render();
+    document.getElementById('chronoInput').style.display = 'block';
+    document.getElementById('chronoQ').textContent = picked[idx].q;
+    document.getElementById('chronoAnswer').value = '';
+    document.getElementById('chronoAnswer').focus();
+  }
+
+  window.mcChronoSubmit = function() {
+    if (current < 0 || done.has(current)) return;
+    const ans = document.getElementById('chronoAnswer').value.trim().toLowerCase();
+    if (ans === picked[current].a.toLowerCase()) {
+      score += picked[current].pts;
+      done.add(current);
+      mcLog(`Chrono: Correct! +${picked[current].pts} pts`, 'info');
+    } else {
+      mcLog(`Chrono: Wrong answer for "${picked[current].q}"`, 'dmg');
+    }
+    current = -1;
+    if (done.size === picked.length) { clearInterval(timer); mcChronoDone(score); return; }
+    render();
+  };
+
+  render();
+  const timer = setInterval(() => {
+    timeLeft--;
+    if (timeLeft <= 0 || !MC.battleActive) {
+      clearInterval(timer);
+      mcChronoDone(score);
+      return;
+    }
+    const timeEl = area.querySelector('[style*="font-weight:700"]');
+    if (timeEl) { timeEl.textContent = timeLeft + 's'; timeEl.style.color = timeLeft < 15 ? 'var(--red)' : 'var(--gold)'; }
+  }, 1000);
+}
+
+function mcChronoDone(score) {
+  const maxScore = 100;
+  const pct = Math.min(1, score / maxScore);
+  if (pct >= 0.5) {
+    const dmg = mcCalcDamage(MC.player, MC.enemy);
+    const totalDmg = Math.round(dmg.dmg * (1 + pct));
+    MC.enemy.hp -= totalDmg;
+    mcLog(`Chrono victory! Score ${score} — dealt ${totalDmg} damage`, dmg.isCrit ? 'crit' : 'info');
+    MC.specialCharges = Math.min(MC.maxSpecial, MC.specialCharges + 1);
+  } else {
+    const dmg = mcCalcDamage(MC.enemy, MC.player);
+    MC.player.hp -= dmg.dmg;
+    mcLog(`Chrono: Low score ${score}. Enemy dealt ${dmg.dmg} damage`, 'dmg');
+  }
+  mcUpdateHp();
+  mcAfterRound();
+}
+
+// ──── AFTER ROUND ────
+function mcAfterRound() {
+  if (MC.enemy.hp <= 0) { mcBattleEnd(true); return; }
+  if (MC.player.hp <= 0) { mcBattleEnd(false); return; }
+
+  // Show action buttons
+  document.getElementById('mcActions').style.display = 'flex';
+  document.getElementById('mcSpecialBtn').disabled = MC.specialCharges < MC.maxSpecial;
+  document.getElementById('mcSpecialBtn').innerHTML = `\u2B50 Special (${MC.specialCharges}/${MC.maxSpecial})`;
+}
+
+function mcAction(type) {
+  document.getElementById('mcActions').style.display = 'none';
+
+  if (type === 'attack') {
+    const dmg = mcCalcDamage(MC.player, MC.enemy);
+    MC.enemy.hp -= dmg.dmg;
+    mcLog(`You attack for ${dmg.dmg}${dmg.isCrit ? ' CRITICAL!' : ''}`, dmg.isCrit ? 'crit' : 'info');
+    mc3DAttackAnim('player');
+    // Enemy retaliates
+    setTimeout(() => {
+      const eDmg = mcCalcDamage(MC.enemy, MC.player);
+      const reduced = Math.round(eDmg.dmg * 0.9);
+      MC.player.hp -= reduced;
+      mcLog(`Enemy strikes back for ${reduced}`, 'dmg');
+      mc3DAttackAnim('enemy');
+      mcUpdateHp();
+      mcAfterRound();
+    }, 600);
+  } else if (type === 'defend') {
+    // Enemy attacks but reduced
+    const eDmg = mcCalcDamage(MC.enemy, MC.player);
+    const reduced = Math.round(eDmg.dmg * 0.4);
+    MC.player.hp -= reduced;
+    MC.player.hp = Math.min(MC.player.maxHp, MC.player.hp + 5); // Small heal
+    mcLog(`You defend! Took only ${reduced} damage and recovered 5 HP`, 'heal');
+    MC.specialCharges = Math.min(MC.maxSpecial, MC.specialCharges + 1);
+    mcUpdateHp();
+    mcAfterRound();
+  } else if (type === 'special') {
+    if (MC.specialCharges < MC.maxSpecial) return;
+    MC.specialCharges = 0;
+    const dmg = mcCalcDamage(MC.player, MC.enemy, true);
+    MC.enemy.hp -= dmg.dmg;
+    mcLog(`SPECIAL ATTACK! Devastating ${dmg.dmg} damage!`, 'crit');
+    mcVoice(`Special attack unleashed!`);
+    mc3DSpecialAnim();
+    mcUpdateHp();
+    setTimeout(mcAfterRound, 800);
+  }
+
+  mcUpdateHp();
+}
+
+// ──── BATTLE END ────
+function mcBattleEnd(won) {
+  MC.battleActive = false;
+  if (won) { MC.wins++; mcStartMusic('victory'); mcVoice('Victory! Your Mindborn grows stronger.'); }
+  else { MC.losses++; mcStartMusic('defeat'); mcVoice('Defeat. But every loss is a lesson.'); }
+
+  setTimeout(() => {
+    ['mc-select','mc-mode','mc-battle'].forEach(id => document.getElementById(id).style.display = 'none');
+    document.getElementById('mc-result').style.display = 'block';
+    document.getElementById('arena3dContainer').style.display = 'none';
+    document.getElementById('mcResultIcon').textContent = won ? '\u{1F3C6}' : '\u{1F480}';
+    document.getElementById('mcResultTitle').textContent = won ? 'VICTORY!' : 'DEFEAT';
+    document.getElementById('mcResultTitle').style.color = won ? '#f59e0b' : '#ef4444';
+    document.getElementById('mcResultSub').textContent = won
+      ? `You defeated ${MC.enemy.name} the ${MC.elements[MC.enemy.element].name}!`
+      : `${MC.enemy.name} proved too strong this time.`;
+
+    const xpGain = won ? 25 + Math.floor(Math.random() * 20) : 5;
+    document.getElementById('mcResultStats').innerHTML = `
+      <div class="stat-card"><div class="stat-value" style="color:var(--green)">${MC.wins}</div><div class="stat-label">Wins</div></div>
+      <div class="stat-card"><div class="stat-value" style="color:var(--red)">${MC.losses}</div><div class="stat-label">Losses</div></div>
+      <div class="stat-card"><div class="stat-value" style="color:var(--gold)">+${xpGain}</div><div class="stat-label">XP Earned</div></div>
+      <div class="stat-card"><div class="stat-value">${MC.battleMode}</div><div class="stat-label">Mode</div></div>
+    `;
+    player.xp = (player.xp || 0) + xpGain;
+  }, 1200);
+}
+
+// ╔══════════════════════════════════════════════════════════════════╗
+// ║                    PROCEDURAL MUSIC SYSTEM                      ║
+// ╚══════════════════════════════════════════════════════════════════╝
+
+function mcInitAudio() {
+  if (MC.musicCtx) return;
+  MC.musicCtx = new (window.AudioContext || window.webkitAudioContext)();
+  MC.musicGain = MC.musicCtx.createGain();
+  MC.musicGain.gain.value = 0.4;
+  MC.musicGain.connect(MC.musicCtx.destination);
+  // Build visualizer bars
+  const viz = document.getElementById('mcMusicViz');
+  for (let i = 0; i < 8; i++) {
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    bar.style.height = (4 + Math.random() * 12) + 'px';
+    bar.style.animationDelay = (i * 0.1) + 's';
+    viz.appendChild(bar);
+  }
+}
+
+function mcStopMusic() {
+  MC.musicNodes.forEach(n => { try { n.stop(); } catch(e) {} });
+  MC.musicNodes = [];
+  MC.musicPlaying = false;
+}
+
+function mcStartMusic(track) {
+  mcInitAudio();
+  mcStopMusic();
+  MC.musicPlaying = true;
+  document.getElementById('mcMusicBar').classList.add('active');
+  document.getElementById('mcMusicToggle').textContent = '\u23F8';
+
+  const ctx = MC.musicCtx;
+  const gain = MC.musicGain;
+  const tracks = {
+    menu:    { notes: [261.6,329.6,392.0,523.3,392.0,329.6], tempo: 0.6, wave: 'sine', filterFreq: 800 },
+    battle:  { notes: [196.0,233.1,261.6,293.7,349.2,293.7,261.6,233.1], tempo: 0.25, wave: 'sawtooth', filterFreq: 2000 },
+    victory: { notes: [523.3,659.3,784.0,1047,784.0,659.3,523.3,659.3], tempo: 0.35, wave: 'triangle', filterFreq: 3000 },
+    defeat:  { notes: [196.0,185.0,174.6,164.8,155.6,146.8], tempo: 0.7, wave: 'sine', filterFreq: 400 },
+  };
+  const t = tracks[track] || tracks.menu;
+  document.getElementById('mcTrackName').textContent = track.charAt(0).toUpperCase() + track.slice(1) + ' Theme';
+
+  function playLoop() {
+    if (!MC.musicPlaying) return;
+    const now = ctx.currentTime;
+    t.notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const noteGain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = t.filterFreq;
+      osc.type = t.wave;
+      osc.frequency.value = freq;
+      noteGain.gain.setValueAtTime(0, now + i * t.tempo);
+      noteGain.gain.linearRampToValueAtTime(0.15, now + i * t.tempo + 0.05);
+      noteGain.gain.linearRampToValueAtTime(0, now + i * t.tempo + t.tempo * 0.9);
+      osc.connect(filter);
+      filter.connect(noteGain);
+      noteGain.connect(gain);
+      osc.start(now + i * t.tempo);
+      osc.stop(now + i * t.tempo + t.tempo);
+      MC.musicNodes.push(osc);
+    });
+    // Bass drone
+    const bass = ctx.createOscillator();
+    const bassGain = ctx.createGain();
+    bass.type = 'sine';
+    bass.frequency.value = t.notes[0] / 2;
+    bassGain.gain.value = 0.08;
+    bass.connect(bassGain);
+    bassGain.connect(gain);
+    bass.start(now);
+    bass.stop(now + t.notes.length * t.tempo);
+    MC.musicNodes.push(bass);
+    // Loop
+    setTimeout(playLoop, t.notes.length * t.tempo * 1000);
+  }
+  playLoop();
+}
+
+function mcToggleMusic() {
+  if (MC.musicPlaying) {
+    mcStopMusic();
+    document.getElementById('mcMusicToggle').textContent = '\u25B6';
+  } else {
+    mcStartMusic('menu');
+  }
+}
+
+function mcSetVolume(val) {
+  if (MC.musicGain) MC.musicGain.gain.value = val / 100;
+}
+
+// ╔══════════════════════════════════════════════════════════════════╗
+// ║                      VOICE INTERACTIONS                         ║
+// ╚══════════════════════════════════════════════════════════════════╝
+
+function mcVoice(text) {
+  if (!text || !MC.voiceSynth) return;
+  try {
+    MC.voiceSynth.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = 1.0;
+    utter.pitch = 1.1;
+    utter.volume = 0.7;
+    // Try to find a good English voice
+    const voices = MC.voiceSynth.getVoices();
+    const eng = voices.find(v => v.lang.startsWith('en') && v.name.includes('Female'))
+             || voices.find(v => v.lang.startsWith('en'))
+             || voices[0];
+    if (eng) utter.voice = eng;
+    MC.voiceSynth.speak(utter);
+  } catch(e) {}
+}
+
+// ╔══════════════════════════════════════════════════════════════════╗
+// ║                    SIMPLE 3D BATTLE ARENA                       ║
+// ╚══════════════════════════════════════════════════════════════════╝
+
+let arena3D = { scene: null, camera: null, renderer: null, animId: null, playerMesh: null, enemyMesh: null };
+
+function mcInit3DArena() {
+  if (!window.THREE) return;
+  const container = document.getElementById('arena3dContainer');
+  const canvas = document.getElementById('arena3dCanvas');
+  if (arena3D.animId) cancelAnimationFrame(arena3D.animId);
+
+  const w = container.clientWidth, h = 350;
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0a0a1a);
+  scene.fog = new THREE.Fog(0x0a0a1a, 20, 50);
+
+  const camera = new THREE.PerspectiveCamera(50, w / h, 0.1, 100);
+  camera.position.set(0, 6, 12);
+  camera.lookAt(0, 1, 0);
+
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setSize(w, h);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  // Arena floor — hexagonal
+  const floorGeo = new THREE.CylinderGeometry(8, 8, 0.3, 6);
+  const pe = MC.elements[MC.player.element];
+  const ee = MC.elements[MC.enemy.element];
+  const floorMat = new THREE.MeshStandardMaterial({ color: 0x1a1a2e, metalness: 0.3, roughness: 0.8 });
+  const floor = new THREE.Mesh(floorGeo, floorMat);
+  floor.position.y = -0.15;
+  scene.add(floor);
+
+  // Arena ring
+  const ringGeo = new THREE.TorusGeometry(8, 0.15, 8, 32);
+  const ringMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(pe.color), emissive: new THREE.Color(pe.color), emissiveIntensity: 0.5 });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.rotation.x = Math.PI / 2;
+  ring.position.y = 0.1;
+  scene.add(ring);
+
+  // Player character
+  const playerGroup = new THREE.Group();
+  const bodyGeo = new THREE.CapsuleGeometry(0.4, 1, 8, 16);
+  const bodyMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(pe.color), emissive: new THREE.Color(pe.color), emissiveIntensity: 0.3 });
+  const body = new THREE.Mesh(bodyGeo, bodyMat);
+  body.position.y = 1;
+  playerGroup.add(body);
+  const headGeo = new THREE.SphereGeometry(0.35, 16, 16);
+  const head = new THREE.Mesh(headGeo, bodyMat);
+  head.position.y = 2;
+  playerGroup.add(head);
+  // Core glow
+  const coreGeo = new THREE.SphereGeometry(0.15, 8, 8);
+  const coreMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: new THREE.Color(pe.color), emissiveIntensity: 2 });
+  const core = new THREE.Mesh(coreGeo, coreMat);
+  core.position.y = 1.2;
+  playerGroup.add(core);
+  playerGroup.position.set(-3, 0, 0);
+  scene.add(playerGroup);
+
+  // Enemy character
+  const enemyGroup = new THREE.Group();
+  const eBodyMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(ee.color), emissive: new THREE.Color(ee.color), emissiveIntensity: 0.3 });
+  const eBody = new THREE.Mesh(bodyGeo, eBodyMat);
+  eBody.position.y = 1;
+  enemyGroup.add(eBody);
+  const eHead = new THREE.Mesh(headGeo, eBodyMat);
+  eHead.position.y = 2;
+  enemyGroup.add(eHead);
+  const eCoreMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: new THREE.Color(ee.color), emissiveIntensity: 2 });
+  const eCore = new THREE.Mesh(coreGeo, eCoreMat);
+  eCore.position.y = 1.2;
+  enemyGroup.add(eCore);
+  enemyGroup.position.set(3, 0, 0);
+  enemyGroup.rotation.y = Math.PI;
+  scene.add(enemyGroup);
+
+  // Lights
+  scene.add(new THREE.AmbientLight(0x404060, 0.5));
+  const spot1 = new THREE.PointLight(new THREE.Color(pe.color), 2, 20);
+  spot1.position.set(-4, 5, 3);
+  scene.add(spot1);
+  const spot2 = new THREE.PointLight(new THREE.Color(ee.color), 2, 20);
+  spot2.position.set(4, 5, -3);
+  scene.add(spot2);
+
+  // Particles
+  const particleCount = 100;
+  const pGeo = new THREE.BufferGeometry();
+  const pPos = new Float32Array(particleCount * 3);
+  for (let i = 0; i < particleCount; i++) {
+    pPos[i * 3] = (Math.random() - 0.5) * 20;
+    pPos[i * 3 + 1] = Math.random() * 10;
+    pPos[i * 3 + 2] = (Math.random() - 0.5) * 20;
+  }
+  pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+  const pMat = new THREE.PointsMaterial({ size: 0.08, color: 0x7c3aed, transparent: true, opacity: 0.6 });
+  const particles = new THREE.Points(pGeo, pMat);
+  scene.add(particles);
+
+  arena3D = { scene, camera, renderer, animId: null, playerMesh: playerGroup, enemyMesh: enemyGroup, particles, core, eCore };
+
+  function animate() {
+    arena3D.animId = requestAnimationFrame(animate);
+    const t = Date.now() * 0.001;
+    // Idle animations
+    playerGroup.position.y = Math.sin(t * 2) * 0.1;
+    enemyGroup.position.y = Math.sin(t * 2 + 1) * 0.1;
+    // Core pulse
+    core.scale.setScalar(1 + Math.sin(t * 4) * 0.2);
+    eCore.scale.setScalar(1 + Math.sin(t * 4 + 2) * 0.2);
+    // Particles drift
+    const pos = particles.geometry.attributes.position;
+    for (let i = 0; i < particleCount; i++) {
+      pos.array[i * 3 + 1] += 0.01;
+      if (pos.array[i * 3 + 1] > 10) pos.array[i * 3 + 1] = 0;
+    }
+    pos.needsUpdate = true;
+    // Slow camera orbit
+    camera.position.x = Math.sin(t * 0.2) * 2;
+    camera.lookAt(0, 1.5, 0);
+    renderer.render(scene, camera);
+  }
+  animate();
+}
+
+function mc3DAttackAnim(who) {
+  if (!arena3D.playerMesh) return;
+  const mesh = who === 'player' ? arena3D.playerMesh : arena3D.enemyMesh;
+  const target = who === 'player' ? arena3D.enemyMesh : arena3D.playerMesh;
+  const origX = mesh.position.x;
+  const targetX = target.position.x + (who === 'player' ? -1 : 1);
+  // Lunge forward
+  let step = 0;
+  const anim = setInterval(() => {
+    step++;
+    if (step < 10) mesh.position.x += (targetX - origX) / 10;
+    else if (step === 10) {
+      // Flash target
+      target.children.forEach(c => { if (c.material) c.material.emissiveIntensity = 2; });
+    }
+    else if (step < 20) mesh.position.x -= (targetX - origX) / 10;
+    else {
+      clearInterval(anim);
+      mesh.position.x = origX;
+      target.children.forEach(c => { if (c.material) c.material.emissiveIntensity = 0.3; });
+    }
+  }, 30);
+}
+
+function mc3DSpecialAnim() {
+  if (!arena3D.scene) return;
+  // Big flash
+  const flash = new THREE.PointLight(0xffffff, 10, 30);
+  flash.position.set(0, 3, 0);
+  arena3D.scene.add(flash);
+  let intensity = 10;
+  const fade = setInterval(() => {
+    intensity -= 0.5;
+    flash.intensity = Math.max(0, intensity);
+    if (intensity <= 0) {
+      clearInterval(fade);
+      arena3D.scene.remove(flash);
+    }
+  }, 30);
 }
 </script>
 </body>
