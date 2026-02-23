@@ -699,6 +699,12 @@ body {
   .avatar-cat-tab { padding:9px 12px; font-size:0.78rem; }
   .avatar-preview-canvas { width:180px !important; height:240px !important; }
 }
+.av3d-camera-overlay { position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.92); z-index:610; display:none; flex-direction:column; align-items:center; justify-content:center; border-radius:var(--radius); }
+.av3d-camera-overlay.active { display:flex; }
+.av3d-camera-overlay video { max-width:90%; max-height:55%; border-radius:var(--radius); border:2px solid var(--accent); }
+.av3d-rotate-hint { font-size:0.7rem; color:var(--muted); text-align:center; margin-top:6px; opacity:0.6; }
+.avatar-preview-canvas { cursor:grab; }
+.avatar-preview-canvas:active { cursor:grabbing; }
 
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
@@ -1499,6 +1505,7 @@ body {
   <div class="avatar-builder-header">
     <h2>&#x1F3A8; Mindborn Creator <span class="ai-badge" style="font-size:0.55rem">AI ASSISTED</span></h2>
     <div class="avatar-actions">
+      <button class="btn btn-sm btn-outline" onclick="av3dCapturePhoto()">&#x1F4F7; Photo</button>
       <button class="btn btn-sm btn-outline" onclick="avatarRandomize()">&#x1F3B2; Random</button>
       <button class="btn btn-sm btn-gold" onclick="avatarAISuggest()">&#x2728; AI Suggest</button>
       <button class="btn btn-sm btn-outline" onclick="avatarCancel()">Cancel</button>
@@ -1509,6 +1516,15 @@ body {
     <div class="avatar-preview-area">
       <div class="avatar-idle">
         <canvas class="avatar-preview-canvas" id="avatarPreviewCanvas" width="300" height="400"></canvas>
+      </div>
+      <div class="av3d-rotate-hint">Drag to rotate &bull; Scroll to zoom</div>
+      <div class="av3d-camera-overlay" id="av3dCameraOverlay">
+        <video id="av3dCameraVideo" autoplay playsinline style="transform:scaleX(-1)"></video>
+        <div style="margin-top:16px;display:flex;gap:12px">
+          <button class="btn btn-primary" onclick="av3dCameraSnap()">&#x1F4F8; Capture</button>
+          <button class="btn btn-outline" onclick="av3dCameraClose()">Cancel</button>
+        </div>
+        <p style="color:var(--muted);margin-top:10px;font-size:0.8rem">Center your face in the frame</p>
       </div>
       <div class="avatar-noor-bubble" id="avatarNoorBubble">Let's create your Mindborn!</div>
     </div>
@@ -5198,936 +5214,1554 @@ const AVATAR_OPTIONS_MAP = {
 let avatarConfig = null;
 let avatarSavedConfig = null;
 
-// ──── AVATAR RENDERING ENGINE ────
+// ──── 3D AVATAR RENDERING ENGINE (Three.js) ────
 
-function avatarRender(canvas, config, elementKey) {
-  const ctx = canvas.getContext('2d');
-  const w = canvas.width, h = canvas.height;
-  ctx.clearRect(0, 0, w, h);
-  const s = Math.min(w / 300, h / 400);
-  const cx = w / 2, cy = h * 0.38;
-  ctx.save();
-  avDrawHairBack(ctx, config, s, cx, cy);
-  avDrawBody(ctx, config, s, cx, cy);
-  avDrawBottomClothes(ctx, config, s, cx, cy);
-  avDrawTopClothes(ctx, config, s, cx, cy);
-  avDrawNecklace(ctx, config, s, cx, cy);
-  avDrawHead(ctx, config, s, cx, cy);
-  avDrawEars(ctx, config, s, cx, cy);
-  avDrawFace(ctx, config, s, cx, cy);
-  avDrawFacialHair(ctx, config, s, cx, cy);
-  avDrawHairFront(ctx, config, s, cx, cy);
-  avDrawGlasses(ctx, config, s, cx, cy);
-  avDrawHat(ctx, config, s, cx, cy);
-  avDrawEarring(ctx, config, s, cx, cy);
-  avDrawElementGlow(ctx, config, s, cx, cy, elementKey);
-  ctx.restore();
-}
+/* ── Globals ── */
+const AV3D = {
+  scene: null, camera: null, renderer: null, avatarGroup: null,
+  orbitAngle: 0.35, orbitElev: 0.15, orbitDist: 3.8,
+  targetCanvas: null, animId: null, autoRotateTimer: null,
+  dragging: false, lastX: 0, lastY: 0, pinchDist: 0,
+  _configHash: '', _snapshotCache: {}
+};
 
-// Helper: darken/lighten color
+/* ── Colour utilities (kept from 2D) ── */
 function avShade(hex, amt) {
   let r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
-  r = Math.max(0, Math.min(255, r + amt));
-  g = Math.max(0, Math.min(255, g + amt));
-  b = Math.max(0, Math.min(255, b + amt));
-  return '#' + [r,g,b].map(c => c.toString(16).padStart(2,'0')).join('');
+  r = Math.max(0,Math.min(255,r+amt)); g = Math.max(0,Math.min(255,g+amt)); b = Math.max(0,Math.min(255,b+amt));
+  return '#'+[r,g,b].map(c=>c.toString(16).padStart(2,'0')).join('');
 }
 function avAlpha(hex, a) {
-  let r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
   return `rgba(${r},${g},${b},${a})`;
 }
 
-// ── HEAD ──
-function avDrawHead(ctx, c, s, cx, cy) {
-  ctx.fillStyle = c.skinTone;
-  ctx.beginPath();
-  const hw = 28*s, hh = 32*s;
-  switch(c.faceShape) {
-    case 'round': ctx.arc(cx, cy, 30*s, 0, Math.PI*2); break;
-    case 'square':
-      { const sz = 28*s, r = 6*s;
-        ctx.moveTo(cx-sz+r, cy-sz); ctx.arcTo(cx+sz, cy-sz, cx+sz, cy+sz, r);
-        ctx.arcTo(cx+sz, cy+sz, cx-sz, cy+sz, r); ctx.arcTo(cx-sz, cy+sz, cx-sz, cy-sz, r);
-        ctx.arcTo(cx-sz, cy-sz, cx+sz, cy-sz, r); } break;
-    case 'heart':
-      ctx.moveTo(cx, cy+32*s);
-      ctx.bezierCurveTo(cx-36*s, cy+10*s, cx-32*s, cy-20*s, cx-16*s, cy-28*s);
-      ctx.bezierCurveTo(cx-4*s, cy-36*s, cx, cy-28*s, cx, cy-28*s);
-      ctx.bezierCurveTo(cx, cy-28*s, cx+4*s, cy-36*s, cx+16*s, cy-28*s);
-      ctx.bezierCurveTo(cx+32*s, cy-20*s, cx+36*s, cy+10*s, cx, cy+32*s);
-      break;
-    case 'long': ctx.ellipse(cx, cy, 24*s, 38*s, 0, 0, Math.PI*2); break;
-    case 'diamond':
-      ctx.moveTo(cx, cy-32*s); ctx.bezierCurveTo(cx+14*s, cy-28*s, cx+30*s, cy-8*s, cx+28*s, cy+4*s);
-      ctx.bezierCurveTo(cx+24*s, cy+18*s, cx+10*s, cy+30*s, cx, cy+34*s);
-      ctx.bezierCurveTo(cx-10*s, cy+30*s, cx-24*s, cy+18*s, cx-28*s, cy+4*s);
-      ctx.bezierCurveTo(cx-30*s, cy-8*s, cx-14*s, cy-28*s, cx, cy-32*s);
-      break;
-    default: ctx.ellipse(cx, cy, hw, hh, 0, 0, Math.PI*2);
+/* ── Procedural Textures (CanvasTexture, no external files) ── */
+function av3dSkinBumpTex() {
+  const sz=128, cv=document.createElement('canvas'); cv.width=cv.height=sz;
+  const x=cv.getContext('2d'), id=x.createImageData(sz,sz);
+  for(let i=0;i<id.data.length;i+=4){ const v=128+Math.floor((Math.random()-0.5)*30); id.data[i]=id.data[i+1]=id.data[i+2]=v; id.data[i+3]=255; }
+  x.putImageData(id,0,0);
+  const t=new THREE.CanvasTexture(cv); t.wrapS=t.wrapT=THREE.RepeatWrapping; return t;
+}
+function av3dIrisTex(color) {
+  const sz=64, cv=document.createElement('canvas'); cv.width=cv.height=sz;
+  const x=cv.getContext('2d'), cx=sz/2;
+  const grd=x.createRadialGradient(cx,cx,2,cx,cx,cx);
+  grd.addColorStop(0, avShade(color,40)); grd.addColorStop(0.3, color); grd.addColorStop(0.8, avShade(color,-50)); grd.addColorStop(1, '#000');
+  x.fillStyle=grd; x.fillRect(0,0,sz,sz);
+  x.strokeStyle=avAlpha(avShade(color,60),0.4); x.lineWidth=0.5;
+  for(let i=0;i<36;i++){ const a=i*Math.PI*2/36; x.beginPath(); x.moveTo(cx+4*Math.cos(a),cx+4*Math.sin(a)); x.lineTo(cx+(cx-4)*Math.cos(a),cx+(cx-4)*Math.sin(a)); x.stroke(); }
+  const t=new THREE.CanvasTexture(cv); return t;
+}
+function av3dHairStrandTex(color) {
+  const w=64,h=128, cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+  const x=cv.getContext('2d');
+  x.fillStyle=color; x.fillRect(0,0,w,h);
+  x.strokeStyle=avAlpha(avShade(color,30),0.3); x.lineWidth=0.8;
+  for(let i=0;i<24;i++){ const sx=Math.random()*w; x.beginPath(); x.moveTo(sx,0); x.bezierCurveTo(sx+Math.random()*6-3,h*0.3,sx+Math.random()*6-3,h*0.7,sx+Math.random()*4-2,h); x.stroke(); }
+  const t=new THREE.CanvasTexture(cv); t.wrapS=t.wrapT=THREE.RepeatWrapping; return t;
+}
+function av3dFabricTex() {
+  const sz=64, cv=document.createElement('canvas'); cv.width=cv.height=sz;
+  const x=cv.getContext('2d'); x.fillStyle='#808080'; x.fillRect(0,0,sz,sz);
+  x.strokeStyle='rgba(0,0,0,0.08)'; x.lineWidth=0.5;
+  for(let i=0;i<sz;i+=3){ x.beginPath(); x.moveTo(i,0); x.lineTo(i,sz); x.stroke(); x.beginPath(); x.moveTo(0,i); x.lineTo(sz,i); x.stroke(); }
+  const t=new THREE.CanvasTexture(cv); t.wrapS=t.wrapT=THREE.RepeatWrapping; return t;
+}
+
+/* ── Materials ── */
+function av3dSkinMat(hex) {
+  const c=new THREE.Color(hex);
+  return new THREE.MeshPhysicalMaterial({ color:c, roughness:0.55, metalness:0, clearcoat:0.08, clearcoatRoughness:0.4, sheen:0.35, sheenColor:new THREE.Color(hex).offsetHSL(0,0,0.1), bumpMap:av3dSkinBumpTex(), bumpScale:0.015 });
+}
+function av3dHairMat(hex) {
+  return new THREE.MeshPhysicalMaterial({ color:new THREE.Color(hex), roughness:0.45, metalness:0.05, sheen:1.0, sheenColor:new THREE.Color(hex).offsetHSL(0,-0.1,0.2), map:av3dHairStrandTex(hex) });
+}
+function av3dClothMat(hex, isArmor) {
+  if(isArmor) return new THREE.MeshStandardMaterial({ color:new THREE.Color(hex), roughness:0.25, metalness:0.75 });
+  return new THREE.MeshStandardMaterial({ color:new THREE.Color(hex), roughness:0.78, metalness:0, bumpMap:av3dFabricTex(), bumpScale:0.01 });
+}
+function av3dMetalMat() {
+  return new THREE.MeshStandardMaterial({ color:0xDAA520, roughness:0.15, metalness:0.9, emissive:0x332200 });
+}
+
+/* ── Scene Init ── */
+function av3dInit(canvas) {
+  if(AV3D.renderer) return;
+  AV3D.renderer = new THREE.WebGLRenderer({ canvas:canvas, antialias:true, alpha:true, preserveDrawingBuffer:true });
+  AV3D.renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  AV3D.renderer.setSize(canvas.width, canvas.height, false);
+  AV3D.renderer.shadowMap.enabled = true;
+  AV3D.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  AV3D.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  AV3D.renderer.toneMappingExposure = 1.4;
+  AV3D.renderer.setClearColor(0x000000, 0);
+
+  AV3D.scene = new THREE.Scene();
+  AV3D.camera = new THREE.PerspectiveCamera(35, canvas.width/canvas.height, 0.1, 50);
+  av3dUpdateCamera();
+  av3dSetupLights();
+  AV3D.targetCanvas = canvas;
+}
+
+function av3dSetupLights() {
+  const s = AV3D.scene;
+  // Ambient
+  s.add(new THREE.AmbientLight(0xffffff, 0.35));
+  // Key light (warm, shadow-casting, upper right)
+  const key = new THREE.DirectionalLight(0xfff0dd, 1.1);
+  key.position.set(2, 3, 2); key.castShadow=true;
+  key.shadow.mapSize.set(1024,1024); key.shadow.camera.near=0.1; key.shadow.camera.far=10;
+  key.shadow.camera.left=-2; key.shadow.camera.right=2; key.shadow.camera.top=3; key.shadow.camera.bottom=-1;
+  key.shadow.bias=-0.002;
+  s.add(key);
+  // Fill light (cool, left)
+  const fill = new THREE.DirectionalLight(0xddeeff, 0.5);
+  fill.position.set(-2, 2, 1); s.add(fill);
+  // Rim light (behind)
+  const rim = new THREE.DirectionalLight(0xffffff, 0.6);
+  rim.position.set(0, 2, -3); s.add(rim);
+  // Element glow (will be colored per element)
+  AV3D.glowLight = new THREE.PointLight(0xffffff, 0.6, 5);
+  AV3D.glowLight.position.set(0, -0.5, 0.5); s.add(AV3D.glowLight);
+}
+
+function av3dUpdateCamera() {
+  const d=AV3D.orbitDist, a=AV3D.orbitAngle, e=AV3D.orbitElev;
+  AV3D.camera.position.set(d*Math.sin(a)*Math.cos(e), 0.8+d*Math.sin(e), d*Math.cos(a)*Math.cos(e));
+  AV3D.camera.lookAt(0, 0.8, 0);
+}
+
+/* ── Dispose helper ── */
+function av3dDisposeGroup(obj) {
+  if(!obj) return;
+  while(obj.children.length) {
+    const c=obj.children[0];
+    av3dDisposeGroup(c);
+    obj.remove(c);
   }
-  ctx.fill();
-  // Subtle shading on sides
-  ctx.fillStyle = avAlpha(avShade(c.skinTone, -20), 0.3);
-  ctx.beginPath(); ctx.ellipse(cx-20*s, cy, 8*s, 22*s, 0, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(cx+20*s, cy, 8*s, 22*s, 0, 0, Math.PI*2); ctx.fill();
-}
-
-// ── EARS ──
-function avDrawEars(ctx, c, s, cx, cy) {
-  if (c.hairStyle === 'hijab') return;
-  ctx.fillStyle = c.skinTone;
-  ctx.beginPath(); ctx.ellipse(cx-28*s, cy+2*s, 5*s, 8*s, 0, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(cx+28*s, cy+2*s, 5*s, 8*s, 0, 0, Math.PI*2); ctx.fill();
-  // Inner ear
-  ctx.fillStyle = avShade(c.skinTone, -15);
-  ctx.beginPath(); ctx.ellipse(cx-28*s, cy+2*s, 3*s, 5*s, 0, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(cx+28*s, cy+2*s, 3*s, 5*s, 0, 0, Math.PI*2); ctx.fill();
-}
-
-// ── FACIAL FEATURES ──
-function avDrawFace(ctx, c, s, cx, cy) {
-  // Eyes
-  const eyeSpacing = 11*s, eyeY = cy - 4*s;
-  avDrawEye(ctx, c, s, cx - eyeSpacing, eyeY, false);
-  avDrawEye(ctx, c, s, cx + eyeSpacing, eyeY, true);
-  // Eyebrows
-  avDrawEyebrows(ctx, c, s, cx, cy);
-  // Nose
-  avDrawNose(ctx, c, s, cx, cy);
-  // Mouth
-  avDrawMouth(ctx, c, s, cx, cy);
-}
-
-function avDrawEye(ctx, c, s, ex, ey, isRight) {
-  const ew = 7*s, eh = 4.5*s;
-  // Sclera
-  ctx.fillStyle = '#fff';
-  ctx.beginPath();
-  switch(c.eyeShape) {
-    case 'round': ctx.arc(ex, ey, 5.5*s, 0, Math.PI*2); break;
-    case 'narrow':
-      ctx.moveTo(ex-ew, ey); ctx.bezierCurveTo(ex-ew*0.5, ey-eh*0.5, ex+ew*0.5, ey-eh*0.5, ex+ew, ey);
-      ctx.bezierCurveTo(ex+ew*0.5, ey+eh*0.5, ex-ew*0.5, ey+eh*0.5, ex-ew, ey); break;
-    case 'wide':
-      ctx.ellipse(ex, ey, 8*s, 5*s, 0, 0, Math.PI*2); break;
-    case 'hooded':
-      ctx.moveTo(ex-ew, ey); ctx.bezierCurveTo(ex-ew*0.5, ey-eh*0.8, ex+ew*0.5, ey-eh*0.8, ex+ew, ey);
-      ctx.bezierCurveTo(ex+ew*0.5, ey+eh, ex-ew*0.5, ey+eh, ex-ew, ey); break;
-    case 'upturned':
-      { const tilt = isRight ? -0.15 : 0.15;
-        ctx.ellipse(ex, ey, ew, eh, tilt, 0, Math.PI*2); } break;
-    default: // almond
-      ctx.moveTo(ex-ew, ey); ctx.bezierCurveTo(ex-ew*0.5, ey-eh, ex+ew*0.5, ey-eh, ex+ew, ey);
-      ctx.bezierCurveTo(ex+ew*0.5, ey+eh, ex-ew*0.5, ey+eh, ex-ew, ey);
-  }
-  ctx.fill();
-  // Iris
-  ctx.fillStyle = c.eyeColor;
-  ctx.beginPath(); ctx.arc(ex, ey+0.5*s, 3.2*s, 0, Math.PI*2); ctx.fill();
-  // Pupil
-  ctx.fillStyle = '#0a0a0a';
-  ctx.beginPath(); ctx.arc(ex, ey+0.5*s, 1.6*s, 0, Math.PI*2); ctx.fill();
-  // Highlight
-  ctx.fillStyle = '#fff';
-  ctx.beginPath(); ctx.arc(ex+1.2*s, ey-1*s, 0.9*s, 0, Math.PI*2); ctx.fill();
-  // Eyelid line
-  if (c.eyeShape === 'hooded') {
-    ctx.strokeStyle = avShade(c.skinTone, -30);
-    ctx.lineWidth = 1*s;
-    ctx.beginPath();
-    ctx.moveTo(ex-ew, ey-1*s);
-    ctx.bezierCurveTo(ex-ew*0.3, ey-eh*1.3, ex+ew*0.3, ey-eh*1.3, ex+ew, ey-1*s);
-    ctx.stroke();
+  if(obj.geometry) obj.geometry.dispose();
+  if(obj.material) {
+    if(Array.isArray(obj.material)) obj.material.forEach(m=>{ if(m.map) m.map.dispose(); if(m.bumpMap) m.bumpMap.dispose(); m.dispose(); });
+    else { if(obj.material.map) obj.material.map.dispose(); if(obj.material.bumpMap) obj.material.bumpMap.dispose(); obj.material.dispose(); }
   }
 }
 
-function avDrawEyebrows(ctx, c, s, cx, cy) {
-  ctx.strokeStyle = c.hairColor;
-  ctx.lineCap = 'round';
-  const by = cy - 14*s;
-  const bw = 10*s;
-  let lw = 2.2*s;
-  if (c.eyebrowStyle === 'thick') lw = 3.5*s;
-  else if (c.eyebrowStyle === 'thin') lw = 1.4*s;
-  ctx.lineWidth = lw;
-  [-1, 1].forEach(side => {
-    const bx = cx + side * 11*s;
-    ctx.beginPath();
-    switch(c.eyebrowStyle) {
-      case 'straight':
-        ctx.moveTo(bx - side*bw, by); ctx.lineTo(bx + side*bw, by); break;
-      case 'angular':
-        ctx.moveTo(bx - side*bw, by+2*s); ctx.lineTo(bx, by-2*s); ctx.lineTo(bx + side*bw, by+1*s); break;
-      case 'curved':
-        ctx.moveTo(bx - side*bw, by+1*s);
-        ctx.bezierCurveTo(bx - side*bw*0.3, by-4*s, bx + side*bw*0.3, by-4*s, bx + side*bw, by+1*s); break;
-      default: // arched, thick, thin
-        ctx.moveTo(bx - side*bw, by+1*s);
-        ctx.quadraticCurveTo(bx, by-4*s, bx + side*bw, by+1*s);
+/* ═══════════════════════════════════════════════════════
+   HEAD GEOMETRY — 6 face shapes via vertex deformation
+   ═══════════════════════════════════════════════════════ */
+function av3dBuildHead(config, skinMat) {
+  const g = new THREE.SphereGeometry(0.42, 48, 36);
+  const pos = g.attributes.position;
+  const shape = config.faceShape || 'oval';
+
+  for(let i=0; i<pos.count; i++) {
+    let x=pos.getX(i), y=pos.getY(i), z=pos.getZ(i);
+    switch(shape) {
+      case 'oval': y*=1.12; x*=0.95; break;
+      case 'round': /* sphere is already round */ break;
+      case 'square': {
+        const f=0.15; x+=f*Math.sign(x)*Math.max(0,0.3-Math.abs(Math.abs(x)-0.3));
+        y*=0.95; break; }
+      case 'heart': {
+        const t=(y+0.42)/0.84;
+        x *= 1.0 + 0.12*(1-t) - 0.15*t; // wide brow, narrow chin
+        break; }
+      case 'long': y*=1.2; x*=0.9; z*=0.95; break;
+      case 'diamond': {
+        const t=Math.abs(y)/0.42;
+        x *= 1.0 + 0.1*(1-t*t) - 0.08*t*t; // wide middle, pinched top/bottom
+        break; }
     }
-    ctx.stroke();
-  });
+    pos.setXYZ(i, x, y, z);
+  }
+  g.computeVertexNormals();
+  const mesh = new THREE.Mesh(g, skinMat);
+  mesh.castShadow=true; mesh.receiveShadow=true;
+  mesh.position.y = 1.65;
+  return mesh;
 }
 
-function avDrawNose(ctx, c, s, cx, cy) {
-  const ny = cy + 8*s;
-  ctx.strokeStyle = avShade(c.skinTone, -35);
-  ctx.fillStyle = avShade(c.skinTone, -10);
-  ctx.lineWidth = 1.2*s;
-  ctx.lineCap = 'round';
-  switch(c.noseShape) {
+/* ── Ears ── */
+function av3dBuildEars(config, skinMat) {
+  const grp = new THREE.Group();
+  [-1,1].forEach(side => {
+    const eg = new THREE.SphereGeometry(0.08, 16, 12);
+    eg.scale(0.6, 1, 0.7);
+    const ear = new THREE.Mesh(eg, skinMat);
+    ear.position.set(side*0.4, 1.62, 0);
+    ear.castShadow=true;
+    grp.add(ear);
+  });
+  return grp;
+}
+
+/* ── Eye (compound: sclera + iris + pupil + highlight) ── */
+function av3dBuildEye(config, side, skinMat) {
+  const grp = new THREE.Group();
+  const shape = config.eyeShape || 'almond';
+
+  // Sclera
+  let sx=0.12, sy=0.08, sz=0.08;
+  switch(shape) {
+    case 'almond': sx=0.12; sy=0.07; break;
+    case 'round': sx=0.1; sy=0.1; break;
+    case 'narrow': sx=0.13; sy=0.05; break;
+    case 'wide': sx=0.14; sy=0.09; break;
+    case 'hooded': sx=0.11; sy=0.065; break;
+    case 'upturned': sx=0.12; sy=0.07; break;
+  }
+  const sg = new THREE.SphereGeometry(1, 24, 16);
+  sg.scale(sx, sy, sz);
+  const sclera = new THREE.Mesh(sg, new THREE.MeshPhysicalMaterial({ color:0xfefefe, roughness:0.1, clearcoat:0.6 }));
+  grp.add(sclera);
+
+  // Iris
+  const irisR = sy*0.7;
+  const irisMat = new THREE.MeshPhysicalMaterial({ map:av3dIrisTex(config.eyeColor||'#4A3728'), roughness:0.15, clearcoat:0.5 });
+  const iris = new THREE.Mesh(new THREE.CircleGeometry(irisR, 32), irisMat);
+  iris.position.z = sz - 0.005;
+  grp.add(iris);
+
+  // Pupil
+  const pupil = new THREE.Mesh(new THREE.CircleGeometry(irisR*0.4, 24), new THREE.MeshBasicMaterial({color:0x000000}));
+  pupil.position.z = sz - 0.003;
+  grp.add(pupil);
+
+  // Highlight
+  const hlGeo = new THREE.SphereGeometry(irisR*0.18, 8, 8);
+  const hl = new THREE.Mesh(hlGeo, new THREE.MeshBasicMaterial({color:0xffffff}));
+  hl.position.set(irisR*0.25, irisR*0.3, sz);
+  grp.add(hl);
+
+  // Upturned tilt
+  if(shape==='upturned') grp.rotation.z = side*0.12;
+
+  // Position
+  const eyeSpacing = 0.16;
+  grp.position.set(side*eyeSpacing, 1.68, 0.32);
+  return grp;
+}
+
+/* ── Eyebrows ── */
+function av3dBuildEyebrows(config, skinMat) {
+  const grp = new THREE.Group();
+  const style = config.eyebrowStyle || 'straight';
+  const hairMat = av3dHairMat(config.hairColor || '#2C1810');
+
+  [-1,1].forEach(side => {
+    const shape = new THREE.Shape();
+    const w=0.12, h=0.015, th=0.012;
+    switch(style) {
+      case 'straight': shape.moveTo(-w,0); shape.lineTo(w,0); shape.lineTo(w,h); shape.lineTo(-w,h); break;
+      case 'arched': shape.moveTo(-w,-h); shape.quadraticCurveTo(0,h*4,w,-h); shape.lineTo(w,0); shape.quadraticCurveTo(0,h*5,-w,0); break;
+      case 'thick': shape.moveTo(-w,0); shape.lineTo(w,0); shape.lineTo(w,h*2.5); shape.lineTo(-w,h*2.5); break;
+      case 'thin': shape.moveTo(-w,0); shape.lineTo(w,0); shape.lineTo(w,h*0.5); shape.lineTo(-w,h*0.5); break;
+      case 'angular': shape.moveTo(-w,-h); shape.lineTo(0,h*3); shape.lineTo(w,-h*0.5); shape.lineTo(w,0); shape.lineTo(0,h*4); shape.lineTo(-w,0); break;
+      case 'curved': shape.moveTo(-w,0); shape.quadraticCurveTo(0,h*3,w,0); shape.lineTo(w,h); shape.quadraticCurveTo(0,h*4,-w,h); break;
+    }
+    shape.closePath();
+    const eg = new THREE.ExtrudeGeometry(shape, {depth:th, bevelEnabled:false});
+    const brow = new THREE.Mesh(eg, hairMat);
+    brow.position.set(side*0.16, 1.76, 0.32);
+    brow.scale.x = side;
+    brow.castShadow=true;
+    grp.add(brow);
+  });
+  return grp;
+}
+
+/* ── Nose ── */
+function av3dBuildNose(config, skinMat) {
+  const shape = config.noseShape || 'medium';
+  const grp = new THREE.Group();
+
+  // Nose bridge + tip via LatheGeometry
+  let points = [];
+  switch(shape) {
     case 'small':
-      ctx.beginPath(); ctx.arc(cx-2*s, ny+3*s, 1.2*s, 0, Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(cx+2*s, ny+3*s, 1.2*s, 0, Math.PI*2); ctx.fill();
+      points = [new THREE.Vector2(0,0), new THREE.Vector2(0.025,0.02), new THREE.Vector2(0.04,0.06), new THREE.Vector2(0.03,0.1), new THREE.Vector2(0,0.12)];
+      break;
+    case 'medium':
+      points = [new THREE.Vector2(0,0), new THREE.Vector2(0.035,0.02), new THREE.Vector2(0.05,0.07), new THREE.Vector2(0.04,0.13), new THREE.Vector2(0,0.15)];
       break;
     case 'wide':
-      ctx.beginPath(); ctx.moveTo(cx, ny-4*s); ctx.lineTo(cx, ny+2*s); ctx.stroke();
-      ctx.beginPath(); ctx.arc(cx-4*s, ny+3*s, 2*s, 0, Math.PI, false); ctx.stroke();
-      ctx.beginPath(); ctx.arc(cx+4*s, ny+3*s, 2*s, 0, Math.PI, false); ctx.stroke();
+      points = [new THREE.Vector2(0,0), new THREE.Vector2(0.045,0.02), new THREE.Vector2(0.06,0.06), new THREE.Vector2(0.055,0.12), new THREE.Vector2(0,0.14)];
       break;
     case 'pointed':
-      ctx.beginPath(); ctx.moveTo(cx, ny-6*s); ctx.lineTo(cx-1*s, ny+4*s); ctx.moveTo(cx, ny-6*s); ctx.lineTo(cx+1*s, ny+4*s); ctx.stroke();
+      points = [new THREE.Vector2(0,0), new THREE.Vector2(0.02,0.02), new THREE.Vector2(0.035,0.08), new THREE.Vector2(0.015,0.15), new THREE.Vector2(0,0.17)];
       break;
     case 'button':
-      ctx.beginPath(); ctx.arc(cx, ny+1*s, 3*s, 0, Math.PI*2); ctx.fill();
-      ctx.strokeStyle = avShade(c.skinTone, -25);
-      ctx.beginPath(); ctx.arc(cx, ny+1*s, 3*s, 0.3, Math.PI-0.3); ctx.stroke();
+      points = [new THREE.Vector2(0,0), new THREE.Vector2(0.03,0.015), new THREE.Vector2(0.045,0.04), new THREE.Vector2(0.04,0.07), new THREE.Vector2(0,0.08)];
       break;
     case 'aquiline':
-      ctx.beginPath(); ctx.moveTo(cx, ny-8*s);
-      ctx.bezierCurveTo(cx+3*s, ny-4*s, cx+4*s, ny, cx+1*s, ny+4*s);
-      ctx.stroke();
-      ctx.beginPath(); ctx.arc(cx-2*s, ny+3*s, 1.5*s, 0, Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(cx+2*s, ny+3*s, 1.5*s, 0, Math.PI*2); ctx.fill();
+      points = [new THREE.Vector2(0,0), new THREE.Vector2(0.03,0.02), new THREE.Vector2(0.05,0.06), new THREE.Vector2(0.06,0.1), new THREE.Vector2(0.04,0.14), new THREE.Vector2(0,0.16)];
       break;
-    default: // medium
-      ctx.beginPath(); ctx.moveTo(cx, ny-4*s); ctx.lineTo(cx, ny+2*s); ctx.stroke();
-      ctx.beginPath(); ctx.arc(cx-2.5*s, ny+3*s, 1.5*s, 0, Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(cx+2.5*s, ny+3*s, 1.5*s, 0, Math.PI*2); ctx.fill();
   }
+  const ng = new THREE.LatheGeometry(points, 16);
+  const nose = new THREE.Mesh(ng, skinMat);
+  nose.rotation.x = -Math.PI/2;
+  nose.position.set(0, 1.6, 0.38);
+  nose.castShadow = true;
+  grp.add(nose);
+
+  // Nostrils
+  if(shape==='wide'||shape==='aquiline') {
+    [-1,1].forEach(s => {
+      const ng2 = new THREE.SphereGeometry(0.018, 10, 10);
+      const nostril = new THREE.Mesh(ng2, skinMat);
+      nostril.position.set(s*0.025, 1.57, 0.4);
+      grp.add(nostril);
+    });
+  }
+  return grp;
 }
 
-function avDrawMouth(ctx, c, s, cx, cy) {
-  const my = cy + 18*s;
-  const lipColor = avShade(c.skinTone, -25);
-  ctx.fillStyle = lipColor;
-  ctx.strokeStyle = avShade(c.skinTone, -40);
-  ctx.lineWidth = 1.2*s;
-  ctx.lineCap = 'round';
-  switch(c.mouthShape) {
-    case 'small':
-      ctx.beginPath(); ctx.arc(cx, my, 4*s, 0.2, Math.PI-0.2); ctx.stroke(); break;
-    case 'wide':
-      ctx.beginPath(); ctx.arc(cx, my-2*s, 10*s, 0.2, Math.PI-0.2); ctx.stroke(); break;
-    case 'full':
-      // Upper lip
-      ctx.beginPath(); ctx.moveTo(cx-7*s, my);
-      ctx.quadraticCurveTo(cx-3*s, my-4*s, cx, my-2*s);
-      ctx.quadraticCurveTo(cx+3*s, my-4*s, cx+7*s, my);
-      ctx.fillStyle = avShade(lipColor, -10); ctx.fill();
-      // Lower lip
-      ctx.beginPath(); ctx.moveTo(cx-7*s, my);
-      ctx.quadraticCurveTo(cx, my+6*s, cx+7*s, my);
-      ctx.fillStyle = lipColor; ctx.fill();
-      break;
-    case 'thin':
-      ctx.beginPath(); ctx.moveTo(cx-6*s, my); ctx.lineTo(cx+6*s, my); ctx.stroke();
-      ctx.beginPath(); ctx.arc(cx, my, 6*s, 0.15, Math.PI-0.15); ctx.lineWidth = 0.8*s; ctx.stroke();
-      break;
-    case 'cupid':
-      ctx.beginPath(); ctx.moveTo(cx-7*s, my);
-      ctx.quadraticCurveTo(cx-4*s, my-3*s, cx-1*s, my-1*s);
-      ctx.lineTo(cx, my-2.5*s);
-      ctx.lineTo(cx+1*s, my-1*s);
-      ctx.quadraticCurveTo(cx+4*s, my-3*s, cx+7*s, my);
-      ctx.quadraticCurveTo(cx, my+5*s, cx-7*s, my);
-      ctx.fill();
-      break;
-    default: // medium
-      ctx.beginPath(); ctx.arc(cx, my-1*s, 6*s, 0.2, Math.PI-0.2); ctx.stroke();
-      ctx.beginPath(); ctx.arc(cx, my+1*s, 5*s, Math.PI+0.3, -0.3); ctx.lineWidth = 0.8*s; ctx.stroke();
+/* ── Mouth (upper + lower lip as extruded shapes) ── */
+function av3dBuildMouth(config, skinMat) {
+  const grp = new THREE.Group();
+  const shape = config.mouthShape || 'medium';
+  const lipColor = avShade(config.skinTone || '#D2A272', -30);
+  const lipMat = new THREE.MeshPhysicalMaterial({ color:new THREE.Color(lipColor), roughness:0.35, clearcoat:0.3, clearcoatRoughness:0.3 });
+
+  let w=0.08, h=0.02, fullness=1.0;
+  switch(shape) {
+    case 'small': w=0.06; h=0.015; fullness=0.8; break;
+    case 'medium': w=0.08; h=0.02; break;
+    case 'wide': w=0.11; h=0.018; break;
+    case 'full': w=0.09; h=0.03; fullness=1.3; break;
+    case 'thin': w=0.09; h=0.012; fullness=0.6; break;
+    case 'cupid': w=0.08; h=0.022; fullness=1.1; break;
   }
+
+  // Upper lip
+  const upper = new THREE.Shape();
+  upper.moveTo(-w, 0);
+  if(shape==='cupid') {
+    upper.quadraticCurveTo(-w*0.5, h*fullness*1.5, 0, h*fullness*0.8);
+    upper.quadraticCurveTo(w*0.5, h*fullness*1.5, w, 0);
+  } else {
+    upper.quadraticCurveTo(0, h*fullness*2, w, 0);
+  }
+  upper.lineTo(w, -0.003);
+  upper.quadraticCurveTo(0, h*fullness*1.5-0.003, -w, -0.003);
+  upper.closePath();
+  const ug = new THREE.ExtrudeGeometry(upper, {depth:0.02, bevelEnabled:true, bevelThickness:0.004, bevelSize:0.003, bevelSegments:3});
+  const upperMesh = new THREE.Mesh(ug, lipMat);
+  upperMesh.position.set(0, 1.52, 0.35);
+  upperMesh.castShadow = true;
+  grp.add(upperMesh);
+
+  // Lower lip
+  const lower = new THREE.Shape();
+  lower.moveTo(-w*0.9, 0);
+  lower.quadraticCurveTo(0, -h*fullness*2.2, w*0.9, 0);
+  lower.lineTo(w*0.9, 0.003);
+  lower.quadraticCurveTo(0, -h*fullness*1.6, -w*0.9, 0.003);
+  lower.closePath();
+  const lg = new THREE.ExtrudeGeometry(lower, {depth:0.018, bevelEnabled:true, bevelThickness:0.003, bevelSize:0.002, bevelSegments:3});
+  const lowerMesh = new THREE.Mesh(lg, lipMat);
+  lowerMesh.position.set(0, 1.495, 0.34);
+  lowerMesh.castShadow = true;
+  grp.add(lowerMesh);
+
+  return grp;
 }
 
-// ── BODY ──
-function avDrawBody(ctx, c, s, cx, cy) {
-  let shoulderW = 28*s, waistW = 22*s, armW = 4*s;
-  const bodyTop = cy + 34*s, bodyBot = cy + 120*s, hipY = cy + 90*s;
-  switch(c.bodyType) {
-    case 'slim': shoulderW = 22*s; waistW = 18*s; armW = 3*s; break;
-    case 'athletic': shoulderW = 32*s; waistW = 20*s; armW = 5*s; break;
-    case 'heavy': shoulderW = 34*s; waistW = 30*s; armW = 6*s; break;
+/* ═══════════════════════════════════════════════════════
+   BODY — LatheGeometry torso + limbs for 4 body types
+   ═══════════════════════════════════════════════════════ */
+function av3dBuildBody(config, skinMat) {
+  const grp = new THREE.Group();
+  const type = config.bodyType || 'average';
+
+  // Torso profile points (bottom to top)
+  let profile;
+  switch(type) {
+    case 'slim':
+      profile = [new THREE.Vector2(0.12,0), new THREE.Vector2(0.13,0.15), new THREE.Vector2(0.14,0.3), new THREE.Vector2(0.13,0.5), new THREE.Vector2(0.11,0.65)];
+      break;
+    case 'average':
+      profile = [new THREE.Vector2(0.14,0), new THREE.Vector2(0.16,0.15), new THREE.Vector2(0.17,0.3), new THREE.Vector2(0.15,0.5), new THREE.Vector2(0.13,0.65)];
+      break;
+    case 'athletic':
+      profile = [new THREE.Vector2(0.13,0), new THREE.Vector2(0.14,0.15), new THREE.Vector2(0.15,0.25), new THREE.Vector2(0.19,0.5), new THREE.Vector2(0.18,0.65)];
+      break;
+    case 'heavy':
+      profile = [new THREE.Vector2(0.17,0), new THREE.Vector2(0.2,0.15), new THREE.Vector2(0.21,0.3), new THREE.Vector2(0.2,0.5), new THREE.Vector2(0.17,0.65)];
+      break;
   }
+  const tg = new THREE.LatheGeometry(profile, 24);
+  const torso = new THREE.Mesh(tg, skinMat);
+  torso.position.y = 0.7;
+  torso.castShadow = true; torso.receiveShadow = true;
+  grp.add(torso);
+
   // Neck
-  ctx.fillStyle = c.skinTone;
-  ctx.fillRect(cx-6*s, cy+28*s, 12*s, 10*s);
-  // Torso
-  ctx.fillStyle = c.skinTone;
-  ctx.beginPath();
-  ctx.moveTo(cx-shoulderW, bodyTop); ctx.lineTo(cx+shoulderW, bodyTop);
-  ctx.lineTo(cx+waistW, hipY); ctx.lineTo(cx-waistW, hipY);
-  ctx.closePath(); ctx.fill();
-  // Legs
-  const legW = (c.bodyType === 'heavy') ? 10*s : 7*s;
-  ctx.fillRect(cx-waistW+2*s, hipY, legW*2, bodyBot-hipY);
-  ctx.fillRect(cx+waistW-2*s-legW*2, hipY, legW*2, bodyBot-hipY);
+  const neckG = new THREE.CylinderGeometry(0.07, 0.09, 0.15, 16);
+  const neck = new THREE.Mesh(neckG, skinMat);
+  neck.position.y = 1.42;
+  neck.castShadow = true;
+  grp.add(neck);
+
   // Arms
-  ctx.strokeStyle = c.skinTone;
-  ctx.lineWidth = armW * 2;
-  ctx.lineCap = 'round';
-  ctx.beginPath(); ctx.moveTo(cx-shoulderW, bodyTop+4*s);
-  ctx.bezierCurveTo(cx-shoulderW-10*s, bodyTop+30*s, cx-shoulderW-5*s, bodyTop+50*s, cx-shoulderW+2*s, bodyTop+55*s);
-  ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(cx+shoulderW, bodyTop+4*s);
-  ctx.bezierCurveTo(cx+shoulderW+10*s, bodyTop+30*s, cx+shoulderW+5*s, bodyTop+50*s, cx+shoulderW-2*s, bodyTop+55*s);
-  ctx.stroke();
-  // Hands
-  ctx.fillStyle = c.skinTone;
-  ctx.beginPath(); ctx.arc(cx-shoulderW+2*s, bodyTop+56*s, 4*s, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(cx+shoulderW-2*s, bodyTop+56*s, 4*s, 0, Math.PI*2); ctx.fill();
+  const armW = type==='heavy' ? 0.055 : type==='athletic' ? 0.05 : 0.04;
+  [-1,1].forEach(side => {
+    const shoulderX = (type==='athletic'?0.2:type==='heavy'?0.21:0.17) * side;
+    // Upper arm
+    const uag = new THREE.CylinderGeometry(armW, armW*0.9, 0.3, 12);
+    const uArm = new THREE.Mesh(uag, skinMat);
+    uArm.position.set(shoulderX, 1.15, 0);
+    uArm.castShadow = true;
+    grp.add(uArm);
+    // Elbow
+    const elG = new THREE.SphereGeometry(armW*0.95, 10, 10);
+    const elbow = new THREE.Mesh(elG, skinMat);
+    elbow.position.set(shoulderX, 0.98, 0);
+    grp.add(elbow);
+    // Forearm
+    const fag = new THREE.CylinderGeometry(armW*0.85, armW*0.7, 0.28, 12);
+    const fArm = new THREE.Mesh(fag, skinMat);
+    fArm.position.set(shoulderX, 0.82, 0);
+    fArm.castShadow = true;
+    grp.add(fArm);
+    // Hand
+    const hg = new THREE.SphereGeometry(0.04, 10, 10);
+    hg.scale(1, 0.7, 0.8);
+    const hand = new THREE.Mesh(hg, skinMat);
+    hand.position.set(shoulderX, 0.66, 0);
+    grp.add(hand);
+  });
+
+  // Legs
+  const legW = type==='heavy' ? 0.065 : type==='athletic' ? 0.055 : 0.05;
+  [-1,1].forEach(side => {
+    const legX = 0.08 * side;
+    // Upper leg
+    const ulg = new THREE.CylinderGeometry(legW, legW*0.9, 0.35, 12);
+    const uLeg = new THREE.Mesh(ulg, skinMat);
+    uLeg.position.set(legX, 0.5, 0);
+    uLeg.castShadow = true;
+    grp.add(uLeg);
+    // Knee
+    const kG = new THREE.SphereGeometry(legW*0.92, 10, 10);
+    const knee = new THREE.Mesh(kG, skinMat);
+    knee.position.set(legX, 0.31, 0);
+    grp.add(knee);
+    // Lower leg
+    const llg = new THREE.CylinderGeometry(legW*0.85, legW*0.7, 0.3, 12);
+    const lLeg = new THREE.Mesh(llg, skinMat);
+    lLeg.position.set(legX, 0.14, 0);
+    lLeg.castShadow = true;
+    grp.add(lLeg);
+    // Foot
+    const fg = new THREE.BoxGeometry(0.06, 0.04, 0.1);
+    const foot = new THREE.Mesh(fg, skinMat);
+    foot.position.set(legX, -0.02, 0.02);
+    grp.add(foot);
+  });
+
+  return grp;
 }
 
-// ── BOTTOM CLOTHES ──
-function avDrawBottomClothes(ctx, c, s, cx, cy) {
-  let waistW = 22*s;
-  switch(c.bodyType) {
-    case 'slim': waistW = 18*s; break;
-    case 'athletic': waistW = 20*s; break;
-    case 'heavy': waistW = 30*s; break;
-  }
-  const hipY = cy + 90*s, botY = cy + 120*s;
-  const legW = (c.bodyType === 'heavy') ? 10*s : 7*s;
-  ctx.fillStyle = c.bottomColor;
-  switch(c.bottomStyle) {
-    case 'shorts':
-      ctx.fillRect(cx-waistW, hipY, waistW*2, 16*s);
-      break;
-    case 'skirt':
-      ctx.beginPath();
-      ctx.moveTo(cx-waistW, hipY); ctx.lineTo(cx+waistW, hipY);
-      ctx.lineTo(cx+waistW+6*s, hipY+24*s); ctx.lineTo(cx-waistW-6*s, hipY+24*s);
-      ctx.closePath(); ctx.fill();
-      break;
-    case 'robe_bottom':
-      ctx.beginPath();
-      ctx.moveTo(cx-waistW, hipY); ctx.lineTo(cx+waistW, hipY);
-      ctx.lineTo(cx+waistW+8*s, botY+4*s); ctx.lineTo(cx-waistW-8*s, botY+4*s);
-      ctx.closePath(); ctx.fill();
-      break;
-    default: // pants
-      ctx.fillRect(cx-waistW+2*s, hipY, legW*2+2*s, botY-hipY);
-      ctx.fillRect(cx+waistW-2*s-legW*2-2*s, hipY, legW*2+2*s, botY-hipY);
-      // Center seam
-      ctx.strokeStyle = avShade(c.bottomColor, -20);
-      ctx.lineWidth = 1*s;
-      ctx.beginPath(); ctx.moveTo(cx, hipY); ctx.lineTo(cx, hipY+10*s); ctx.stroke();
-  }
-}
+/* ═══════════════════════════════════════════════════════
+   HAIR SYSTEM — 17 styles
+   ═══════════════════════════════════════════════════════ */
+function av3dBuildHair(config) {
+  const grp = new THREE.Group();
+  const style = config.hairStyle || 'short_straight';
+  if(style==='bald') return grp;
 
-// ── TOP CLOTHES ──
-function avDrawTopClothes(ctx, c, s, cx, cy) {
-  let shoulderW = 28*s, waistW = 22*s;
-  switch(c.bodyType) {
-    case 'slim': shoulderW = 22*s; waistW = 18*s; break;
-    case 'athletic': shoulderW = 32*s; waistW = 20*s; break;
-    case 'heavy': shoulderW = 34*s; waistW = 30*s; break;
-  }
-  const bodyTop = cy + 34*s, hipY = cy + 90*s;
-  ctx.fillStyle = c.topColor;
-  switch(c.topStyle) {
-    case 'tank':
-      ctx.beginPath();
-      ctx.moveTo(cx-shoulderW+8*s, bodyTop); ctx.lineTo(cx+shoulderW-8*s, bodyTop);
-      ctx.lineTo(cx+waistW, hipY); ctx.lineTo(cx-waistW, hipY);
-      ctx.closePath(); ctx.fill();
-      // Straps
-      ctx.fillRect(cx-shoulderW+8*s, bodyTop-4*s, 6*s, 8*s);
-      ctx.fillRect(cx+shoulderW-14*s, bodyTop-4*s, 6*s, 8*s);
-      break;
-    case 'crop_top':
-      ctx.beginPath();
-      ctx.moveTo(cx-shoulderW, bodyTop); ctx.lineTo(cx+shoulderW, bodyTop);
-      ctx.lineTo(cx+waistW+2*s, bodyTop+28*s); ctx.lineTo(cx-waistW-2*s, bodyTop+28*s);
-      ctx.closePath(); ctx.fill();
-      break;
-    case 'hoodie':
-      // Main body
-      ctx.beginPath();
-      ctx.moveTo(cx-shoulderW-2*s, bodyTop); ctx.lineTo(cx+shoulderW+2*s, bodyTop);
-      ctx.lineTo(cx+waistW+2*s, hipY+2*s); ctx.lineTo(cx-waistW-2*s, hipY+2*s);
-      ctx.closePath(); ctx.fill();
-      // Sleeves (cover arms)
-      ctx.lineWidth = 12*s; ctx.strokeStyle = c.topColor; ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.moveTo(cx-shoulderW, bodyTop+4*s);
-      ctx.bezierCurveTo(cx-shoulderW-10*s, bodyTop+30*s, cx-shoulderW-5*s, bodyTop+45*s, cx-shoulderW+2*s, bodyTop+48*s);
-      ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(cx+shoulderW, bodyTop+4*s);
-      ctx.bezierCurveTo(cx+shoulderW+10*s, bodyTop+30*s, cx+shoulderW+5*s, bodyTop+45*s, cx+shoulderW-2*s, bodyTop+48*s);
-      ctx.stroke();
-      // Hood outline behind neck
-      ctx.strokeStyle = avShade(c.topColor, -20); ctx.lineWidth = 2*s;
-      ctx.beginPath(); ctx.arc(cx, cy+30*s, 14*s, Math.PI+0.3, -0.3); ctx.stroke();
-      // Pocket
-      ctx.strokeStyle = avShade(c.topColor, -15); ctx.lineWidth = 1*s;
-      ctx.beginPath(); ctx.moveTo(cx-12*s, hipY-16*s); ctx.lineTo(cx+12*s, hipY-16*s);
-      ctx.lineTo(cx+12*s, hipY-4*s); ctx.lineTo(cx-12*s, hipY-4*s); ctx.closePath(); ctx.stroke();
-      break;
-    case 'jacket':
-      ctx.beginPath();
-      ctx.moveTo(cx-shoulderW-1*s, bodyTop); ctx.lineTo(cx+shoulderW+1*s, bodyTop);
-      ctx.lineTo(cx+waistW+1*s, hipY); ctx.lineTo(cx-waistW-1*s, hipY);
-      ctx.closePath(); ctx.fill();
-      // Lapels
-      ctx.fillStyle = avShade(c.topColor, -25);
-      ctx.beginPath(); ctx.moveTo(cx-4*s, bodyTop); ctx.lineTo(cx-12*s, bodyTop+18*s); ctx.lineTo(cx-4*s, bodyTop+18*s); ctx.closePath(); ctx.fill();
-      ctx.beginPath(); ctx.moveTo(cx+4*s, bodyTop); ctx.lineTo(cx+12*s, bodyTop+18*s); ctx.lineTo(cx+4*s, bodyTop+18*s); ctx.closePath(); ctx.fill();
-      // Zipper line
-      ctx.strokeStyle = '#888'; ctx.lineWidth = 1*s;
-      ctx.beginPath(); ctx.moveTo(cx, bodyTop+18*s); ctx.lineTo(cx, hipY); ctx.stroke();
-      break;
-    case 'armor':
-      ctx.beginPath();
-      ctx.moveTo(cx-shoulderW-4*s, bodyTop-2*s); ctx.lineTo(cx+shoulderW+4*s, bodyTop-2*s);
-      ctx.lineTo(cx+waistW+2*s, hipY); ctx.lineTo(cx-waistW-2*s, hipY);
-      ctx.closePath(); ctx.fill();
-      // Shoulder pads
-      ctx.beginPath(); ctx.ellipse(cx-shoulderW-2*s, bodyTop+2*s, 10*s, 6*s, -0.3, 0, Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.ellipse(cx+shoulderW+2*s, bodyTop+2*s, 10*s, 6*s, 0.3, 0, Math.PI*2); ctx.fill();
-      // Chest emblem
-      ctx.strokeStyle = avShade(c.topColor, 40); ctx.lineWidth = 1.5*s;
-      ctx.beginPath(); ctx.arc(cx, bodyTop+22*s, 8*s, 0, Math.PI*2); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(cx, bodyTop+14*s); ctx.lineTo(cx, bodyTop+30*s); ctx.moveTo(cx-8*s, bodyTop+22*s); ctx.lineTo(cx+8*s, bodyTop+22*s); ctx.stroke();
-      break;
-    case 'robe':
-      ctx.beginPath();
-      ctx.moveTo(cx-shoulderW-2*s, bodyTop-2*s); ctx.lineTo(cx+shoulderW+2*s, bodyTop-2*s);
-      ctx.lineTo(cx+waistW+10*s, cy+122*s); ctx.lineTo(cx-waistW-10*s, cy+122*s);
-      ctx.closePath(); ctx.fill();
-      // V-neck
-      ctx.fillStyle = c.skinTone;
-      ctx.beginPath(); ctx.moveTo(cx-8*s, bodyTop); ctx.lineTo(cx, bodyTop+16*s); ctx.lineTo(cx+8*s, bodyTop); ctx.closePath(); ctx.fill();
-      // Sash
-      ctx.strokeStyle = avShade(c.topColor, 30); ctx.lineWidth = 3*s;
-      ctx.beginPath(); ctx.moveTo(cx-waistW, cy+70*s); ctx.lineTo(cx+waistW, cy+70*s); ctx.stroke();
-      break;
-    case 'suit':
-      ctx.beginPath();
-      ctx.moveTo(cx-shoulderW, bodyTop); ctx.lineTo(cx+shoulderW, bodyTop);
-      ctx.lineTo(cx+waistW, hipY); ctx.lineTo(cx-waistW, hipY);
-      ctx.closePath(); ctx.fill();
-      // Collar + tie
-      ctx.fillStyle = '#fff';
-      ctx.beginPath(); ctx.moveTo(cx-6*s, bodyTop); ctx.lineTo(cx, bodyTop+8*s); ctx.lineTo(cx+6*s, bodyTop); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = '#c0392b';
-      ctx.beginPath(); ctx.moveTo(cx, bodyTop+4*s); ctx.lineTo(cx-3*s, bodyTop+12*s); ctx.lineTo(cx, bodyTop+28*s); ctx.lineTo(cx+3*s, bodyTop+12*s); ctx.closePath(); ctx.fill();
-      // Buttons
-      ctx.fillStyle = avShade(c.topColor, 30);
-      [20,30,40].forEach(dy => { ctx.beginPath(); ctx.arc(cx, bodyTop+dy*s, 1.5*s, 0, Math.PI*2); ctx.fill(); });
-      break;
-    default: // tshirt
-      ctx.beginPath();
-      ctx.moveTo(cx-shoulderW, bodyTop); ctx.lineTo(cx+shoulderW, bodyTop);
-      ctx.lineTo(cx+waistW, hipY); ctx.lineTo(cx-waistW, hipY);
-      ctx.closePath(); ctx.fill();
-      // Short sleeves
-      ctx.beginPath(); ctx.moveTo(cx-shoulderW, bodyTop+2*s);
-      ctx.lineTo(cx-shoulderW-8*s, bodyTop+16*s); ctx.lineTo(cx-shoulderW, bodyTop+18*s); ctx.closePath(); ctx.fill();
-      ctx.beginPath(); ctx.moveTo(cx+shoulderW, bodyTop+2*s);
-      ctx.lineTo(cx+shoulderW+8*s, bodyTop+16*s); ctx.lineTo(cx+shoulderW, bodyTop+18*s); ctx.closePath(); ctx.fill();
-      // Neckline
-      ctx.strokeStyle = avShade(c.topColor, -15); ctx.lineWidth = 1.5*s;
-      ctx.beginPath(); ctx.arc(cx, bodyTop+2*s, 8*s, 0.3, Math.PI-0.3); ctx.stroke();
-  }
-}
+  const mat = av3dHairMat(config.hairColor || '#2C1810');
+  const headY = 1.65;
 
-// ── NECKLACE ──
-function avDrawNecklace(ctx, c, s, cx, cy) {
-  if (c.necklace === 'none') return;
-  const ny = cy + 32*s;
-  ctx.strokeStyle = '#DAA520'; ctx.lineWidth = 1.5*s; ctx.lineCap = 'round';
-  switch(c.necklace) {
-    case 'chain':
-      ctx.beginPath(); ctx.arc(cx, ny-4*s, 12*s, 0.3, Math.PI-0.3); ctx.stroke();
-      break;
-    case 'pendant':
-      ctx.beginPath(); ctx.arc(cx, ny-4*s, 12*s, 0.3, Math.PI-0.3); ctx.stroke();
-      ctx.fillStyle = '#DAA520';
-      ctx.beginPath(); ctx.moveTo(cx, ny+8*s); ctx.lineTo(cx-3*s, ny+14*s); ctx.lineTo(cx+3*s, ny+14*s); ctx.closePath(); ctx.fill();
-      break;
-    case 'choker':
-      ctx.lineWidth = 3*s; ctx.strokeStyle = '#333';
-      ctx.beginPath(); ctx.arc(cx, cy+28*s, 8*s, 0.2, Math.PI-0.2); ctx.stroke();
-      break;
+  // Hair shell (cap over head) — base for most styles
+  function makeShell(scaleY, extraR) {
+    const sg = new THREE.SphereGeometry(0.44 + (extraR||0), 32, 24, 0, Math.PI*2, 0, Math.PI*0.55);
+    if(scaleY!==1) sg.scale(1, scaleY, 1);
+    const shell = new THREE.Mesh(sg, mat);
+    shell.position.y = headY + 0.03;
+    shell.castShadow = true;
+    return shell;
   }
-}
 
-// ── HAIR (BACK LAYER) ──
-function avDrawHairBack(ctx, c, s, cx, cy) {
-  if (c.hairStyle === 'bald' || c.hairStyle === 'buzz_cut' || c.hairStyle === 'mohawk') return;
-  ctx.fillStyle = c.hairColor;
-  switch(c.hairStyle) {
-    case 'long_straight': case 'long_wavy': case 'long_curly':
-      ctx.beginPath();
-      ctx.moveTo(cx-26*s, cy-20*s);
-      ctx.bezierCurveTo(cx-32*s, cy+20*s, cx-30*s, cy+60*s, cx-22*s, cy+80*s);
-      ctx.lineTo(cx+22*s, cy+80*s);
-      ctx.bezierCurveTo(cx+30*s, cy+60*s, cx+32*s, cy+20*s, cx+26*s, cy-20*s);
-      ctx.closePath(); ctx.fill();
-      break;
-    case 'ponytail':
-      ctx.beginPath();
-      ctx.moveTo(cx-4*s, cy-28*s);
-      ctx.bezierCurveTo(cx+8*s, cy-30*s, cx+14*s, cy-20*s, cx+10*s, cy-10*s);
-      ctx.bezierCurveTo(cx+12*s, cy+10*s, cx+8*s, cy+40*s, cx+2*s, cy+60*s);
-      ctx.lineTo(cx-2*s, cy+60*s);
-      ctx.bezierCurveTo(cx+4*s, cy+40*s, cx+6*s, cy+10*s, cx+4*s, cy-10*s);
-      ctx.closePath(); ctx.fill();
-      break;
-    case 'braids':
-      [-1, 1].forEach(side => {
-        ctx.beginPath();
-        ctx.moveTo(cx + side*20*s, cy-10*s);
-        for (let i = 0; i < 8; i++) {
-          ctx.bezierCurveTo(
-            cx + side*(20 + (i%2?4:-4))*s, cy + (i*10-5)*s,
-            cx + side*(20 + (i%2?-4:4))*s, cy + (i*10+5)*s,
-            cx + side*20*s, cy + (i*10+10)*s
-          );
-        }
-        ctx.lineWidth = 6*s; ctx.strokeStyle = c.hairColor; ctx.stroke();
-      });
-      break;
-    case 'bun':
-      ctx.beginPath(); ctx.arc(cx, cy-38*s, 12*s, 0, Math.PI*2); ctx.fill();
-      break;
-    case 'hijab':
-      ctx.fillStyle = c.hairColor;
-      ctx.beginPath();
-      ctx.moveTo(cx-34*s, cy-10*s);
-      ctx.bezierCurveTo(cx-36*s, cy-34*s, cx-20*s, cy-44*s, cx, cy-42*s);
-      ctx.bezierCurveTo(cx+20*s, cy-44*s, cx+36*s, cy-34*s, cx+34*s, cy-10*s);
-      ctx.bezierCurveTo(cx+36*s, cy+20*s, cx+30*s, cy+50*s, cx+20*s, cy+70*s);
-      ctx.lineTo(cx-20*s, cy+70*s);
-      ctx.bezierCurveTo(cx-30*s, cy+50*s, cx-36*s, cy+20*s, cx-34*s, cy-10*s);
-      ctx.closePath(); ctx.fill();
-      // Fold line
-      ctx.strokeStyle = avShade(c.hairColor, -20); ctx.lineWidth = 1*s;
-      ctx.beginPath();
-      ctx.moveTo(cx, cy-40*s);
-      ctx.bezierCurveTo(cx-10*s, cy-20*s, cx-15*s, cy+10*s, cx-18*s, cy+40*s);
-      ctx.stroke();
-      break;
-    case 'medium_straight': case 'medium_wavy': case 'medium_curly':
-      ctx.beginPath();
-      ctx.moveTo(cx-28*s, cy-18*s);
-      ctx.bezierCurveTo(cx-32*s, cy+10*s, cx-30*s, cy+30*s, cx-24*s, cy+40*s);
-      ctx.lineTo(cx+24*s, cy+40*s);
-      ctx.bezierCurveTo(cx+30*s, cy+30*s, cx+32*s, cy+10*s, cx+28*s, cy-18*s);
-      ctx.closePath(); ctx.fill();
-      break;
-    case 'afro':
-      ctx.beginPath(); ctx.arc(cx, cy-4*s, 42*s, 0, Math.PI*2); ctx.fill();
-      break;
+  // Side/back panels
+  function makePanel(w, h, xOff, yOff, zOff, curveZ) {
+    const pg = new THREE.PlaneGeometry(w, h, 8, 12);
+    const pos = pg.attributes.position;
+    for(let i=0;i<pos.count;i++) {
+      const y = pos.getY(i);
+      const t = (y + h/2) / h; // 0 at bottom, 1 at top
+      pos.setZ(i, pos.getZ(i) + (curveZ||0.04) * Math.sin(t*Math.PI));
+    }
+    pg.computeVertexNormals();
+    const panel = new THREE.Mesh(pg, mat);
+    panel.position.set(xOff, headY + yOff, zOff);
+    panel.castShadow = true;
+    return panel;
   }
-}
 
-// ── HAIR (FRONT LAYER) ──
-function avDrawHairFront(ctx, c, s, cx, cy) {
-  if (c.hairStyle === 'bald' || c.hairStyle === 'hijab') return;
-  ctx.fillStyle = c.hairColor;
-  switch(c.hairStyle) {
+  switch(style) {
     case 'buzz_cut':
-      ctx.globalAlpha = 0.6;
-      ctx.beginPath(); ctx.ellipse(cx, cy-12*s, 28*s, 22*s, 0, Math.PI, Math.PI*2); ctx.fill();
-      ctx.globalAlpha = 1;
+      grp.add(makeShell(0.9, -0.01));
       break;
+
     case 'short_straight':
-      ctx.beginPath();
-      ctx.moveTo(cx-26*s, cy-8*s);
-      ctx.bezierCurveTo(cx-28*s, cy-28*s, cx-14*s, cy-36*s, cx, cy-34*s);
-      ctx.bezierCurveTo(cx+14*s, cy-36*s, cx+28*s, cy-28*s, cx+26*s, cy-8*s);
-      ctx.lineTo(cx+22*s, cy-6*s);
-      ctx.bezierCurveTo(cx+20*s, cy-22*s, cx+10*s, cy-28*s, cx, cy-28*s);
-      ctx.bezierCurveTo(cx-10*s, cy-28*s, cx-20*s, cy-22*s, cx-22*s, cy-6*s);
-      ctx.closePath(); ctx.fill();
-      // Fringe
-      ctx.beginPath(); ctx.moveTo(cx-20*s, cy-16*s);
-      ctx.bezierCurveTo(cx-10*s, cy-20*s, cx+10*s, cy-22*s, cx+18*s, cy-18*s);
-      ctx.lineTo(cx+16*s, cy-12*s);
-      ctx.bezierCurveTo(cx+6*s, cy-16*s, cx-6*s, cy-14*s, cx-18*s, cy-12*s);
-      ctx.closePath(); ctx.fill();
-      break;
     case 'short_wavy':
-      ctx.beginPath();
-      ctx.moveTo(cx-26*s, cy-6*s);
-      ctx.bezierCurveTo(cx-30*s, cy-30*s, cx-10*s, cy-38*s, cx, cy-36*s);
-      ctx.bezierCurveTo(cx+10*s, cy-38*s, cx+30*s, cy-30*s, cx+26*s, cy-6*s);
-      ctx.lineTo(cx+20*s, cy-4*s);
-      ctx.bezierCurveTo(cx+22*s, cy-24*s, cx+8*s, cy-30*s, cx, cy-30*s);
-      ctx.bezierCurveTo(cx-8*s, cy-30*s, cx-22*s, cy-24*s, cx-20*s, cy-4*s);
-      ctx.closePath(); ctx.fill();
-      // Wavy fringe
-      ctx.beginPath(); ctx.moveTo(cx-22*s, cy-14*s);
-      for (let i = 0; i < 6; i++) {
-        const x = cx + (-22 + i*8)*s;
-        ctx.quadraticCurveTo(x+2*s, cy+(-18+((i%2)?4:-4))*s, x+4*s, cy-14*s);
-      }
-      ctx.lineTo(cx+18*s, cy-10*s); ctx.lineTo(cx-22*s, cy-10*s);
-      ctx.closePath(); ctx.fill();
-      break;
-    case 'short_curly':
-      for (let a = -Math.PI; a < 0; a += 0.4) {
-        const r = 30*s;
-        const x = cx + Math.cos(a) * r;
-        const y = cy - 6*s + Math.sin(a) * r * 0.8;
-        ctx.beginPath(); ctx.arc(x, y, 6*s, 0, Math.PI*2); ctx.fill();
+    case 'short_curly': {
+      grp.add(makeShell(1.0, 0.01));
+      if(style==='short_wavy'||style==='short_curly') {
+        // Add small tufts
+        for(let i=0;i<12;i++) {
+          const a = Math.random()*Math.PI*2;
+          const tg = new THREE.SphereGeometry(0.03+Math.random()*0.02, 8, 8);
+          const tuft = new THREE.Mesh(tg, mat);
+          tuft.position.set(Math.cos(a)*0.42, headY+0.1+Math.random()*0.15, Math.sin(a)*0.42);
+          grp.add(tuft);
+        }
       }
       break;
+    }
+
     case 'medium_straight':
-      ctx.beginPath();
-      ctx.moveTo(cx-28*s, cy-6*s);
-      ctx.bezierCurveTo(cx-30*s, cy-30*s, cx-14*s, cy-38*s, cx, cy-36*s);
-      ctx.bezierCurveTo(cx+14*s, cy-38*s, cx+30*s, cy-30*s, cx+28*s, cy-6*s);
-      ctx.lineTo(cx+24*s, cy-4*s);
-      ctx.bezierCurveTo(cx+24*s, cy-24*s, cx+10*s, cy-30*s, cx, cy-30*s);
-      ctx.bezierCurveTo(cx-10*s, cy-30*s, cx-24*s, cy-24*s, cx-24*s, cy-4*s);
-      ctx.closePath(); ctx.fill();
-      // Side falls
-      ctx.fillRect(cx-30*s, cy-6*s, 6*s, 30*s);
-      ctx.fillRect(cx+24*s, cy-6*s, 6*s, 30*s);
-      break;
     case 'medium_wavy':
-      ctx.beginPath();
-      ctx.moveTo(cx-28*s, cy-6*s);
-      ctx.bezierCurveTo(cx-30*s, cy-30*s, cx-14*s, cy-38*s, cx, cy-36*s);
-      ctx.bezierCurveTo(cx+14*s, cy-38*s, cx+30*s, cy-30*s, cx+28*s, cy-6*s);
-      ctx.lineTo(cx+22*s, cy-4*s);
-      ctx.bezierCurveTo(cx+24*s, cy-24*s, cx+8*s, cy-30*s, cx, cy-30*s);
-      ctx.bezierCurveTo(cx-8*s, cy-30*s, cx-24*s, cy-24*s, cx-22*s, cy-4*s);
-      ctx.closePath(); ctx.fill();
-      // Wavy side falls
-      [-1, 1].forEach(side => {
-        ctx.beginPath(); ctx.moveTo(cx+side*28*s, cy-6*s);
-        for (let i = 0; i < 5; i++) {
-          ctx.quadraticCurveTo(cx+side*(30+(i%2?4:-4))*s, cy+(i*8)*s, cx+side*28*s, cy+(i*8+8)*s);
+    case 'medium_curly': {
+      grp.add(makeShell(1.05, 0.02));
+      // Side panels
+      grp.add(makePanel(0.15, 0.25, -0.38, -0.12, 0, 0.05));
+      grp.add(makePanel(0.15, 0.25, 0.38, -0.12, 0, 0.05));
+      // Back panel
+      grp.add(makePanel(0.4, 0.25, 0, -0.12, -0.35, 0.06));
+      if(style.includes('curly')) {
+        for(let i=0;i<16;i++) {
+          const a=Math.random()*Math.PI*1.5+Math.PI*0.25;
+          const tg = new THREE.SphereGeometry(0.025+Math.random()*0.015, 8, 8);
+          const tuft = new THREE.Mesh(tg, mat);
+          tuft.position.set(Math.cos(a)*0.44, headY-0.05+Math.random()*0.2, Math.sin(a)*0.44);
+          grp.add(tuft);
         }
-        ctx.lineWidth = 5*s; ctx.strokeStyle = c.hairColor; ctx.stroke();
-      });
+      }
       break;
-    case 'medium_curly':
-      ctx.beginPath();
-      ctx.moveTo(cx-26*s, cy-6*s);
-      ctx.bezierCurveTo(cx-28*s, cy-28*s, cx-12*s, cy-36*s, cx, cy-34*s);
-      ctx.bezierCurveTo(cx+12*s, cy-36*s, cx+28*s, cy-28*s, cx+26*s, cy-6*s);
-      ctx.lineTo(cx+20*s, cy-4*s);
-      ctx.bezierCurveTo(cx+22*s, cy-22*s, cx+8*s, cy-28*s, cx, cy-28*s);
-      ctx.bezierCurveTo(cx-8*s, cy-28*s, cx-22*s, cy-22*s, cx-20*s, cy-4*s);
-      ctx.closePath(); ctx.fill();
-      [-1, 1].forEach(side => {
-        for (let i = 0; i < 4; i++) {
-          ctx.beginPath(); ctx.arc(cx+side*26*s, cy+(i*8)*s, 5*s, 0, Math.PI*2); ctx.fill();
-        }
-      });
-      break;
+    }
+
     case 'long_straight':
-      ctx.beginPath();
-      ctx.moveTo(cx-28*s, cy-6*s);
-      ctx.bezierCurveTo(cx-30*s, cy-32*s, cx-14*s, cy-40*s, cx, cy-38*s);
-      ctx.bezierCurveTo(cx+14*s, cy-40*s, cx+30*s, cy-32*s, cx+28*s, cy-6*s);
-      ctx.lineTo(cx+22*s, cy-4*s);
-      ctx.bezierCurveTo(cx+24*s, cy-26*s, cx+10*s, cy-32*s, cx, cy-32*s);
-      ctx.bezierCurveTo(cx-10*s, cy-32*s, cx-24*s, cy-26*s, cx-22*s, cy-4*s);
-      ctx.closePath(); ctx.fill();
-      break;
     case 'long_wavy':
-      ctx.beginPath();
-      ctx.moveTo(cx-28*s, cy-6*s);
-      ctx.bezierCurveTo(cx-30*s, cy-32*s, cx-14*s, cy-40*s, cx, cy-38*s);
-      ctx.bezierCurveTo(cx+14*s, cy-40*s, cx+30*s, cy-32*s, cx+28*s, cy-6*s);
-      ctx.lineTo(cx+22*s, cy-4*s);
-      ctx.bezierCurveTo(cx+24*s, cy-26*s, cx+10*s, cy-32*s, cx, cy-32*s);
-      ctx.bezierCurveTo(cx-10*s, cy-32*s, cx-24*s, cy-26*s, cx-22*s, cy-4*s);
-      ctx.closePath(); ctx.fill();
-      // Wavy texture on top
-      ctx.strokeStyle = avShade(c.hairColor, 15); ctx.lineWidth = 1*s;
-      for (let i = -2; i < 3; i++) {
-        ctx.beginPath(); ctx.moveTo(cx+i*8*s, cy-32*s);
-        ctx.quadraticCurveTo(cx+i*8*s+4*s, cy-24*s, cx+i*8*s, cy-16*s);
-        ctx.stroke();
+    case 'long_curly': {
+      grp.add(makeShell(1.1, 0.02));
+      // Long side panels
+      grp.add(makePanel(0.18, 0.55, -0.38, -0.25, 0.05, 0.06));
+      grp.add(makePanel(0.18, 0.55, 0.38, -0.25, 0.05, 0.06));
+      // Long back panel
+      grp.add(makePanel(0.45, 0.6, 0, -0.3, -0.35, 0.08));
+      if(style.includes('wavy')||style.includes('curly')) {
+        for(let i=0;i<20;i++) {
+          const a = Math.PI*0.3 + Math.random()*Math.PI*1.4;
+          const tg = new THREE.SphereGeometry(0.02+Math.random()*0.02, 8, 8);
+          const tuft = new THREE.Mesh(tg, mat);
+          tuft.position.set(Math.cos(a)*0.44, headY-0.2-Math.random()*0.3, Math.sin(a)*0.44);
+          grp.add(tuft);
+        }
       }
       break;
-    case 'long_curly':
-      ctx.beginPath();
-      ctx.moveTo(cx-28*s, cy-6*s);
-      ctx.bezierCurveTo(cx-30*s, cy-32*s, cx-14*s, cy-40*s, cx, cy-38*s);
-      ctx.bezierCurveTo(cx+14*s, cy-40*s, cx+30*s, cy-32*s, cx+28*s, cy-6*s);
-      ctx.lineTo(cx+22*s, cy-4*s);
-      ctx.bezierCurveTo(cx+24*s, cy-26*s, cx+10*s, cy-32*s, cx, cy-32*s);
-      ctx.bezierCurveTo(cx-10*s, cy-32*s, cx-24*s, cy-26*s, cx-22*s, cy-4*s);
-      ctx.closePath(); ctx.fill();
-      for (let a = -Math.PI; a < 0; a += 0.5) {
-        const x = cx + Math.cos(a)*28*s, y = cy-6*s + Math.sin(a)*26*s;
-        ctx.beginPath(); ctx.arc(x, y, 4*s, 0, Math.PI*2); ctx.fill();
+    }
+
+    case 'afro': {
+      const ag = new THREE.SphereGeometry(0.55, 32, 24);
+      // Displace for volume
+      const apos = ag.attributes.position;
+      for(let i=0;i<apos.count;i++) {
+        const x=apos.getX(i), y=apos.getY(i), z=apos.getZ(i);
+        const noise = 1 + (Math.sin(x*15)*Math.cos(z*15)*Math.sin(y*10))*0.06;
+        apos.setXYZ(i, x*noise, y*noise, z*noise);
+      }
+      ag.computeVertexNormals();
+      const afro = new THREE.Mesh(ag, mat);
+      afro.position.y = headY + 0.08;
+      afro.castShadow = true;
+      grp.add(afro);
+      break;
+    }
+
+    case 'mohawk': {
+      grp.add(makeShell(0.9, -0.02));
+      // Spike row
+      for(let i=0;i<8;i++) {
+        const cg = new THREE.ConeGeometry(0.035, 0.12+Math.random()*0.06, 8);
+        const spike = new THREE.Mesh(cg, mat);
+        spike.position.set(0, headY+0.25+i*0.01, -0.15+i*0.05);
+        spike.rotation.x = -0.2;
+        spike.castShadow = true;
+        grp.add(spike);
       }
       break;
-    case 'afro':
-      // Already drawn in back, just add texture
-      ctx.strokeStyle = avShade(c.hairColor, 10); ctx.lineWidth = 0.8*s;
-      for (let a = 0; a < Math.PI*2; a += 0.3) {
-        const r1 = 32*s, r2 = 40*s;
-        ctx.beginPath();
-        ctx.moveTo(cx + Math.cos(a)*r1, cy-4*s + Math.sin(a)*r1*0.9);
-        ctx.lineTo(cx + Math.cos(a)*r2, cy-4*s + Math.sin(a)*r2*0.9);
-        ctx.stroke();
-      }
+    }
+
+    case 'ponytail': {
+      grp.add(makeShell(1.0, 0.01));
+      // Ponytail cylinder
+      const pg = new THREE.CylinderGeometry(0.05, 0.03, 0.4, 12);
+      const pony = new THREE.Mesh(pg, mat);
+      pony.position.set(0, headY-0.1, -0.38);
+      pony.rotation.x = 0.4;
+      pony.castShadow = true;
+      grp.add(pony);
+      // Tie
+      const tg = new THREE.TorusGeometry(0.055, 0.012, 8, 12);
+      const tie = new THREE.Mesh(tg, new THREE.MeshStandardMaterial({color:0x333333}));
+      tie.position.set(0, headY+0.03, -0.4);
+      tie.rotation.x = Math.PI/2 + 0.4;
+      grp.add(tie);
       break;
-    case 'mohawk':
-      ctx.beginPath();
-      ctx.moveTo(cx-4*s, cy+10*s);
-      for (let i = 0; i < 5; i++) {
-        ctx.lineTo(cx + (i%2?5:-5)*s, cy + (-10 - i*10)*s);
-        ctx.lineTo(cx + (i%2?-3:3)*s, cy + (-14 - i*10)*s);
-      }
-      ctx.lineTo(cx+4*s, cy+10*s);
-      ctx.closePath(); ctx.fill();
+    }
+
+    case 'bun': {
+      grp.add(makeShell(1.0, 0.01));
+      const bg = new THREE.SphereGeometry(0.1, 16, 16);
+      const bun = new THREE.Mesh(bg, mat);
+      bun.position.set(0, headY+0.3, -0.2);
+      bun.castShadow = true;
+      grp.add(bun);
       break;
-    case 'ponytail':
-      // Front: pulled back
-      ctx.beginPath();
-      ctx.moveTo(cx-26*s, cy-8*s);
-      ctx.bezierCurveTo(cx-28*s, cy-28*s, cx-10*s, cy-36*s, cx, cy-34*s);
-      ctx.bezierCurveTo(cx+10*s, cy-36*s, cx+28*s, cy-28*s, cx+26*s, cy-8*s);
-      ctx.lineTo(cx+22*s, cy-6*s);
-      ctx.bezierCurveTo(cx+22*s, cy-24*s, cx+8*s, cy-30*s, cx, cy-30*s);
-      ctx.bezierCurveTo(cx-8*s, cy-30*s, cx-22*s, cy-24*s, cx-22*s, cy-6*s);
-      ctx.closePath(); ctx.fill();
+    }
+
+    case 'braids': {
+      grp.add(makeShell(1.0, 0.01));
+      // Two braids (chains of small spheres)
+      [-1,1].forEach(side => {
+        for(let i=0;i<8;i++) {
+          const bg = new THREE.SphereGeometry(0.028, 8, 8);
+          const bead = new THREE.Mesh(bg, mat);
+          bead.position.set(side*0.25, headY-0.05-i*0.06, -0.1-i*0.02);
+          grp.add(bead);
+        }
+      });
       break;
-    case 'bun':
-      ctx.beginPath();
-      ctx.moveTo(cx-26*s, cy-8*s);
-      ctx.bezierCurveTo(cx-28*s, cy-28*s, cx-10*s, cy-36*s, cx, cy-34*s);
-      ctx.bezierCurveTo(cx+10*s, cy-36*s, cx+28*s, cy-28*s, cx+26*s, cy-8*s);
-      ctx.lineTo(cx+22*s, cy-6*s);
-      ctx.bezierCurveTo(cx+22*s, cy-24*s, cx+8*s, cy-30*s, cx, cy-30*s);
-      ctx.bezierCurveTo(cx-8*s, cy-30*s, cx-22*s, cy-24*s, cx-22*s, cy-6*s);
-      ctx.closePath(); ctx.fill();
+    }
+
+    case 'hijab': {
+      // Draped covering head + shoulders
+      const hPoints = [
+        new THREE.Vector2(0, -0.3),
+        new THREE.Vector2(0.35, -0.25),
+        new THREE.Vector2(0.4, -0.1),
+        new THREE.Vector2(0.42, 0.1),
+        new THREE.Vector2(0.38, 0.3),
+        new THREE.Vector2(0.2, 0.42),
+        new THREE.Vector2(0, 0.45)
+      ];
+      const hg = new THREE.LatheGeometry(hPoints, 32);
+      const hijabMat = av3dClothMat(config.hairColor||'#4A3728', false);
+      const hijab = new THREE.Mesh(hg, hijabMat);
+      hijab.position.y = headY + 0.02;
+      hijab.castShadow = true;
+      grp.add(hijab);
       break;
-    case 'braids':
-      ctx.beginPath();
-      ctx.moveTo(cx-22*s, cy-6*s);
-      ctx.bezierCurveTo(cx-26*s, cy-26*s, cx-10*s, cy-34*s, cx, cy-32*s);
-      ctx.bezierCurveTo(cx+10*s, cy-34*s, cx+26*s, cy-26*s, cx+22*s, cy-6*s);
-      ctx.lineTo(cx+18*s, cy-4*s);
-      ctx.bezierCurveTo(cx+20*s, cy-20*s, cx+8*s, cy-26*s, cx, cy-26*s);
-      ctx.bezierCurveTo(cx-8*s, cy-26*s, cx-20*s, cy-20*s, cx-18*s, cy-4*s);
-      ctx.closePath(); ctx.fill();
-      // Center part
-      ctx.strokeStyle = c.skinTone; ctx.lineWidth = 1.5*s;
-      ctx.beginPath(); ctx.moveTo(cx, cy-34*s); ctx.lineTo(cx, cy-8*s); ctx.stroke();
-      break;
+    }
   }
+
+  return grp;
 }
 
-// ── FACIAL HAIR ──
-function avDrawFacialHair(ctx, c, s, cx, cy) {
-  if (c.facialHair === 'none') return;
-  ctx.fillStyle = c.hairColor;
-  ctx.strokeStyle = c.hairColor;
-  switch(c.facialHair) {
-    case 'stubble':
-      ctx.globalAlpha = 0.4;
-      for (let i = 0; i < 40; i++) {
-        const sx = cx + (Math.sin(i*7.3)*16 - 8)*s;
-        const sy = cy + (16 + Math.cos(i*3.7)*10)*s;
-        ctx.beginPath(); ctx.arc(sx, sy, 0.7*s, 0, Math.PI*2); ctx.fill();
+/* ── Facial Hair ── */
+function av3dBuildFacialHair(config) {
+  const style = config.facialHair || 'none';
+  if(style==='none') return new THREE.Group();
+  const grp = new THREE.Group();
+  const mat = av3dHairMat(config.hairColor || '#2C1810');
+  const headY = 1.65;
+
+  switch(style) {
+    case 'stubble': {
+      // Dotted area on chin and jaw
+      for(let i=0;i<40;i++) {
+        const a=Math.random()*Math.PI-Math.PI/2;
+        const r=0.35+Math.random()*0.08;
+        const sg = new THREE.SphereGeometry(0.004, 4, 4);
+        const dot = new THREE.Mesh(sg, mat);
+        dot.position.set(Math.sin(a)*r*0.5, headY-0.18+Math.random()*0.1, Math.cos(a)*r);
+        grp.add(dot);
       }
-      ctx.globalAlpha = 1;
       break;
-    case 'goatee':
-      ctx.beginPath();
-      ctx.moveTo(cx-6*s, cy+20*s);
-      ctx.bezierCurveTo(cx-8*s, cy+30*s, cx-4*s, cy+36*s, cx, cy+38*s);
-      ctx.bezierCurveTo(cx+4*s, cy+36*s, cx+8*s, cy+30*s, cx+6*s, cy+20*s);
-      ctx.closePath(); ctx.fill();
+    }
+    case 'goatee': {
+      const gg = new THREE.SphereGeometry(0.06, 12, 12);
+      gg.scale(0.8, 1.2, 0.6);
+      const goatee = new THREE.Mesh(gg, mat);
+      goatee.position.set(0, headY-0.22, 0.3);
+      goatee.castShadow=true;
+      grp.add(goatee);
       break;
-    case 'full_beard':
-      ctx.beginPath();
-      ctx.moveTo(cx-26*s, cy+6*s);
-      ctx.bezierCurveTo(cx-28*s, cy+18*s, cx-22*s, cy+36*s, cx-10*s, cy+42*s);
-      ctx.bezierCurveTo(cx-4*s, cy+46*s, cx+4*s, cy+46*s, cx+10*s, cy+42*s);
-      ctx.bezierCurveTo(cx+22*s, cy+36*s, cx+28*s, cy+18*s, cx+26*s, cy+6*s);
-      ctx.lineTo(cx+22*s, cy+8*s);
-      ctx.bezierCurveTo(cx+22*s, cy+16*s, cx+16*s, cy+30*s, cx, cy+36*s);
-      ctx.bezierCurveTo(cx-16*s, cy+30*s, cx-22*s, cy+16*s, cx-22*s, cy+8*s);
-      ctx.closePath(); ctx.fill();
+    }
+    case 'full_beard': {
+      const bg = new THREE.SphereGeometry(0.2, 20, 16, 0, Math.PI*2, Math.PI*0.4, Math.PI*0.45);
+      const beard = new THREE.Mesh(bg, mat);
+      beard.position.set(0, headY-0.08, 0.12);
+      beard.castShadow=true;
+      grp.add(beard);
       break;
-    case 'mustache':
-      ctx.lineWidth = 2.5*s; ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.moveTo(cx-10*s, cy+16*s);
-      ctx.quadraticCurveTo(cx-5*s, cy+12*s, cx, cy+14*s);
-      ctx.quadraticCurveTo(cx+5*s, cy+12*s, cx+10*s, cy+16*s);
-      ctx.stroke();
+    }
+    case 'mustache': {
+      [-1,1].forEach(side => {
+        const ms = new THREE.Shape();
+        ms.moveTo(0, 0);
+        ms.quadraticCurveTo(side*0.04, 0.015, side*0.07, -0.005);
+        ms.lineTo(side*0.07, -0.01);
+        ms.quadraticCurveTo(side*0.04, 0.005, 0, -0.005);
+        ms.closePath();
+        const mg = new THREE.ExtrudeGeometry(ms, {depth:0.015, bevelEnabled:false});
+        const msh = new THREE.Mesh(mg, mat);
+        msh.position.set(0, headY-0.12, 0.37);
+        grp.add(msh);
+      });
       break;
-    case 'van_dyke':
-      // Mustache
-      ctx.lineWidth = 2*s; ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.moveTo(cx-9*s, cy+16*s);
-      ctx.quadraticCurveTo(cx-4*s, cy+12*s, cx, cy+14*s);
-      ctx.quadraticCurveTo(cx+4*s, cy+12*s, cx+9*s, cy+16*s);
-      ctx.stroke();
-      // Goatee
-      ctx.beginPath();
-      ctx.moveTo(cx-5*s, cy+22*s);
-      ctx.bezierCurveTo(cx-6*s, cy+30*s, cx-3*s, cy+34*s, cx, cy+36*s);
-      ctx.bezierCurveTo(cx+3*s, cy+34*s, cx+6*s, cy+30*s, cx+5*s, cy+22*s);
-      ctx.closePath(); ctx.fill();
+    }
+    case 'van_dyke': {
+      // Mustache + pointed goatee
+      [-1,1].forEach(side => {
+        const ms = new THREE.Shape();
+        ms.moveTo(0,0); ms.quadraticCurveTo(side*0.04,0.012,side*0.06,-0.003);
+        ms.lineTo(side*0.06,-0.008); ms.quadraticCurveTo(side*0.04,0.004,0,-0.005);
+        ms.closePath();
+        const mg = new THREE.ExtrudeGeometry(ms, {depth:0.012, bevelEnabled:false});
+        const msh = new THREE.Mesh(mg, mat);
+        msh.position.set(0, headY-0.12, 0.37);
+        grp.add(msh);
+      });
+      const cg = new THREE.ConeGeometry(0.04, 0.12, 10);
+      const chin = new THREE.Mesh(cg, mat);
+      chin.position.set(0, headY-0.28, 0.28);
+      chin.rotation.x = 0.2;
+      grp.add(chin);
       break;
+    }
   }
+  return grp;
 }
 
-// ── GLASSES ──
-function avDrawGlasses(ctx, c, s, cx, cy) {
-  if (c.glasses === 'none') return;
-  const ey = cy - 4*s;
-  ctx.strokeStyle = '#555'; ctx.lineWidth = 1.5*s;
-  switch(c.glasses) {
-    case 'round':
-      ctx.beginPath(); ctx.arc(cx-11*s, ey, 7*s, 0, Math.PI*2); ctx.stroke();
-      ctx.beginPath(); ctx.arc(cx+11*s, ey, 7*s, 0, Math.PI*2); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(cx-4*s, ey); ctx.lineTo(cx+4*s, ey); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(cx-18*s, ey); ctx.lineTo(cx-26*s, ey-2*s); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(cx+18*s, ey); ctx.lineTo(cx+26*s, ey-2*s); ctx.stroke();
-      break;
-    case 'square':
-      ctx.strokeRect(cx-18*s, ey-5*s, 14*s, 10*s);
-      ctx.strokeRect(cx+4*s, ey-5*s, 14*s, 10*s);
-      ctx.beginPath(); ctx.moveTo(cx-4*s, ey); ctx.lineTo(cx+4*s, ey); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(cx-18*s, ey); ctx.lineTo(cx-26*s, ey-2*s); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(cx+18*s, ey); ctx.lineTo(cx+26*s, ey-2*s); ctx.stroke();
-      break;
-    case 'sunglasses':
-      ctx.fillStyle = '#1a1a1a';
-      ctx.beginPath(); ctx.ellipse(cx-11*s, ey, 8*s, 6*s, 0, 0, Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.ellipse(cx+11*s, ey, 8*s, 6*s, 0, 0, Math.PI*2); ctx.fill();
-      ctx.strokeStyle = '#333'; ctx.lineWidth = 2*s;
-      ctx.beginPath(); ctx.ellipse(cx-11*s, ey, 8*s, 6*s, 0, 0, Math.PI*2); ctx.stroke();
-      ctx.beginPath(); ctx.ellipse(cx+11*s, ey, 8*s, 6*s, 0, 0, Math.PI*2); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(cx-3*s, ey); ctx.lineTo(cx+3*s, ey); ctx.stroke();
-      break;
-    case 'visor':
-      ctx.fillStyle = 'rgba(100,100,255,0.3)';
-      const vw = 24*s, vh = 6*s;
-      ctx.beginPath();
-      ctx.moveTo(cx-vw, ey-vh); ctx.lineTo(cx+vw, ey-vh);
-      ctx.lineTo(cx+vw-2*s, ey+vh); ctx.lineTo(cx-vw+2*s, ey+vh);
-      ctx.closePath(); ctx.fill();
-      ctx.strokeStyle = '#7C3AED'; ctx.lineWidth = 1.5*s; ctx.stroke();
-      break;
+/* ═══════════════════════════════════════════════════════
+   CLOTHING
+   ═══════════════════════════════════════════════════════ */
+function av3dBuildTop(config) {
+  const style = config.topStyle || 'tshirt';
+  const color = config.topColor || '#3B82F6';
+  const isArmor = style==='armor';
+  const mat = av3dClothMat(color, isArmor);
+  const grp = new THREE.Group();
+  const bType = config.bodyType || 'average';
+  const torsoW = bType==='heavy'?0.22:bType==='athletic'?0.2:bType==='slim'?0.15:0.18;
+
+  // Base torso shell
+  function torsoShell(extraR, topY, bottomY) {
+    const pts = [];
+    const steps = 10;
+    for(let i=0;i<=steps;i++){
+      const t=i/steps;
+      const y=bottomY+t*(topY-bottomY);
+      const r = torsoW + extraR + 0.01 + Math.sin(t*Math.PI)*0.02;
+      pts.push(new THREE.Vector2(r, y));
+    }
+    return new THREE.LatheGeometry(pts, 20);
   }
+
+  switch(style) {
+    case 'tshirt': {
+      const tg = torsoShell(0.015, 0.65, 0);
+      const top = new THREE.Mesh(tg, mat);
+      top.position.y = 0.7;
+      top.castShadow = true;
+      grp.add(top);
+      // Short sleeves
+      [-1,1].forEach(side => {
+        const sg = new THREE.CylinderGeometry(0.055, 0.06, 0.12, 12);
+        const sleeve = new THREE.Mesh(sg, mat);
+        sleeve.position.set(side*(torsoW+0.02), 1.2, 0);
+        sleeve.castShadow = true;
+        grp.add(sleeve);
+      });
+      break;
+    }
+    case 'hoodie': {
+      const tg = torsoShell(0.025, 0.67, 0);
+      const top = new THREE.Mesh(tg, mat);
+      top.position.y = 0.68;
+      top.castShadow = true;
+      grp.add(top);
+      // Full sleeves
+      [-1,1].forEach(side => {
+        const sg = new THREE.CylinderGeometry(0.06, 0.055, 0.35, 12);
+        const sleeve = new THREE.Mesh(sg, mat);
+        sleeve.position.set(side*(torsoW+0.02), 1.05, 0);
+        sleeve.castShadow = true;
+        grp.add(sleeve);
+      });
+      // Hood behind neck
+      const hg = new THREE.SphereGeometry(0.12, 16, 12, 0, Math.PI*2, 0, Math.PI*0.6);
+      const hood = new THREE.Mesh(hg, mat);
+      hood.position.set(0, 1.42, -0.1);
+      hood.rotation.x = 0.5;
+      grp.add(hood);
+      break;
+    }
+    case 'jacket': {
+      const tg = torsoShell(0.02, 0.65, 0);
+      const top = new THREE.Mesh(tg, mat);
+      top.position.y = 0.7;
+      top.castShadow = true;
+      grp.add(top);
+      // Full sleeves
+      [-1,1].forEach(side => {
+        const sg = new THREE.CylinderGeometry(0.055, 0.05, 0.35, 12);
+        const sleeve = new THREE.Mesh(sg, mat);
+        sleeve.position.set(side*(torsoW+0.02), 1.05, 0);
+        sleeve.castShadow = true;
+        grp.add(sleeve);
+      });
+      // Lapels (two small planes)
+      [-1,1].forEach(side => {
+        const lg = new THREE.PlaneGeometry(0.06, 0.15);
+        const lapelMat = av3dClothMat(avShade(color,-20), false);
+        const lapel = new THREE.Mesh(lg, lapelMat);
+        lapel.position.set(side*0.06, 1.3, torsoW+0.025);
+        lapel.rotation.y = side*0.3;
+        grp.add(lapel);
+      });
+      break;
+    }
+    case 'armor': {
+      const tg = torsoShell(0.03, 0.67, -0.02);
+      const top = new THREE.Mesh(tg, mat);
+      top.position.y = 0.7;
+      top.castShadow = true;
+      grp.add(top);
+      // Shoulder pads
+      [-1,1].forEach(side => {
+        const spg = new THREE.SphereGeometry(0.08, 12, 12);
+        spg.scale(1.2, 0.6, 1);
+        const pad = new THREE.Mesh(spg, mat);
+        pad.position.set(side*(torsoW+0.05), 1.3, 0);
+        pad.castShadow = true;
+        grp.add(pad);
+      });
+      // Chest emblem
+      const eg = new THREE.CircleGeometry(0.04, 6);
+      const emblem = new THREE.Mesh(eg, new THREE.MeshStandardMaterial({color:0xDAA520, emissive:0x332200, metalness:0.8, roughness:0.2}));
+      emblem.position.set(0, 1.2, torsoW+0.02);
+      grp.add(emblem);
+      break;
+    }
+    case 'robe': {
+      // Full-length robe
+      const pts = [];
+      for(let i=0;i<=12;i++){
+        const t=i/12; const y=t*0.95;
+        const r = (torsoW+0.03) * (1 + 0.2*Math.pow(1-t,2));
+        pts.push(new THREE.Vector2(r, y));
+      }
+      const rg = new THREE.LatheGeometry(pts, 20);
+      const robe = new THREE.Mesh(rg, mat);
+      robe.position.y = 0.42;
+      robe.castShadow = true;
+      grp.add(robe);
+      // Full sleeves
+      [-1,1].forEach(side => {
+        const sg = new THREE.CylinderGeometry(0.06, 0.07, 0.35, 12);
+        const sleeve = new THREE.Mesh(sg, mat);
+        sleeve.position.set(side*(torsoW+0.03), 1.05, 0);
+        sleeve.castShadow = true;
+        grp.add(sleeve);
+      });
+      // V-neck collar
+      const cs = new THREE.Shape();
+      cs.moveTo(-0.05,0); cs.lineTo(0,-0.1); cs.lineTo(0.05,0); cs.lineTo(0.04,0.01);
+      cs.lineTo(0,-0.08); cs.lineTo(-0.04,0.01); cs.closePath();
+      const cg = new THREE.ExtrudeGeometry(cs,{depth:0.01,bevelEnabled:false});
+      const collar = new THREE.Mesh(cg, av3dClothMat(avShade(color,20),false));
+      collar.position.set(0,1.35,torsoW+0.015);
+      grp.add(collar);
+      break;
+    }
+    case 'tank': {
+      const tg = torsoShell(0.01, 0.55, 0);
+      const top = new THREE.Mesh(tg, mat);
+      top.position.y = 0.72;
+      top.castShadow = true;
+      grp.add(top);
+      // Thin straps
+      [-1,1].forEach(side => {
+        const sg = new THREE.CylinderGeometry(0.015, 0.015, 0.15, 8);
+        const strap = new THREE.Mesh(sg, mat);
+        strap.position.set(side*0.08, 1.32, 0.08);
+        strap.rotation.z = side*0.15;
+        grp.add(strap);
+      });
+      break;
+    }
+    case 'suit': {
+      const tg = torsoShell(0.02, 0.66, 0);
+      const top = new THREE.Mesh(tg, mat);
+      top.position.y = 0.7;
+      top.castShadow = true;
+      grp.add(top);
+      // Full sleeves
+      [-1,1].forEach(side => {
+        const sg = new THREE.CylinderGeometry(0.052, 0.048, 0.35, 12);
+        const sleeve = new THREE.Mesh(sg, mat);
+        sleeve.position.set(side*(torsoW+0.02), 1.05, 0);
+        sleeve.castShadow = true;
+        grp.add(sleeve);
+      });
+      // Collar
+      const cg = new THREE.BoxGeometry(0.14, 0.03, 0.01);
+      const collar = new THREE.Mesh(cg, new THREE.MeshStandardMaterial({color:0xffffff,roughness:0.5}));
+      collar.position.set(0, 1.36, torsoW+0.015);
+      grp.add(collar);
+      // Tie
+      const ts = new THREE.Shape();
+      ts.moveTo(-0.015,0); ts.lineTo(0,-0.2); ts.lineTo(0.015,0); ts.closePath();
+      const ttg = new THREE.ExtrudeGeometry(ts,{depth:0.008,bevelEnabled:false});
+      const tie = new THREE.Mesh(ttg, new THREE.MeshStandardMaterial({color:0x8B0000,roughness:0.4}));
+      tie.position.set(0,1.33,torsoW+0.02);
+      grp.add(tie);
+      break;
+    }
+    case 'crop_top': {
+      const tg = torsoShell(0.012, 0.5, 0.2);
+      const top = new THREE.Mesh(tg, mat);
+      top.position.y = 0.78;
+      top.castShadow = true;
+      grp.add(top);
+      // Short sleeves
+      [-1,1].forEach(side => {
+        const sg = new THREE.CylinderGeometry(0.045, 0.05, 0.08, 12);
+        const sleeve = new THREE.Mesh(sg, mat);
+        sleeve.position.set(side*(torsoW+0.01), 1.22, 0);
+        grp.add(sleeve);
+      });
+      break;
+    }
+  }
+  return grp;
 }
 
-// ── HAT ──
-function avDrawHat(ctx, c, s, cx, cy) {
-  if (c.hat === 'none' || c.hairStyle === 'hijab') return;
-  switch(c.hat) {
-    case 'cap':
-      ctx.fillStyle = '#2d3748';
+function av3dBuildBottom(config) {
+  const style = config.bottomStyle || 'pants';
+  const color = config.bottomColor || '#1E293B';
+  const mat = av3dClothMat(color, false);
+  const grp = new THREE.Group();
+
+  switch(style) {
+    case 'pants': {
+      [-1,1].forEach(side => {
+        const pg = new THREE.CylinderGeometry(0.065, 0.055, 0.65, 12);
+        const leg = new THREE.Mesh(pg, mat);
+        leg.position.set(side*0.08, 0.35, 0);
+        leg.castShadow = true;
+        grp.add(leg);
+      });
+      // Waistband
+      const wg = new THREE.TorusGeometry(0.16, 0.015, 8, 24);
+      const waist = new THREE.Mesh(wg, mat);
+      waist.position.y = 0.68;
+      waist.rotation.x = Math.PI/2;
+      grp.add(waist);
+      break;
+    }
+    case 'shorts': {
+      [-1,1].forEach(side => {
+        const sg = new THREE.CylinderGeometry(0.07, 0.065, 0.25, 12);
+        const leg = new THREE.Mesh(sg, mat);
+        leg.position.set(side*0.08, 0.56, 0);
+        leg.castShadow = true;
+        grp.add(leg);
+      });
+      break;
+    }
+    case 'skirt': {
+      const pts = [
+        new THREE.Vector2(0.08, 0),
+        new THREE.Vector2(0.14, 0.05),
+        new THREE.Vector2(0.18, 0.15),
+        new THREE.Vector2(0.2, 0.3),
+        new THREE.Vector2(0.16, 0.38)
+      ];
+      const sg = new THREE.LatheGeometry(pts, 24);
+      const skirt = new THREE.Mesh(sg, mat);
+      skirt.position.y = 0.32;
+      skirt.castShadow = true;
+      grp.add(skirt);
+      break;
+    }
+    case 'robe_bottom': {
+      const pts = [
+        new THREE.Vector2(0.1, 0),
+        new THREE.Vector2(0.14, 0.1),
+        new THREE.Vector2(0.18, 0.3),
+        new THREE.Vector2(0.2, 0.5),
+        new THREE.Vector2(0.17, 0.6)
+      ];
+      const rg = new THREE.LatheGeometry(pts, 24);
+      const rb = new THREE.Mesh(rg, mat);
+      rb.position.y = 0.08;
+      rb.castShadow = true;
+      grp.add(rb);
+      break;
+    }
+  }
+  return grp;
+}
+
+/* ═══════════════════════════════════════════════════════
+   ACCESSORIES
+   ═══════════════════════════════════════════════════════ */
+function av3dBuildGlasses(config) {
+  const style = config.glasses || 'none';
+  if(style==='none') return new THREE.Group();
+  const grp = new THREE.Group();
+  const headY = 1.65;
+  const frameMat = style==='sunglasses'
+    ? new THREE.MeshStandardMaterial({color:0x111111, roughness:0.2, metalness:0.5})
+    : new THREE.MeshStandardMaterial({color:0x333333, roughness:0.3, metalness:0.6});
+  const lensMat = style==='sunglasses'
+    ? new THREE.MeshPhysicalMaterial({color:0x222222, roughness:0.05, metalness:0.1, transparent:true, opacity:0.7})
+    : new THREE.MeshPhysicalMaterial({color:0xffffff, roughness:0.05, transparent:true, opacity:0.15, clearcoat:1.0});
+
+  const isRound = style==='round';
+  const r = isRound ? 0.045 : 0.05;
+
+  [-1,1].forEach(side => {
+    // Frame
+    const fg = isRound
+      ? new THREE.TorusGeometry(r, 0.005, 8, 24)
+      : new THREE.TorusGeometry(r, 0.005, 8, 4);
+    const frame = new THREE.Mesh(fg, frameMat);
+    frame.position.set(side*0.12, headY+0.02, 0.38);
+    grp.add(frame);
+    // Lens
+    const lg = new THREE.CircleGeometry(r-0.005, isRound?24:4);
+    const lens = new THREE.Mesh(lg, lensMat);
+    lens.position.set(side*0.12, headY+0.02, 0.381);
+    grp.add(lens);
+  });
+  // Bridge
+  const bg = new THREE.CylinderGeometry(0.004, 0.004, 0.08, 8);
+  bg.rotateZ(Math.PI/2);
+  const bridge = new THREE.Mesh(bg, frameMat);
+  bridge.position.set(0, headY+0.02, 0.39);
+  grp.add(bridge);
+
+  if(style==='visor') {
+    // Wrap-around visor
+    const vg = new THREE.SphereGeometry(0.46, 32, 16, -Math.PI*0.35, Math.PI*0.7, Math.PI*0.38, Math.PI*0.12);
+    const visor = new THREE.Mesh(vg, new THREE.MeshPhysicalMaterial({color:0x4488ff, transparent:true, opacity:0.4, metalness:0.3, roughness:0.05, clearcoat:1.0}));
+    visor.position.set(0, headY, 0);
+    grp.add(visor);
+  }
+
+  return grp;
+}
+
+function av3dBuildHat(config) {
+  const style = config.hat || 'none';
+  if(style==='none') return new THREE.Group();
+  const grp = new THREE.Group();
+  const headY = 1.65;
+  const mat = av3dClothMat(config.topColor||'#3B82F6', false);
+
+  switch(style) {
+    case 'cap': {
       // Dome
-      ctx.beginPath(); ctx.ellipse(cx, cy-28*s, 28*s, 14*s, 0, Math.PI, Math.PI*2); ctx.fill();
+      const dg = new THREE.SphereGeometry(0.44, 24, 16, 0, Math.PI*2, 0, Math.PI*0.4);
+      const dome = new THREE.Mesh(dg, mat);
+      dome.position.y = headY+0.06;
+      dome.castShadow = true;
+      grp.add(dome);
       // Brim
-      ctx.beginPath();
-      ctx.moveTo(cx-28*s, cy-28*s);
-      ctx.bezierCurveTo(cx-30*s, cy-26*s, cx-32*s, cy-24*s, cx-18*s, cy-22*s);
-      ctx.lineTo(cx+30*s, cy-24*s);
-      ctx.bezierCurveTo(cx+34*s, cy-26*s, cx+32*s, cy-28*s, cx+28*s, cy-28*s);
-      ctx.closePath(); ctx.fill();
+      const bg = new THREE.CylinderGeometry(0.3, 0.3, 0.015, 24, 1, false, -Math.PI/2, Math.PI);
+      const brim = new THREE.Mesh(bg, mat);
+      brim.position.set(0, headY+0.08, 0.2);
+      brim.rotation.x = -0.15;
+      brim.castShadow = true;
+      grp.add(brim);
       break;
-    case 'beanie':
-      ctx.fillStyle = '#8B4513';
-      ctx.beginPath(); ctx.ellipse(cx, cy-24*s, 30*s, 18*s, 0, Math.PI, Math.PI*2); ctx.fill();
-      // Fold line
-      ctx.strokeStyle = avShade('#8B4513', -20); ctx.lineWidth = 2*s;
-      ctx.beginPath(); ctx.ellipse(cx, cy-24*s, 28*s, 4*s, 0, 0, Math.PI*2); ctx.stroke();
-      // Pom pom
-      ctx.beginPath(); ctx.arc(cx, cy-42*s, 5*s, 0, Math.PI*2); ctx.fill();
+    }
+    case 'beanie': {
+      const bg = new THREE.SphereGeometry(0.44, 24, 16, 0, Math.PI*2, 0, Math.PI*0.45);
+      const beanie = new THREE.Mesh(bg, mat);
+      beanie.position.y = headY+0.06;
+      beanie.castShadow = true;
+      grp.add(beanie);
+      // Pom-pom
+      const pg = new THREE.SphereGeometry(0.04, 12, 12);
+      const pom = new THREE.Mesh(pg, mat);
+      pom.position.y = headY+0.48;
+      grp.add(pom);
       break;
-    case 'crown':
-      ctx.fillStyle = '#DAA520';
-      ctx.beginPath();
-      ctx.moveTo(cx-18*s, cy-28*s); ctx.lineTo(cx-18*s, cy-40*s);
-      ctx.lineTo(cx-10*s, cy-34*s); ctx.lineTo(cx, cy-44*s);
-      ctx.lineTo(cx+10*s, cy-34*s); ctx.lineTo(cx+18*s, cy-40*s);
-      ctx.lineTo(cx+18*s, cy-28*s);
-      ctx.closePath(); ctx.fill();
-      // Jewels
-      ctx.fillStyle = '#EF4444';
-      ctx.beginPath(); ctx.arc(cx, cy-34*s, 2*s, 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle = '#3B82F6';
-      ctx.beginPath(); ctx.arc(cx-10*s, cy-30*s, 1.5*s, 0, Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(cx+10*s, cy-30*s, 1.5*s, 0, Math.PI*2); ctx.fill();
+    }
+    case 'crown': {
+      // Base ring
+      const rg = new THREE.TorusGeometry(0.35, 0.03, 8, 24);
+      const cMat = av3dMetalMat();
+      const ring = new THREE.Mesh(rg, cMat);
+      ring.position.y = headY+0.25;
+      ring.rotation.x = Math.PI/2;
+      grp.add(ring);
+      // Points
+      for(let i=0;i<6;i++) {
+        const a=i*Math.PI*2/6;
+        const pg = new THREE.ConeGeometry(0.025, 0.08, 4);
+        const point = new THREE.Mesh(pg, cMat);
+        point.position.set(Math.sin(a)*0.35, headY+0.32, Math.cos(a)*0.35);
+        grp.add(point);
+        // Jewel
+        const jg = new THREE.SphereGeometry(0.012, 8, 8);
+        const jewel = new THREE.Mesh(jg, new THREE.MeshStandardMaterial({color:0xff0000, emissive:0x440000, metalness:0.3, roughness:0.2}));
+        jewel.position.set(Math.sin(a)*0.35, headY+0.27, Math.cos(a)*0.35);
+        grp.add(jewel);
+      }
       break;
-    case 'headband':
-      ctx.strokeStyle = '#EF4444'; ctx.lineWidth = 3*s;
-      ctx.beginPath(); ctx.ellipse(cx, cy-14*s, 28*s, 20*s, 0, Math.PI+0.2, -0.2); ctx.stroke();
+    }
+    case 'headband': {
+      const hg = new THREE.TorusGeometry(0.42, 0.015, 8, 32);
+      const headband = new THREE.Mesh(hg, mat);
+      headband.position.y = headY+0.15;
+      headband.rotation.x = Math.PI/2;
+      grp.add(headband);
       break;
-    case 'turban':
-      ctx.fillStyle = '#F5F5DC';
-      ctx.beginPath();
-      ctx.moveTo(cx-30*s, cy-16*s);
-      ctx.bezierCurveTo(cx-32*s, cy-36*s, cx-16*s, cy-48*s, cx, cy-46*s);
-      ctx.bezierCurveTo(cx+16*s, cy-48*s, cx+32*s, cy-36*s, cx+30*s, cy-16*s);
-      ctx.lineTo(cx+26*s, cy-14*s);
-      ctx.bezierCurveTo(cx+28*s, cy-30*s, cx+12*s, cy-38*s, cx, cy-38*s);
-      ctx.bezierCurveTo(cx-12*s, cy-38*s, cx-28*s, cy-30*s, cx-26*s, cy-14*s);
-      ctx.closePath(); ctx.fill();
-      // Fold lines
-      ctx.strokeStyle = avShade('#F5F5DC', -20); ctx.lineWidth = 1*s;
-      ctx.beginPath(); ctx.moveTo(cx, cy-46*s); ctx.bezierCurveTo(cx+6*s, cy-38*s, cx+4*s, cy-26*s, cx+2*s, cy-16*s); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(cx, cy-46*s); ctx.bezierCurveTo(cx-8*s, cy-36*s, cx-6*s, cy-24*s, cx-4*s, cy-16*s); ctx.stroke();
+    }
+    case 'turban': {
+      const tg = new THREE.SphereGeometry(0.46, 24, 20, 0, Math.PI*2, 0, Math.PI*0.5);
+      const turban = new THREE.Mesh(tg, mat);
+      turban.position.y = headY+0.06;
+      turban.castShadow = true;
+      grp.add(turban);
+      // Fold lines (subtle rings)
+      for(let i=0;i<3;i++){
+        const fg = new THREE.TorusGeometry(0.42-i*0.04, 0.008, 6, 24);
+        const fold = new THREE.Mesh(fg, av3dClothMat(avShade(config.topColor||'#3B82F6',-15),false));
+        fold.position.y = headY+0.18+i*0.07;
+        fold.rotation.x = Math.PI/2;
+        grp.add(fold);
+      }
       break;
+    }
   }
+  return grp;
 }
 
-// ── EARRING ──
-function avDrawEarring(ctx, c, s, cx, cy) {
-  if (c.earring === 'none' || c.hairStyle === 'hijab') return;
-  ctx.fillStyle = '#DAA520'; ctx.strokeStyle = '#DAA520'; ctx.lineWidth = 1.2*s;
-  const ex1 = cx - 28*s, ex2 = cx + 28*s, ey = cy + 8*s;
-  switch(c.earring) {
-    case 'stud':
-      ctx.beginPath(); ctx.arc(ex1, ey, 2*s, 0, Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(ex2, ey, 2*s, 0, Math.PI*2); ctx.fill();
-      break;
-    case 'hoop':
-      ctx.beginPath(); ctx.arc(ex1, ey+4*s, 4*s, 0, Math.PI*2); ctx.stroke();
-      ctx.beginPath(); ctx.arc(ex2, ey+4*s, 4*s, 0, Math.PI*2); ctx.stroke();
-      break;
-    case 'dangle':
-      ctx.beginPath(); ctx.moveTo(ex1, ey); ctx.lineTo(ex1, ey+8*s); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(ex1-2*s, ey+8*s); ctx.lineTo(ex1, ey+12*s); ctx.lineTo(ex1+2*s, ey+8*s); ctx.closePath(); ctx.fill();
-      ctx.beginPath(); ctx.moveTo(ex2, ey); ctx.lineTo(ex2, ey+8*s); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(ex2-2*s, ey+8*s); ctx.lineTo(ex2, ey+12*s); ctx.lineTo(ex2+2*s, ey+8*s); ctx.closePath(); ctx.fill();
-      break;
-  }
+function av3dBuildEarring(config) {
+  const style = config.earring || 'none';
+  if(style==='none') return new THREE.Group();
+  const grp = new THREE.Group();
+  const headY = 1.65;
+  const gMat = av3dMetalMat();
+
+  [-1,1].forEach(side => {
+    switch(style) {
+      case 'stud': {
+        const sg = new THREE.SphereGeometry(0.015, 10, 10);
+        const stud = new THREE.Mesh(sg, gMat);
+        stud.position.set(side*0.42, headY-0.02, 0);
+        grp.add(stud);
+        break;
+      }
+      case 'hoop': {
+        const hg = new THREE.TorusGeometry(0.03, 0.004, 8, 20);
+        const hoop = new THREE.Mesh(hg, gMat);
+        hoop.position.set(side*0.42, headY-0.06, 0);
+        grp.add(hoop);
+        break;
+      }
+      case 'dangle': {
+        // Chain of small links
+        for(let i=0;i<3;i++){
+          const lg = new THREE.SphereGeometry(0.008, 6, 6);
+          const link = new THREE.Mesh(lg, gMat);
+          link.position.set(side*0.42, headY-0.04-i*0.025, 0);
+          grp.add(link);
+        }
+        // Drop
+        const dg = new THREE.ConeGeometry(0.012, 0.025, 6);
+        const drop = new THREE.Mesh(dg, gMat);
+        drop.position.set(side*0.42, headY-0.12, 0);
+        grp.add(drop);
+        break;
+      }
+    }
+  });
+  return grp;
 }
 
-// ── ELEMENT GLOW ──
-function avDrawElementGlow(ctx, c, s, cx, cy, elementKey) {
-  if (!elementKey || !MC.elements[elementKey]) return;
-  const e = MC.elements[elementKey];
-  const grd = ctx.createRadialGradient(cx, cy-10*s, 5*s, cx, cy-10*s, 55*s);
-  grd.addColorStop(0, avAlpha(e.color, 0.12));
-  grd.addColorStop(0.6, avAlpha(e.color, 0.04));
-  grd.addColorStop(1, 'transparent');
-  ctx.fillStyle = grd;
-  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  if (c.elementBadge) {
-    ctx.font = `${14*s}px serif`;
-    ctx.textAlign = 'center';
-    ctx.fillStyle = e.color;
-    ctx.fillText(e.icon, cx + 28*s, cy - 36*s);
+function av3dBuildNecklace(config) {
+  const style = config.necklace || 'none';
+  if(style==='none') return new THREE.Group();
+  const grp = new THREE.Group();
+  const gMat = av3dMetalMat();
+
+  switch(style) {
+    case 'chain': {
+      // Arc of small tori
+      for(let i=0;i<16;i++){
+        const a = -Math.PI*0.4 + i*Math.PI*0.8/15;
+        const r = 0.18;
+        const lg = new THREE.TorusGeometry(0.006, 0.002, 6, 8);
+        const link = new THREE.Mesh(lg, gMat);
+        link.position.set(Math.sin(a)*r, 1.38+Math.cos(a)*r*0.3, 0.13+Math.cos(a)*0.02);
+        link.rotation.y = a;
+        grp.add(link);
+      }
+      break;
+    }
+    case 'pendant': {
+      // Chain
+      for(let i=0;i<12;i++){
+        const a = -Math.PI*0.35 + i*Math.PI*0.7/11;
+        const r = 0.16;
+        const lg = new THREE.TorusGeometry(0.005, 0.0015, 6, 8);
+        const link = new THREE.Mesh(lg, gMat);
+        link.position.set(Math.sin(a)*r, 1.38+Math.cos(a)*r*0.3, 0.14+Math.cos(a)*0.02);
+        link.rotation.y = a;
+        grp.add(link);
+      }
+      // Pendant gem
+      const pg = new THREE.OctahedronGeometry(0.02, 0);
+      const pendant = new THREE.Mesh(pg, new THREE.MeshPhysicalMaterial({color:0x4488ff, roughness:0.1, metalness:0.2, clearcoat:1.0, transparent:true, opacity:0.8}));
+      pendant.position.set(0, 1.32, 0.16);
+      grp.add(pendant);
+      break;
+    }
+    case 'choker': {
+      const cg = new THREE.TorusGeometry(0.1, 0.01, 8, 32);
+      const choker = new THREE.Mesh(cg, new THREE.MeshStandardMaterial({color:0x111111, roughness:0.3, metalness:0.1}));
+      choker.position.set(0, 1.4, 0.02);
+      choker.rotation.x = Math.PI/2;
+      grp.add(choker);
+      break;
+    }
+  }
+  return grp;
+}
+
+/* ── Element Glow ── */
+function av3dBuildElementGlow(elementKey) {
+  const elColors = {
+    ignis:0xff4500, aqua:0x06b6d4, terra:0x22c55e, ventus:0xa78bfa,
+    lux:0xf59e0b, umbra:0x6b21a8, ferrum:0x6b7280, psyche:0xec4899
+  };
+  const color = elColors[elementKey] || 0xffffff;
+  if(AV3D.glowLight) { AV3D.glowLight.color.set(color); AV3D.glowLight.intensity = 0.6; }
+
+  // Subtle glow ring at feet
+  const rg = new THREE.TorusGeometry(0.25, 0.02, 8, 32);
+  const glowMat = new THREE.MeshBasicMaterial({color:color, transparent:true, opacity:0.4});
+  const ring = new THREE.Mesh(rg, glowMat);
+  ring.position.y = 0.01;
+  ring.rotation.x = Math.PI/2;
+  return ring;
+}
+
+/* ═══════════════════════════════════════════════════════
+   MASTER BUILD — Assemble full avatar
+   ═══════════════════════════════════════════════════════ */
+function av3dBuildAvatar(config, elementKey) {
+  if(AV3D.avatarGroup) { av3dDisposeGroup(AV3D.avatarGroup); AV3D.scene.remove(AV3D.avatarGroup); }
+  const g = new THREE.Group();
+  const skinMat = av3dSkinMat(config.skinTone || '#D2A272');
+
+  g.add(av3dBuildBody(config, skinMat));
+  g.add(av3dBuildHead(config, skinMat));
+  g.add(av3dBuildEars(config, skinMat));
+  g.add(av3dBuildEye(config, -1, skinMat));
+  g.add(av3dBuildEye(config, 1, skinMat));
+  g.add(av3dBuildEyebrows(config, skinMat));
+  g.add(av3dBuildNose(config, skinMat));
+  g.add(av3dBuildMouth(config, skinMat));
+  g.add(av3dBuildFacialHair(config));
+  g.add(av3dBuildHair(config));
+  g.add(av3dBuildTop(config));
+  g.add(av3dBuildBottom(config));
+  g.add(av3dBuildGlasses(config));
+  g.add(av3dBuildHat(config));
+  g.add(av3dBuildEarring(config));
+  g.add(av3dBuildNecklace(config));
+  if(config.elementBadge) g.add(av3dBuildElementGlow(elementKey || 'ignis'));
+
+  AV3D.avatarGroup = g;
+  AV3D.scene.add(g);
+}
+
+/* ═══════════════════════════════════════════════════════
+   ORBIT CONTROLS — 360° mouse + touch
+   ═══════════════════════════════════════════════════════ */
+function av3dSetupControls(canvas) {
+  const sens = 0.008, elevMax = 0.7;
+
+  function onPointerDown(e) {
+    AV3D.dragging=true;
+    AV3D.lastX=e.clientX||e.touches[0].clientX;
+    AV3D.lastY=e.clientY||e.touches[0].clientY;
+    canvas.style.cursor='grabbing';
+    av3dStopAutoRotate();
+  }
+  function onPointerMove(e) {
+    if(!AV3D.dragging) return;
+    const x=e.clientX||e.touches[0].clientX, y=e.clientY||e.touches[0].clientY;
+    AV3D.orbitAngle += (x-AV3D.lastX)*sens;
+    AV3D.orbitElev = Math.max(-elevMax, Math.min(elevMax, AV3D.orbitElev + (AV3D.lastY-y)*sens));
+    AV3D.lastX=x; AV3D.lastY=y;
+    av3dUpdateCamera();
+    av3dRenderFrame();
+  }
+  function onPointerUp() {
+    AV3D.dragging=false;
+    canvas.style.cursor='grab';
+    av3dStartAutoRotate();
+  }
+  function onWheel(e) {
+    e.preventDefault();
+    AV3D.orbitDist = Math.max(2.5, Math.min(6.0, AV3D.orbitDist + e.deltaY*0.005));
+    av3dUpdateCamera();
+    av3dRenderFrame();
+    av3dStopAutoRotate();
+    av3dStartAutoRotate();
+  }
+  // Touch pinch zoom
+  function onTouchStart(e) {
+    if(e.touches.length===2) {
+      AV3D.pinchDist = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+    } else if(e.touches.length===1) {
+      onPointerDown(e);
+    }
+  }
+  function onTouchMove(e) {
+    e.preventDefault();
+    if(e.touches.length===2) {
+      const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+      AV3D.orbitDist = Math.max(2.5, Math.min(6.0, AV3D.orbitDist - (d-AV3D.pinchDist)*0.01));
+      AV3D.pinchDist=d;
+      av3dUpdateCamera(); av3dRenderFrame();
+    } else if(e.touches.length===1) {
+      onPointerMove(e);
+    }
+  }
+
+  canvas.addEventListener('mousedown', onPointerDown);
+  window.addEventListener('mousemove', onPointerMove);
+  window.addEventListener('mouseup', onPointerUp);
+  canvas.addEventListener('wheel', onWheel, {passive:false});
+  canvas.addEventListener('touchstart', onTouchStart, {passive:false});
+  canvas.addEventListener('touchmove', onTouchMove, {passive:false});
+  canvas.addEventListener('touchend', onPointerUp);
+  canvas.style.cursor = 'grab';
+
+  // Store cleanup ref
+  AV3D._controlCleanup = () => {
+    canvas.removeEventListener('mousedown', onPointerDown);
+    window.removeEventListener('mousemove', onPointerMove);
+    window.removeEventListener('mouseup', onPointerUp);
+    canvas.removeEventListener('wheel', onWheel);
+    canvas.removeEventListener('touchstart', onTouchStart);
+    canvas.removeEventListener('touchmove', onTouchMove);
+    canvas.removeEventListener('touchend', onPointerUp);
+  };
+}
+
+/* ── Auto-rotate ── */
+function av3dStartAutoRotate() {
+  clearTimeout(AV3D.autoRotateTimer);
+  AV3D.autoRotateTimer = setTimeout(() => {
+    function spin() {
+      if(AV3D.dragging) return;
+      AV3D.orbitAngle += 0.003;
+      av3dUpdateCamera();
+      av3dRenderFrame();
+      AV3D.animId = requestAnimationFrame(spin);
+    }
+    AV3D.animId = requestAnimationFrame(spin);
+  }, 8000);
+}
+function av3dStopAutoRotate() {
+  clearTimeout(AV3D.autoRotateTimer);
+  if(AV3D.animId) { cancelAnimationFrame(AV3D.animId); AV3D.animId=null; }
+}
+
+/* ── Render ── */
+function av3dRenderFrame() {
+  if(!AV3D.renderer || !AV3D.scene || !AV3D.camera) return;
+  AV3D.renderer.render(AV3D.scene, AV3D.camera);
+}
+
+/* ── Snapshot for non-builder canvases ── */
+function av3dSnapshot(targetCanvas, config, elementKey) {
+  // Config hash for caching
+  const hash = JSON.stringify(config) + (elementKey||'');
+  if(AV3D._snapshotCache[hash]) {
+    const ctx = targetCanvas.getContext('2d');
+    ctx.clearRect(0,0,targetCanvas.width,targetCanvas.height);
+    ctx.drawImage(AV3D._snapshotCache[hash], 0, 0, targetCanvas.width, targetCanvas.height);
+    return;
+  }
+
+  // Ensure 3D scene exists
+  if(!AV3D.renderer) {
+    // Create offscreen renderer
+    const offCanvas = document.createElement('canvas');
+    offCanvas.width = 300; offCanvas.height = 400;
+    av3dInit(offCanvas);
+  }
+
+  // Save state
+  const savedAngle=AV3D.orbitAngle, savedElev=AV3D.orbitElev, savedDist=AV3D.orbitDist;
+  AV3D.orbitAngle=0.35; AV3D.orbitElev=0.15; AV3D.orbitDist=3.8;
+  av3dUpdateCamera();
+
+  // Build + render
+  av3dBuildAvatar(config, elementKey);
+  AV3D.renderer.setSize(300, 400, false);
+  AV3D.camera.aspect = 0.75;
+  AV3D.camera.updateProjectionMatrix();
+  av3dRenderFrame();
+
+  // Capture
+  const img = new Image();
+  img.src = AV3D.renderer.domElement.toDataURL();
+  img.onload = () => {
+    AV3D._snapshotCache[hash] = img;
+    const ctx = targetCanvas.getContext('2d');
+    ctx.clearRect(0,0,targetCanvas.width,targetCanvas.height);
+    ctx.drawImage(img, 0, 0, targetCanvas.width, targetCanvas.height);
+  };
+  // Also draw immediately (in case image is instant)
+  const ctx2 = targetCanvas.getContext('2d');
+  ctx2.clearRect(0,0,targetCanvas.width,targetCanvas.height);
+  try { ctx2.drawImage(AV3D.renderer.domElement, 0, 0, targetCanvas.width, targetCanvas.height); } catch(e){}
+
+  // Restore state
+  AV3D.orbitAngle=savedAngle; AV3D.orbitElev=savedElev; AV3D.orbitDist=savedDist;
+  av3dUpdateCamera();
+}
+
+/* ═══════════════════════════════════════════════════════
+   CAMERA PHOTO CAPTURE
+   ═══════════════════════════════════════════════════════ */
+function av3dCapturePhoto() {
+  const overlay = document.getElementById('av3dCameraOverlay');
+  if(!overlay) return;
+  overlay.style.display = 'flex';
+  const video = document.getElementById('av3dCameraVideo');
+
+  navigator.mediaDevices.getUserMedia({ video: { facingMode:'user', width:{ideal:320}, height:{ideal:240} } })
+    .then(stream => {
+      video.srcObject = stream;
+      video.play();
+      video._stream = stream;
+    })
+    .catch(err => {
+      console.warn('Camera access denied:', err);
+      overlay.style.display = 'none';
+      avatarNoorSpeak("Camera not available. No worries, customize manually!");
+    });
+}
+
+function av3dCameraSnap() {
+  const video = document.getElementById('av3dCameraVideo');
+  if(!video || !video.srcObject) return;
+
+  const cv = document.createElement('canvas');
+  cv.width = video.videoWidth || 320; cv.height = video.videoHeight || 240;
+  const ctx = cv.getContext('2d');
+  ctx.drawImage(video, 0, 0, cv.width, cv.height);
+
+  const imageData = ctx.getImageData(0, 0, cv.width, cv.height);
+  const d = imageData.data;
+
+  // Sample center 40% for skin tone
+  const cx=cv.width/2, cy=cv.height/2, rw=cv.width*0.2, rh=cv.height*0.2;
+  let sr=0,sg=0,sb=0,sn=0;
+  for(let y=Math.floor(cy-rh);y<cy+rh;y++) {
+    for(let x=Math.floor(cx-rw);x<cx+rw;x++) {
+      const i=(y*cv.width+x)*4;
+      sr+=d[i]; sg+=d[i+1]; sb+=d[i+2]; sn++;
+    }
+  }
+  if(sn>0){ sr=Math.round(sr/sn); sg=Math.round(sg/sn); sb=Math.round(sb/sn); }
+
+  // Map to nearest skin tone
+  function colorDist(hex,r,g,b) {
+    const cr=parseInt(hex.slice(1,3),16), cg=parseInt(hex.slice(3,5),16), cb=parseInt(hex.slice(5,7),16);
+    return Math.sqrt((cr-r)**2+(cg-g)**2+(cb-b)**2);
+  }
+  let bestSkin=SKIN_TONES[0], bestSD=999;
+  SKIN_TONES.forEach(t => { const d2=colorDist(t,sr,sg,sb); if(d2<bestSD){bestSD=d2;bestSkin=t;} });
+
+  // Sample top 20% for hair color
+  let hr=0,hg=0,hb=0,hn=0;
+  for(let y=0;y<cv.height*0.2;y++) {
+    for(let x=Math.floor(cv.width*0.2);x<cv.width*0.8;x++) {
+      const i=(y*cv.width+x)*4;
+      hr+=d[i]; hg+=d[i+1]; hb+=d[i+2]; hn++;
+    }
+  }
+  if(hn>0){ hr=Math.round(hr/hn); hg=Math.round(hg/hn); hb=Math.round(hb/hn); }
+
+  let bestHair=HAIR_COLORS[0], bestHD=999;
+  HAIR_COLORS.forEach(t => { const d2=colorDist(t,hr,hg,hb); if(d2<bestHD){bestHD=d2;bestHair=t;} });
+
+  // Apply
+  if(avatarConfig) {
+    avatarConfig.skinTone = bestSkin;
+    avatarConfig.hairColor = bestHair;
+    avatarUpdatePreview();
+    const activeTab = document.querySelector('.avatar-cat-tab.active');
+    if(activeTab) avatarSwitchTab(activeTab.dataset.tab);
+  }
+
+  av3dCameraClose();
+  avatarNoorSpeak("Photo analyzed! I matched your skin tone and hair color. Tweak if needed!");
+}
+
+function av3dCameraClose() {
+  const video = document.getElementById('av3dCameraVideo');
+  if(video && video._stream) {
+    video._stream.getTracks().forEach(t => t.stop());
+    video.srcObject = null;
+  }
+  const overlay = document.getElementById('av3dCameraOverlay');
+  if(overlay) overlay.style.display = 'none';
+}
+
+/* ═══════════════════════════════════════════════════════
+   PUBLIC API — avatarRender (replacement entry point)
+   ═══════════════════════════════════════════════════════ */
+function avatarRender(canvas, config, elementKey) {
+  if(!config) return;
+  const isBuilder = (canvas.id === 'avatarPreviewCanvas');
+
+  if(isBuilder) {
+    // Live 3D interactive rendering
+    if(!AV3D.renderer) {
+      av3dInit(canvas);
+      av3dSetupControls(canvas);
+      av3dStartAutoRotate();
+    }
+    // Resize renderer if canvas size changed
+    if(AV3D.renderer.domElement !== canvas) {
+      // Re-init on different canvas
+      av3dStopAutoRotate();
+      if(AV3D._controlCleanup) AV3D._controlCleanup();
+      AV3D.renderer.dispose(); AV3D.renderer=null;
+      av3dInit(canvas);
+      av3dSetupControls(canvas);
+      av3dStartAutoRotate();
+    }
+    AV3D.renderer.setSize(canvas.width, canvas.height, false);
+    AV3D.camera.aspect = canvas.width / canvas.height;
+    AV3D.camera.updateProjectionMatrix();
+    av3dBuildAvatar(config, elementKey);
+    av3dRenderFrame();
+  } else {
+    // Snapshot mode for profile, battle HUD, etc.
+    av3dSnapshot(canvas, config, elementKey);
   }
 }
 
