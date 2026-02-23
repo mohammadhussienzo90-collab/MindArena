@@ -658,6 +658,48 @@ body {
 .chrono-task .ct-pts { font-size: 1.2rem; font-weight: 700; color: var(--gold); min-width: 40px; }
 .chrono-task .ct-q { flex: 1; font-size: 0.9rem; }
 
+/* ============ AVATAR BUILDER ============ */
+.avatar-builder { display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:600; background:var(--bg); overflow:hidden; }
+.avatar-builder.active { display:flex; flex-direction:column; }
+.avatar-builder-header { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; background:linear-gradient(135deg,#1e1b4b 0%,#312e81 50%,#4c1d95 100%); border-bottom:1px solid var(--border); flex-shrink:0; }
+.avatar-builder-header h2 { font-size:1.15rem; display:flex; align-items:center; gap:8px; margin:0; }
+.avatar-builder-body { display:flex; flex:1; overflow:hidden; }
+.avatar-preview-area { flex:0 0 340px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; background:radial-gradient(ellipse at center,rgba(124,58,237,0.08),transparent 70%); border-right:1px solid var(--border); position:relative; }
+.avatar-preview-canvas { border-radius:var(--radius); background:#0d0d1a; }
+.avatar-noor-bubble { margin-top:14px; padding:10px 16px; background:var(--card); border:1px solid var(--accent); border-radius:var(--radius); font-size:0.82rem; color:var(--text); max-width:300px; text-align:center; min-height:38px; opacity:0; transition:opacity 0.4s; }
+.avatar-noor-bubble.visible { opacity:1; }
+.avatar-controls-area { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.avatar-category-tabs { display:flex; gap:0; border-bottom:1px solid var(--border); overflow-x:auto; flex-shrink:0; }
+.avatar-cat-tab { padding:11px 18px; cursor:pointer; font-size:0.82rem; font-weight:600; color:var(--muted); border:none; background:none; border-bottom:3px solid transparent; white-space:nowrap; transition:all 0.2s; }
+.avatar-cat-tab:hover { color:var(--text); }
+.avatar-cat-tab.active { color:var(--accent-light); border-bottom-color:var(--accent); }
+.avatar-options-area { flex:1; overflow-y:auto; padding:18px; }
+.avatar-option-group { margin-bottom:18px; }
+.avatar-option-group label { display:block; font-size:0.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; font-weight:600; }
+.avatar-color-palette { display:flex; flex-wrap:wrap; gap:8px; }
+.avatar-color-swatch { width:32px; height:32px; border-radius:50%; border:2px solid transparent; cursor:pointer; transition:all 0.2s; position:relative; }
+.avatar-color-swatch:hover { transform:scale(1.15); }
+.avatar-color-swatch.selected { border-color:#fff; box-shadow:0 0 8px rgba(255,255,255,0.4); }
+.avatar-color-swatch.selected::after { content:'\2713'; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#fff; font-size:13px; font-weight:700; text-shadow:0 0 4px rgba(0,0,0,0.8); }
+.avatar-style-selector { display:flex; align-items:center; gap:12px; }
+.avatar-style-prev,.avatar-style-next { width:34px; height:34px; border-radius:50%; border:1px solid var(--border); background:var(--card); color:var(--text); cursor:pointer; font-size:1.1rem; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
+.avatar-style-prev:hover,.avatar-style-next:hover { border-color:var(--accent); background:rgba(124,58,237,0.1); }
+.avatar-style-label { font-size:0.88rem; font-weight:600; min-width:120px; text-align:center; }
+.avatar-actions { display:flex; gap:10px; flex-wrap:wrap; }
+@keyframes avatarBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+@keyframes avatarGlow { 0%,100%{filter:drop-shadow(0 0 4px var(--accent))} 50%{filter:drop-shadow(0 0 14px var(--accent))} }
+.avatar-idle { animation:avatarBounce 3s ease-in-out infinite; }
+.battle-avatar-mini { width:48px; height:64px; border-radius:6px; }
+@media (max-width:768px) {
+  .avatar-builder-body { flex-direction:column; }
+  .avatar-preview-area { flex:0 0 260px; border-right:none; border-bottom:1px solid var(--border); padding:12px; }
+  .avatar-builder-header { flex-wrap:wrap; gap:8px; padding:10px 14px; }
+  .avatar-builder-header h2 { font-size:1rem; }
+  .avatar-actions { justify-content:center; }
+  .avatar-cat-tab { padding:9px 12px; font-size:0.78rem; }
+  .avatar-preview-canvas { width:180px !important; height:240px !important; }
+}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
@@ -1303,6 +1345,7 @@ body {
             </div>
             <div style="text-align:center;margin-top:16px">
               <button class="btn btn-primary" id="mcAwakeBtn" onclick="mcAwaken()" disabled style="padding:14px 40px;font-size:1.1rem">Awaken Mindborn</button>
+              <button class="btn btn-outline" id="mcCustomizeBtn" onclick="avatarOpen()" style="padding:12px 24px;font-size:0.9rem;margin-left:10px;display:none">&#x1F3A8; Customize Look</button>
             </div>
           </div>
 
@@ -1445,6 +1488,37 @@ body {
       <button class="btn btn-primary" onclick="closeSessionSummary();showPanel('challenge')" style="padding:12px 28px">Play More</button>
       <button class="btn btn-outline" onclick="closeSessionSummary();showPanel('dashboard')" style="padding:12px 28px">Dashboard</button>
       <button class="btn btn-green" onclick="closeSessionSummary();showPanel('ai')" style="padding:12px 28px">AI Insights</button>
+    </div>
+  </div>
+</div>
+
+<!-- Avatar Builder Overlay -->
+<div class="avatar-builder" id="avatarBuilder">
+  <div class="avatar-builder-header">
+    <h2>&#x1F3A8; Mindborn Creator <span class="ai-badge" style="font-size:0.55rem">AI ASSISTED</span></h2>
+    <div class="avatar-actions">
+      <button class="btn btn-sm btn-outline" onclick="avatarRandomize()">&#x1F3B2; Random</button>
+      <button class="btn btn-sm btn-gold" onclick="avatarAISuggest()">&#x2728; AI Suggest</button>
+      <button class="btn btn-sm btn-outline" onclick="avatarCancel()">Cancel</button>
+      <button class="btn btn-sm btn-primary" onclick="avatarSave()">&#x2714; Done</button>
+    </div>
+  </div>
+  <div class="avatar-builder-body">
+    <div class="avatar-preview-area">
+      <div class="avatar-idle">
+        <canvas class="avatar-preview-canvas" id="avatarPreviewCanvas" width="300" height="400"></canvas>
+      </div>
+      <div class="avatar-noor-bubble" id="avatarNoorBubble">Let's create your Mindborn!</div>
+    </div>
+    <div class="avatar-controls-area">
+      <div class="avatar-category-tabs">
+        <button class="avatar-cat-tab active" onclick="avatarSwitchTab('face')" data-tab="face">&#x1F464; Face</button>
+        <button class="avatar-cat-tab" onclick="avatarSwitchTab('hair')" data-tab="hair">&#x2702; Hair</button>
+        <button class="avatar-cat-tab" onclick="avatarSwitchTab('body')" data-tab="body">&#x1F9CD; Body</button>
+        <button class="avatar-cat-tab" onclick="avatarSwitchTab('clothes')" data-tab="clothes">&#x1F455; Clothes</button>
+        <button class="avatar-cat-tab" onclick="avatarSwitchTab('acc')" data-tab="acc">&#x1F453; Accessories</button>
+      </div>
+      <div class="avatar-options-area" id="avatarOptionsArea"></div>
     </div>
   </div>
 </div>
@@ -1785,6 +1859,8 @@ if (DEMO_MODE) {
     refreshToken = 'demo-refresh';
     localStorage.setItem('ma_token', token);
     localStorage.setItem('ma_refresh', refreshToken);
+    // Restore saved avatar
+    avatarRestore();
   });
 }
 
@@ -4145,54 +4221,16 @@ function mcSelectElement(el) {
   document.getElementById('mcAwakeBtn').disabled = false;
   MC.selectedElement = el;
   mcDrawPreview(el);
+  const cb = document.getElementById('mcCustomizeBtn');
+  if (cb) cb.style.display = 'inline-block';
 }
 
 function mcDrawPreview(el) {
   const e = MC.elements[el];
   document.getElementById('mcPreview').style.display = 'flex';
-  // Draw avatar on canvas
   const canvas = document.getElementById('mcAvatarCanvas');
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, 180, 240);
-  // Body glow
-  const grd = ctx.createRadialGradient(90, 120, 10, 90, 120, 90);
-  grd.addColorStop(0, e.color + '40');
-  grd.addColorStop(1, 'transparent');
-  ctx.fillStyle = grd;
-  ctx.fillRect(0, 0, 180, 240);
-  // Body
-  ctx.fillStyle = e.color + 'cc';
-  ctx.beginPath();
-  ctx.ellipse(90, 150, 30, 50, 0, 0, Math.PI * 2);
-  ctx.fill();
-  // Head
-  ctx.fillStyle = e.color;
-  ctx.beginPath();
-  ctx.arc(90, 85, 25, 0, Math.PI * 2);
-  ctx.fill();
-  // Eyes
-  ctx.fillStyle = '#fff';
-  ctx.beginPath(); ctx.arc(80, 82, 5, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.arc(100, 82, 5, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = '#111';
-  ctx.beginPath(); ctx.arc(81, 83, 2.5, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.arc(101, 83, 2.5, 0, Math.PI * 2); ctx.fill();
-  // Core glow
-  ctx.fillStyle = e.color;
-  ctx.shadowColor = e.color;
-  ctx.shadowBlur = 20;
-  ctx.beginPath(); ctx.arc(90, 140, 8, 0, Math.PI * 2); ctx.fill();
-  ctx.shadowBlur = 0;
-  // Arms
-  ctx.strokeStyle = e.color + 'cc';
-  ctx.lineWidth = 8;
-  ctx.lineCap = 'round';
-  ctx.beginPath(); ctx.moveTo(60, 130); ctx.lineTo(40, 160); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(120, 130); ctx.lineTo(140, 160); ctx.stroke();
-  // Element symbol text
-  ctx.font = '28px serif';
-  ctx.textAlign = 'center';
-  ctx.fillText(e.icon, 90, 40);
+  const config = avatarSavedConfig || (MC.player && MC.player.avatar) || AVATAR_DEFAULTS;
+  avatarRender(canvas, config, el);
 
   // Info panel
   document.getElementById('mcInfoPanel').innerHTML = `
@@ -4212,6 +4250,7 @@ function mcAwaken() {
   MC.player = {
     element: MC.selectedElement, name: (player?.display_name || 'Explorer'),
     hp: 100, maxHp: 100, atk: e.atk, def: e.def, spd: e.spd,
+    avatar: avatarSavedConfig || JSON.parse(JSON.stringify(AVATAR_DEFAULTS)),
   };
   mcVoice(`Your ${e.name} Mindborn has awakened. Choose your battle mode.`);
   mcShowMode();
@@ -4222,7 +4261,14 @@ function mcShowMode() {
   ['mc-select','mc-battle','mc-result'].forEach(id => document.getElementById(id).style.display = 'none');
   document.getElementById('mc-mode').style.display = 'block';
   const e = MC.elements[MC.player.element];
-  document.getElementById('mcPlayerIcon').textContent = e.icon;
+  // Render avatar or fallback to emoji
+  const iconDiv = document.getElementById('mcPlayerIcon');
+  if (MC.player.avatar) {
+    iconDiv.innerHTML = '';
+    let mc = document.getElementById('mcModeAvatar');
+    if (!mc) { mc = document.createElement('canvas'); mc.id = 'mcModeAvatar'; mc.width = 60; mc.height = 80; mc.style.borderRadius = '8px'; iconDiv.appendChild(mc); }
+    avatarRender(mc, MC.player.avatar, MC.player.element);
+  } else { iconDiv.textContent = e.icon; }
   document.getElementById('mcPlayerName').textContent = MC.player.name;
   document.getElementById('mcPlayerEl').textContent = `${e.name} Mindborn — ATK ${MC.player.atk} | DEF ${MC.player.def} | SPD ${MC.player.spd}`;
   document.getElementById('mcPlayerRecord').textContent = `${MC.wins}W / ${MC.losses}L`;
@@ -4243,6 +4289,7 @@ function mcGenerateEnemy() {
   return {
     element: elKey, name: MC.enemyNames[Math.floor(Math.random() * MC.enemyNames.length)],
     hp: 100, maxHp: 100, atk: Math.round(e.atk * lvlMod), def: Math.round(e.def * lvlMod), spd: Math.round(e.spd * lvlMod),
+    avatar: avatarGenerateRandom(),
   };
 }
 
@@ -5091,6 +5138,1237 @@ function mcStartMusic() {}
 function mcStopMusic() {}
 function mc3DAttackAnim() {}
 function mc3DSpecialAnim() {}
+
+// ════════════════════════════════════════════════════════════════
+// ██  AVATAR BUILDER SYSTEM  ██
+// ════════════════════════════════════════════════════════════════
+
+const AVATAR_DEFAULTS = {
+  skinTone:'#C68642', faceShape:'oval', eyeShape:'almond', eyeColor:'#4A3728',
+  eyebrowStyle:'arched', noseShape:'medium', mouthShape:'medium',
+  hairStyle:'short_wavy', hairColor:'#2C1810', facialHair:'none',
+  bodyType:'average', topStyle:'tshirt', topColor:'#3B82F6',
+  bottomStyle:'pants', bottomColor:'#1E293B',
+  glasses:'none', hat:'none', earring:'none', necklace:'none', elementBadge:true
+};
+const SKIN_TONES = ['#FDEBD0','#F5CBA7','#F0B27A','#E59866','#D2A272','#C68642','#B07D3A','#8D6E2C','#6E4B1E','#4A3728','#3B2F2F','#2C1810'];
+const HAIR_COLORS = ['#0A0A0A','#2C1810','#4A3728','#71503A','#B8860B','#DAA520','#D4A574','#C0C0C0','#FFFFFF','#8B0000','#FF4500','#7C3AED','#EC4899','#06B6D4'];
+const EYE_COLORS = ['#4A3728','#8B6914','#2E8B57','#4169E1','#708090','#0A0A0A','#DAA520','#800020'];
+const CLOTH_COLORS = ['#1E293B','#3B82F6','#EF4444','#22C55E','#A78BFA','#EC4899','#F59E0B','#06B6D4','#6B7280','#FFFFFF','#0A0A0A','#8B4513'];
+const FACE_SHAPES = ['oval','round','square','heart','long','diamond'];
+const EYE_SHAPES = ['almond','round','narrow','wide','hooded','upturned'];
+const EYEBROW_STYLES = ['straight','arched','thick','thin','angular','curved'];
+const NOSE_SHAPES = ['small','medium','wide','pointed','button','aquiline'];
+const MOUTH_SHAPES = ['small','medium','wide','full','thin','cupid'];
+const HAIR_STYLES = ['bald','buzz_cut','short_straight','short_wavy','short_curly','medium_straight','medium_wavy','medium_curly','long_straight','long_wavy','long_curly','afro','mohawk','ponytail','bun','braids','hijab'];
+const FACIAL_HAIR_STYLES = ['none','stubble','goatee','full_beard','mustache','van_dyke'];
+const BODY_TYPES = ['slim','average','athletic','heavy'];
+const TOP_STYLES = ['tshirt','hoodie','jacket','armor','robe','tank','suit','crop_top'];
+const BOTTOM_STYLES = ['pants','shorts','skirt','robe_bottom'];
+const GLASSES_STYLES = ['none','round','square','sunglasses','visor'];
+const HAT_STYLES = ['none','cap','beanie','crown','headband','turban'];
+const EARRING_STYLES = ['none','stud','hoop','dangle'];
+const NECKLACE_STYLES = ['none','chain','pendant','choker'];
+const AVATAR_OPTIONS_MAP = {
+  faceShape:FACE_SHAPES, eyeShape:EYE_SHAPES, eyebrowStyle:EYEBROW_STYLES,
+  noseShape:NOSE_SHAPES, mouthShape:MOUTH_SHAPES, hairStyle:HAIR_STYLES,
+  facialHair:FACIAL_HAIR_STYLES, bodyType:BODY_TYPES, topStyle:TOP_STYLES,
+  bottomStyle:BOTTOM_STYLES, glasses:GLASSES_STYLES, hat:HAT_STYLES,
+  earring:EARRING_STYLES, necklace:NECKLACE_STYLES
+};
+
+let avatarConfig = null;
+let avatarSavedConfig = null;
+
+// ──── AVATAR RENDERING ENGINE ────
+
+function avatarRender(canvas, config, elementKey) {
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+  const s = Math.min(w / 300, h / 400);
+  const cx = w / 2, cy = h * 0.38;
+  ctx.save();
+  avDrawHairBack(ctx, config, s, cx, cy);
+  avDrawBody(ctx, config, s, cx, cy);
+  avDrawBottomClothes(ctx, config, s, cx, cy);
+  avDrawTopClothes(ctx, config, s, cx, cy);
+  avDrawNecklace(ctx, config, s, cx, cy);
+  avDrawHead(ctx, config, s, cx, cy);
+  avDrawEars(ctx, config, s, cx, cy);
+  avDrawFace(ctx, config, s, cx, cy);
+  avDrawFacialHair(ctx, config, s, cx, cy);
+  avDrawHairFront(ctx, config, s, cx, cy);
+  avDrawGlasses(ctx, config, s, cx, cy);
+  avDrawHat(ctx, config, s, cx, cy);
+  avDrawEarring(ctx, config, s, cx, cy);
+  avDrawElementGlow(ctx, config, s, cx, cy, elementKey);
+  ctx.restore();
+}
+
+// Helper: darken/lighten color
+function avShade(hex, amt) {
+  let r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  r = Math.max(0, Math.min(255, r + amt));
+  g = Math.max(0, Math.min(255, g + amt));
+  b = Math.max(0, Math.min(255, b + amt));
+  return '#' + [r,g,b].map(c => c.toString(16).padStart(2,'0')).join('');
+}
+function avAlpha(hex, a) {
+  let r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+// ── HEAD ──
+function avDrawHead(ctx, c, s, cx, cy) {
+  ctx.fillStyle = c.skinTone;
+  ctx.beginPath();
+  const hw = 28*s, hh = 32*s;
+  switch(c.faceShape) {
+    case 'round': ctx.arc(cx, cy, 30*s, 0, Math.PI*2); break;
+    case 'square':
+      { const sz = 28*s, r = 6*s;
+        ctx.moveTo(cx-sz+r, cy-sz); ctx.arcTo(cx+sz, cy-sz, cx+sz, cy+sz, r);
+        ctx.arcTo(cx+sz, cy+sz, cx-sz, cy+sz, r); ctx.arcTo(cx-sz, cy+sz, cx-sz, cy-sz, r);
+        ctx.arcTo(cx-sz, cy-sz, cx+sz, cy-sz, r); } break;
+    case 'heart':
+      ctx.moveTo(cx, cy+32*s);
+      ctx.bezierCurveTo(cx-36*s, cy+10*s, cx-32*s, cy-20*s, cx-16*s, cy-28*s);
+      ctx.bezierCurveTo(cx-4*s, cy-36*s, cx, cy-28*s, cx, cy-28*s);
+      ctx.bezierCurveTo(cx, cy-28*s, cx+4*s, cy-36*s, cx+16*s, cy-28*s);
+      ctx.bezierCurveTo(cx+32*s, cy-20*s, cx+36*s, cy+10*s, cx, cy+32*s);
+      break;
+    case 'long': ctx.ellipse(cx, cy, 24*s, 38*s, 0, 0, Math.PI*2); break;
+    case 'diamond':
+      ctx.moveTo(cx, cy-32*s); ctx.bezierCurveTo(cx+14*s, cy-28*s, cx+30*s, cy-8*s, cx+28*s, cy+4*s);
+      ctx.bezierCurveTo(cx+24*s, cy+18*s, cx+10*s, cy+30*s, cx, cy+34*s);
+      ctx.bezierCurveTo(cx-10*s, cy+30*s, cx-24*s, cy+18*s, cx-28*s, cy+4*s);
+      ctx.bezierCurveTo(cx-30*s, cy-8*s, cx-14*s, cy-28*s, cx, cy-32*s);
+      break;
+    default: ctx.ellipse(cx, cy, hw, hh, 0, 0, Math.PI*2);
+  }
+  ctx.fill();
+  // Subtle shading on sides
+  ctx.fillStyle = avAlpha(avShade(c.skinTone, -20), 0.3);
+  ctx.beginPath(); ctx.ellipse(cx-20*s, cy, 8*s, 22*s, 0, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx+20*s, cy, 8*s, 22*s, 0, 0, Math.PI*2); ctx.fill();
+}
+
+// ── EARS ──
+function avDrawEars(ctx, c, s, cx, cy) {
+  if (c.hairStyle === 'hijab') return;
+  ctx.fillStyle = c.skinTone;
+  ctx.beginPath(); ctx.ellipse(cx-28*s, cy+2*s, 5*s, 8*s, 0, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx+28*s, cy+2*s, 5*s, 8*s, 0, 0, Math.PI*2); ctx.fill();
+  // Inner ear
+  ctx.fillStyle = avShade(c.skinTone, -15);
+  ctx.beginPath(); ctx.ellipse(cx-28*s, cy+2*s, 3*s, 5*s, 0, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx+28*s, cy+2*s, 3*s, 5*s, 0, 0, Math.PI*2); ctx.fill();
+}
+
+// ── FACIAL FEATURES ──
+function avDrawFace(ctx, c, s, cx, cy) {
+  // Eyes
+  const eyeSpacing = 11*s, eyeY = cy - 4*s;
+  avDrawEye(ctx, c, s, cx - eyeSpacing, eyeY, false);
+  avDrawEye(ctx, c, s, cx + eyeSpacing, eyeY, true);
+  // Eyebrows
+  avDrawEyebrows(ctx, c, s, cx, cy);
+  // Nose
+  avDrawNose(ctx, c, s, cx, cy);
+  // Mouth
+  avDrawMouth(ctx, c, s, cx, cy);
+}
+
+function avDrawEye(ctx, c, s, ex, ey, isRight) {
+  const ew = 7*s, eh = 4.5*s;
+  // Sclera
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  switch(c.eyeShape) {
+    case 'round': ctx.arc(ex, ey, 5.5*s, 0, Math.PI*2); break;
+    case 'narrow':
+      ctx.moveTo(ex-ew, ey); ctx.bezierCurveTo(ex-ew*0.5, ey-eh*0.5, ex+ew*0.5, ey-eh*0.5, ex+ew, ey);
+      ctx.bezierCurveTo(ex+ew*0.5, ey+eh*0.5, ex-ew*0.5, ey+eh*0.5, ex-ew, ey); break;
+    case 'wide':
+      ctx.ellipse(ex, ey, 8*s, 5*s, 0, 0, Math.PI*2); break;
+    case 'hooded':
+      ctx.moveTo(ex-ew, ey); ctx.bezierCurveTo(ex-ew*0.5, ey-eh*0.8, ex+ew*0.5, ey-eh*0.8, ex+ew, ey);
+      ctx.bezierCurveTo(ex+ew*0.5, ey+eh, ex-ew*0.5, ey+eh, ex-ew, ey); break;
+    case 'upturned':
+      { const tilt = isRight ? -0.15 : 0.15;
+        ctx.ellipse(ex, ey, ew, eh, tilt, 0, Math.PI*2); } break;
+    default: // almond
+      ctx.moveTo(ex-ew, ey); ctx.bezierCurveTo(ex-ew*0.5, ey-eh, ex+ew*0.5, ey-eh, ex+ew, ey);
+      ctx.bezierCurveTo(ex+ew*0.5, ey+eh, ex-ew*0.5, ey+eh, ex-ew, ey);
+  }
+  ctx.fill();
+  // Iris
+  ctx.fillStyle = c.eyeColor;
+  ctx.beginPath(); ctx.arc(ex, ey+0.5*s, 3.2*s, 0, Math.PI*2); ctx.fill();
+  // Pupil
+  ctx.fillStyle = '#0a0a0a';
+  ctx.beginPath(); ctx.arc(ex, ey+0.5*s, 1.6*s, 0, Math.PI*2); ctx.fill();
+  // Highlight
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.arc(ex+1.2*s, ey-1*s, 0.9*s, 0, Math.PI*2); ctx.fill();
+  // Eyelid line
+  if (c.eyeShape === 'hooded') {
+    ctx.strokeStyle = avShade(c.skinTone, -30);
+    ctx.lineWidth = 1*s;
+    ctx.beginPath();
+    ctx.moveTo(ex-ew, ey-1*s);
+    ctx.bezierCurveTo(ex-ew*0.3, ey-eh*1.3, ex+ew*0.3, ey-eh*1.3, ex+ew, ey-1*s);
+    ctx.stroke();
+  }
+}
+
+function avDrawEyebrows(ctx, c, s, cx, cy) {
+  ctx.strokeStyle = c.hairColor;
+  ctx.lineCap = 'round';
+  const by = cy - 14*s;
+  const bw = 10*s;
+  let lw = 2.2*s;
+  if (c.eyebrowStyle === 'thick') lw = 3.5*s;
+  else if (c.eyebrowStyle === 'thin') lw = 1.4*s;
+  ctx.lineWidth = lw;
+  [-1, 1].forEach(side => {
+    const bx = cx + side * 11*s;
+    ctx.beginPath();
+    switch(c.eyebrowStyle) {
+      case 'straight':
+        ctx.moveTo(bx - side*bw, by); ctx.lineTo(bx + side*bw, by); break;
+      case 'angular':
+        ctx.moveTo(bx - side*bw, by+2*s); ctx.lineTo(bx, by-2*s); ctx.lineTo(bx + side*bw, by+1*s); break;
+      case 'curved':
+        ctx.moveTo(bx - side*bw, by+1*s);
+        ctx.bezierCurveTo(bx - side*bw*0.3, by-4*s, bx + side*bw*0.3, by-4*s, bx + side*bw, by+1*s); break;
+      default: // arched, thick, thin
+        ctx.moveTo(bx - side*bw, by+1*s);
+        ctx.quadraticCurveTo(bx, by-4*s, bx + side*bw, by+1*s);
+    }
+    ctx.stroke();
+  });
+}
+
+function avDrawNose(ctx, c, s, cx, cy) {
+  const ny = cy + 8*s;
+  ctx.strokeStyle = avShade(c.skinTone, -35);
+  ctx.fillStyle = avShade(c.skinTone, -10);
+  ctx.lineWidth = 1.2*s;
+  ctx.lineCap = 'round';
+  switch(c.noseShape) {
+    case 'small':
+      ctx.beginPath(); ctx.arc(cx-2*s, ny+3*s, 1.2*s, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(cx+2*s, ny+3*s, 1.2*s, 0, Math.PI*2); ctx.fill();
+      break;
+    case 'wide':
+      ctx.beginPath(); ctx.moveTo(cx, ny-4*s); ctx.lineTo(cx, ny+2*s); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx-4*s, ny+3*s, 2*s, 0, Math.PI, false); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx+4*s, ny+3*s, 2*s, 0, Math.PI, false); ctx.stroke();
+      break;
+    case 'pointed':
+      ctx.beginPath(); ctx.moveTo(cx, ny-6*s); ctx.lineTo(cx-1*s, ny+4*s); ctx.moveTo(cx, ny-6*s); ctx.lineTo(cx+1*s, ny+4*s); ctx.stroke();
+      break;
+    case 'button':
+      ctx.beginPath(); ctx.arc(cx, ny+1*s, 3*s, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = avShade(c.skinTone, -25);
+      ctx.beginPath(); ctx.arc(cx, ny+1*s, 3*s, 0.3, Math.PI-0.3); ctx.stroke();
+      break;
+    case 'aquiline':
+      ctx.beginPath(); ctx.moveTo(cx, ny-8*s);
+      ctx.bezierCurveTo(cx+3*s, ny-4*s, cx+4*s, ny, cx+1*s, ny+4*s);
+      ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx-2*s, ny+3*s, 1.5*s, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(cx+2*s, ny+3*s, 1.5*s, 0, Math.PI*2); ctx.fill();
+      break;
+    default: // medium
+      ctx.beginPath(); ctx.moveTo(cx, ny-4*s); ctx.lineTo(cx, ny+2*s); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx-2.5*s, ny+3*s, 1.5*s, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(cx+2.5*s, ny+3*s, 1.5*s, 0, Math.PI*2); ctx.fill();
+  }
+}
+
+function avDrawMouth(ctx, c, s, cx, cy) {
+  const my = cy + 18*s;
+  const lipColor = avShade(c.skinTone, -25);
+  ctx.fillStyle = lipColor;
+  ctx.strokeStyle = avShade(c.skinTone, -40);
+  ctx.lineWidth = 1.2*s;
+  ctx.lineCap = 'round';
+  switch(c.mouthShape) {
+    case 'small':
+      ctx.beginPath(); ctx.arc(cx, my, 4*s, 0.2, Math.PI-0.2); ctx.stroke(); break;
+    case 'wide':
+      ctx.beginPath(); ctx.arc(cx, my-2*s, 10*s, 0.2, Math.PI-0.2); ctx.stroke(); break;
+    case 'full':
+      // Upper lip
+      ctx.beginPath(); ctx.moveTo(cx-7*s, my);
+      ctx.quadraticCurveTo(cx-3*s, my-4*s, cx, my-2*s);
+      ctx.quadraticCurveTo(cx+3*s, my-4*s, cx+7*s, my);
+      ctx.fillStyle = avShade(lipColor, -10); ctx.fill();
+      // Lower lip
+      ctx.beginPath(); ctx.moveTo(cx-7*s, my);
+      ctx.quadraticCurveTo(cx, my+6*s, cx+7*s, my);
+      ctx.fillStyle = lipColor; ctx.fill();
+      break;
+    case 'thin':
+      ctx.beginPath(); ctx.moveTo(cx-6*s, my); ctx.lineTo(cx+6*s, my); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx, my, 6*s, 0.15, Math.PI-0.15); ctx.lineWidth = 0.8*s; ctx.stroke();
+      break;
+    case 'cupid':
+      ctx.beginPath(); ctx.moveTo(cx-7*s, my);
+      ctx.quadraticCurveTo(cx-4*s, my-3*s, cx-1*s, my-1*s);
+      ctx.lineTo(cx, my-2.5*s);
+      ctx.lineTo(cx+1*s, my-1*s);
+      ctx.quadraticCurveTo(cx+4*s, my-3*s, cx+7*s, my);
+      ctx.quadraticCurveTo(cx, my+5*s, cx-7*s, my);
+      ctx.fill();
+      break;
+    default: // medium
+      ctx.beginPath(); ctx.arc(cx, my-1*s, 6*s, 0.2, Math.PI-0.2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx, my+1*s, 5*s, Math.PI+0.3, -0.3); ctx.lineWidth = 0.8*s; ctx.stroke();
+  }
+}
+
+// ── BODY ──
+function avDrawBody(ctx, c, s, cx, cy) {
+  let shoulderW = 28*s, waistW = 22*s, armW = 4*s;
+  const bodyTop = cy + 34*s, bodyBot = cy + 120*s, hipY = cy + 90*s;
+  switch(c.bodyType) {
+    case 'slim': shoulderW = 22*s; waistW = 18*s; armW = 3*s; break;
+    case 'athletic': shoulderW = 32*s; waistW = 20*s; armW = 5*s; break;
+    case 'heavy': shoulderW = 34*s; waistW = 30*s; armW = 6*s; break;
+  }
+  // Neck
+  ctx.fillStyle = c.skinTone;
+  ctx.fillRect(cx-6*s, cy+28*s, 12*s, 10*s);
+  // Torso
+  ctx.fillStyle = c.skinTone;
+  ctx.beginPath();
+  ctx.moveTo(cx-shoulderW, bodyTop); ctx.lineTo(cx+shoulderW, bodyTop);
+  ctx.lineTo(cx+waistW, hipY); ctx.lineTo(cx-waistW, hipY);
+  ctx.closePath(); ctx.fill();
+  // Legs
+  const legW = (c.bodyType === 'heavy') ? 10*s : 7*s;
+  ctx.fillRect(cx-waistW+2*s, hipY, legW*2, bodyBot-hipY);
+  ctx.fillRect(cx+waistW-2*s-legW*2, hipY, legW*2, bodyBot-hipY);
+  // Arms
+  ctx.strokeStyle = c.skinTone;
+  ctx.lineWidth = armW * 2;
+  ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(cx-shoulderW, bodyTop+4*s);
+  ctx.bezierCurveTo(cx-shoulderW-10*s, bodyTop+30*s, cx-shoulderW-5*s, bodyTop+50*s, cx-shoulderW+2*s, bodyTop+55*s);
+  ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx+shoulderW, bodyTop+4*s);
+  ctx.bezierCurveTo(cx+shoulderW+10*s, bodyTop+30*s, cx+shoulderW+5*s, bodyTop+50*s, cx+shoulderW-2*s, bodyTop+55*s);
+  ctx.stroke();
+  // Hands
+  ctx.fillStyle = c.skinTone;
+  ctx.beginPath(); ctx.arc(cx-shoulderW+2*s, bodyTop+56*s, 4*s, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx+shoulderW-2*s, bodyTop+56*s, 4*s, 0, Math.PI*2); ctx.fill();
+}
+
+// ── BOTTOM CLOTHES ──
+function avDrawBottomClothes(ctx, c, s, cx, cy) {
+  let waistW = 22*s;
+  switch(c.bodyType) {
+    case 'slim': waistW = 18*s; break;
+    case 'athletic': waistW = 20*s; break;
+    case 'heavy': waistW = 30*s; break;
+  }
+  const hipY = cy + 90*s, botY = cy + 120*s;
+  const legW = (c.bodyType === 'heavy') ? 10*s : 7*s;
+  ctx.fillStyle = c.bottomColor;
+  switch(c.bottomStyle) {
+    case 'shorts':
+      ctx.fillRect(cx-waistW, hipY, waistW*2, 16*s);
+      break;
+    case 'skirt':
+      ctx.beginPath();
+      ctx.moveTo(cx-waistW, hipY); ctx.lineTo(cx+waistW, hipY);
+      ctx.lineTo(cx+waistW+6*s, hipY+24*s); ctx.lineTo(cx-waistW-6*s, hipY+24*s);
+      ctx.closePath(); ctx.fill();
+      break;
+    case 'robe_bottom':
+      ctx.beginPath();
+      ctx.moveTo(cx-waistW, hipY); ctx.lineTo(cx+waistW, hipY);
+      ctx.lineTo(cx+waistW+8*s, botY+4*s); ctx.lineTo(cx-waistW-8*s, botY+4*s);
+      ctx.closePath(); ctx.fill();
+      break;
+    default: // pants
+      ctx.fillRect(cx-waistW+2*s, hipY, legW*2+2*s, botY-hipY);
+      ctx.fillRect(cx+waistW-2*s-legW*2-2*s, hipY, legW*2+2*s, botY-hipY);
+      // Center seam
+      ctx.strokeStyle = avShade(c.bottomColor, -20);
+      ctx.lineWidth = 1*s;
+      ctx.beginPath(); ctx.moveTo(cx, hipY); ctx.lineTo(cx, hipY+10*s); ctx.stroke();
+  }
+}
+
+// ── TOP CLOTHES ──
+function avDrawTopClothes(ctx, c, s, cx, cy) {
+  let shoulderW = 28*s, waistW = 22*s;
+  switch(c.bodyType) {
+    case 'slim': shoulderW = 22*s; waistW = 18*s; break;
+    case 'athletic': shoulderW = 32*s; waistW = 20*s; break;
+    case 'heavy': shoulderW = 34*s; waistW = 30*s; break;
+  }
+  const bodyTop = cy + 34*s, hipY = cy + 90*s;
+  ctx.fillStyle = c.topColor;
+  switch(c.topStyle) {
+    case 'tank':
+      ctx.beginPath();
+      ctx.moveTo(cx-shoulderW+8*s, bodyTop); ctx.lineTo(cx+shoulderW-8*s, bodyTop);
+      ctx.lineTo(cx+waistW, hipY); ctx.lineTo(cx-waistW, hipY);
+      ctx.closePath(); ctx.fill();
+      // Straps
+      ctx.fillRect(cx-shoulderW+8*s, bodyTop-4*s, 6*s, 8*s);
+      ctx.fillRect(cx+shoulderW-14*s, bodyTop-4*s, 6*s, 8*s);
+      break;
+    case 'crop_top':
+      ctx.beginPath();
+      ctx.moveTo(cx-shoulderW, bodyTop); ctx.lineTo(cx+shoulderW, bodyTop);
+      ctx.lineTo(cx+waistW+2*s, bodyTop+28*s); ctx.lineTo(cx-waistW-2*s, bodyTop+28*s);
+      ctx.closePath(); ctx.fill();
+      break;
+    case 'hoodie':
+      // Main body
+      ctx.beginPath();
+      ctx.moveTo(cx-shoulderW-2*s, bodyTop); ctx.lineTo(cx+shoulderW+2*s, bodyTop);
+      ctx.lineTo(cx+waistW+2*s, hipY+2*s); ctx.lineTo(cx-waistW-2*s, hipY+2*s);
+      ctx.closePath(); ctx.fill();
+      // Sleeves (cover arms)
+      ctx.lineWidth = 12*s; ctx.strokeStyle = c.topColor; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(cx-shoulderW, bodyTop+4*s);
+      ctx.bezierCurveTo(cx-shoulderW-10*s, bodyTop+30*s, cx-shoulderW-5*s, bodyTop+45*s, cx-shoulderW+2*s, bodyTop+48*s);
+      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx+shoulderW, bodyTop+4*s);
+      ctx.bezierCurveTo(cx+shoulderW+10*s, bodyTop+30*s, cx+shoulderW+5*s, bodyTop+45*s, cx+shoulderW-2*s, bodyTop+48*s);
+      ctx.stroke();
+      // Hood outline behind neck
+      ctx.strokeStyle = avShade(c.topColor, -20); ctx.lineWidth = 2*s;
+      ctx.beginPath(); ctx.arc(cx, cy+30*s, 14*s, Math.PI+0.3, -0.3); ctx.stroke();
+      // Pocket
+      ctx.strokeStyle = avShade(c.topColor, -15); ctx.lineWidth = 1*s;
+      ctx.beginPath(); ctx.moveTo(cx-12*s, hipY-16*s); ctx.lineTo(cx+12*s, hipY-16*s);
+      ctx.lineTo(cx+12*s, hipY-4*s); ctx.lineTo(cx-12*s, hipY-4*s); ctx.closePath(); ctx.stroke();
+      break;
+    case 'jacket':
+      ctx.beginPath();
+      ctx.moveTo(cx-shoulderW-1*s, bodyTop); ctx.lineTo(cx+shoulderW+1*s, bodyTop);
+      ctx.lineTo(cx+waistW+1*s, hipY); ctx.lineTo(cx-waistW-1*s, hipY);
+      ctx.closePath(); ctx.fill();
+      // Lapels
+      ctx.fillStyle = avShade(c.topColor, -25);
+      ctx.beginPath(); ctx.moveTo(cx-4*s, bodyTop); ctx.lineTo(cx-12*s, bodyTop+18*s); ctx.lineTo(cx-4*s, bodyTop+18*s); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(cx+4*s, bodyTop); ctx.lineTo(cx+12*s, bodyTop+18*s); ctx.lineTo(cx+4*s, bodyTop+18*s); ctx.closePath(); ctx.fill();
+      // Zipper line
+      ctx.strokeStyle = '#888'; ctx.lineWidth = 1*s;
+      ctx.beginPath(); ctx.moveTo(cx, bodyTop+18*s); ctx.lineTo(cx, hipY); ctx.stroke();
+      break;
+    case 'armor':
+      ctx.beginPath();
+      ctx.moveTo(cx-shoulderW-4*s, bodyTop-2*s); ctx.lineTo(cx+shoulderW+4*s, bodyTop-2*s);
+      ctx.lineTo(cx+waistW+2*s, hipY); ctx.lineTo(cx-waistW-2*s, hipY);
+      ctx.closePath(); ctx.fill();
+      // Shoulder pads
+      ctx.beginPath(); ctx.ellipse(cx-shoulderW-2*s, bodyTop+2*s, 10*s, 6*s, -0.3, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(cx+shoulderW+2*s, bodyTop+2*s, 10*s, 6*s, 0.3, 0, Math.PI*2); ctx.fill();
+      // Chest emblem
+      ctx.strokeStyle = avShade(c.topColor, 40); ctx.lineWidth = 1.5*s;
+      ctx.beginPath(); ctx.arc(cx, bodyTop+22*s, 8*s, 0, Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx, bodyTop+14*s); ctx.lineTo(cx, bodyTop+30*s); ctx.moveTo(cx-8*s, bodyTop+22*s); ctx.lineTo(cx+8*s, bodyTop+22*s); ctx.stroke();
+      break;
+    case 'robe':
+      ctx.beginPath();
+      ctx.moveTo(cx-shoulderW-2*s, bodyTop-2*s); ctx.lineTo(cx+shoulderW+2*s, bodyTop-2*s);
+      ctx.lineTo(cx+waistW+10*s, cy+122*s); ctx.lineTo(cx-waistW-10*s, cy+122*s);
+      ctx.closePath(); ctx.fill();
+      // V-neck
+      ctx.fillStyle = c.skinTone;
+      ctx.beginPath(); ctx.moveTo(cx-8*s, bodyTop); ctx.lineTo(cx, bodyTop+16*s); ctx.lineTo(cx+8*s, bodyTop); ctx.closePath(); ctx.fill();
+      // Sash
+      ctx.strokeStyle = avShade(c.topColor, 30); ctx.lineWidth = 3*s;
+      ctx.beginPath(); ctx.moveTo(cx-waistW, cy+70*s); ctx.lineTo(cx+waistW, cy+70*s); ctx.stroke();
+      break;
+    case 'suit':
+      ctx.beginPath();
+      ctx.moveTo(cx-shoulderW, bodyTop); ctx.lineTo(cx+shoulderW, bodyTop);
+      ctx.lineTo(cx+waistW, hipY); ctx.lineTo(cx-waistW, hipY);
+      ctx.closePath(); ctx.fill();
+      // Collar + tie
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.moveTo(cx-6*s, bodyTop); ctx.lineTo(cx, bodyTop+8*s); ctx.lineTo(cx+6*s, bodyTop); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#c0392b';
+      ctx.beginPath(); ctx.moveTo(cx, bodyTop+4*s); ctx.lineTo(cx-3*s, bodyTop+12*s); ctx.lineTo(cx, bodyTop+28*s); ctx.lineTo(cx+3*s, bodyTop+12*s); ctx.closePath(); ctx.fill();
+      // Buttons
+      ctx.fillStyle = avShade(c.topColor, 30);
+      [20,30,40].forEach(dy => { ctx.beginPath(); ctx.arc(cx, bodyTop+dy*s, 1.5*s, 0, Math.PI*2); ctx.fill(); });
+      break;
+    default: // tshirt
+      ctx.beginPath();
+      ctx.moveTo(cx-shoulderW, bodyTop); ctx.lineTo(cx+shoulderW, bodyTop);
+      ctx.lineTo(cx+waistW, hipY); ctx.lineTo(cx-waistW, hipY);
+      ctx.closePath(); ctx.fill();
+      // Short sleeves
+      ctx.beginPath(); ctx.moveTo(cx-shoulderW, bodyTop+2*s);
+      ctx.lineTo(cx-shoulderW-8*s, bodyTop+16*s); ctx.lineTo(cx-shoulderW, bodyTop+18*s); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(cx+shoulderW, bodyTop+2*s);
+      ctx.lineTo(cx+shoulderW+8*s, bodyTop+16*s); ctx.lineTo(cx+shoulderW, bodyTop+18*s); ctx.closePath(); ctx.fill();
+      // Neckline
+      ctx.strokeStyle = avShade(c.topColor, -15); ctx.lineWidth = 1.5*s;
+      ctx.beginPath(); ctx.arc(cx, bodyTop+2*s, 8*s, 0.3, Math.PI-0.3); ctx.stroke();
+  }
+}
+
+// ── NECKLACE ──
+function avDrawNecklace(ctx, c, s, cx, cy) {
+  if (c.necklace === 'none') return;
+  const ny = cy + 32*s;
+  ctx.strokeStyle = '#DAA520'; ctx.lineWidth = 1.5*s; ctx.lineCap = 'round';
+  switch(c.necklace) {
+    case 'chain':
+      ctx.beginPath(); ctx.arc(cx, ny-4*s, 12*s, 0.3, Math.PI-0.3); ctx.stroke();
+      break;
+    case 'pendant':
+      ctx.beginPath(); ctx.arc(cx, ny-4*s, 12*s, 0.3, Math.PI-0.3); ctx.stroke();
+      ctx.fillStyle = '#DAA520';
+      ctx.beginPath(); ctx.moveTo(cx, ny+8*s); ctx.lineTo(cx-3*s, ny+14*s); ctx.lineTo(cx+3*s, ny+14*s); ctx.closePath(); ctx.fill();
+      break;
+    case 'choker':
+      ctx.lineWidth = 3*s; ctx.strokeStyle = '#333';
+      ctx.beginPath(); ctx.arc(cx, cy+28*s, 8*s, 0.2, Math.PI-0.2); ctx.stroke();
+      break;
+  }
+}
+
+// ── HAIR (BACK LAYER) ──
+function avDrawHairBack(ctx, c, s, cx, cy) {
+  if (c.hairStyle === 'bald' || c.hairStyle === 'buzz_cut' || c.hairStyle === 'mohawk') return;
+  ctx.fillStyle = c.hairColor;
+  switch(c.hairStyle) {
+    case 'long_straight': case 'long_wavy': case 'long_curly':
+      ctx.beginPath();
+      ctx.moveTo(cx-26*s, cy-20*s);
+      ctx.bezierCurveTo(cx-32*s, cy+20*s, cx-30*s, cy+60*s, cx-22*s, cy+80*s);
+      ctx.lineTo(cx+22*s, cy+80*s);
+      ctx.bezierCurveTo(cx+30*s, cy+60*s, cx+32*s, cy+20*s, cx+26*s, cy-20*s);
+      ctx.closePath(); ctx.fill();
+      break;
+    case 'ponytail':
+      ctx.beginPath();
+      ctx.moveTo(cx-4*s, cy-28*s);
+      ctx.bezierCurveTo(cx+8*s, cy-30*s, cx+14*s, cy-20*s, cx+10*s, cy-10*s);
+      ctx.bezierCurveTo(cx+12*s, cy+10*s, cx+8*s, cy+40*s, cx+2*s, cy+60*s);
+      ctx.lineTo(cx-2*s, cy+60*s);
+      ctx.bezierCurveTo(cx+4*s, cy+40*s, cx+6*s, cy+10*s, cx+4*s, cy-10*s);
+      ctx.closePath(); ctx.fill();
+      break;
+    case 'braids':
+      [-1, 1].forEach(side => {
+        ctx.beginPath();
+        ctx.moveTo(cx + side*20*s, cy-10*s);
+        for (let i = 0; i < 8; i++) {
+          ctx.bezierCurveTo(
+            cx + side*(20 + (i%2?4:-4))*s, cy + (i*10-5)*s,
+            cx + side*(20 + (i%2?-4:4))*s, cy + (i*10+5)*s,
+            cx + side*20*s, cy + (i*10+10)*s
+          );
+        }
+        ctx.lineWidth = 6*s; ctx.strokeStyle = c.hairColor; ctx.stroke();
+      });
+      break;
+    case 'bun':
+      ctx.beginPath(); ctx.arc(cx, cy-38*s, 12*s, 0, Math.PI*2); ctx.fill();
+      break;
+    case 'hijab':
+      ctx.fillStyle = c.hairColor;
+      ctx.beginPath();
+      ctx.moveTo(cx-34*s, cy-10*s);
+      ctx.bezierCurveTo(cx-36*s, cy-34*s, cx-20*s, cy-44*s, cx, cy-42*s);
+      ctx.bezierCurveTo(cx+20*s, cy-44*s, cx+36*s, cy-34*s, cx+34*s, cy-10*s);
+      ctx.bezierCurveTo(cx+36*s, cy+20*s, cx+30*s, cy+50*s, cx+20*s, cy+70*s);
+      ctx.lineTo(cx-20*s, cy+70*s);
+      ctx.bezierCurveTo(cx-30*s, cy+50*s, cx-36*s, cy+20*s, cx-34*s, cy-10*s);
+      ctx.closePath(); ctx.fill();
+      // Fold line
+      ctx.strokeStyle = avShade(c.hairColor, -20); ctx.lineWidth = 1*s;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy-40*s);
+      ctx.bezierCurveTo(cx-10*s, cy-20*s, cx-15*s, cy+10*s, cx-18*s, cy+40*s);
+      ctx.stroke();
+      break;
+    case 'medium_straight': case 'medium_wavy': case 'medium_curly':
+      ctx.beginPath();
+      ctx.moveTo(cx-28*s, cy-18*s);
+      ctx.bezierCurveTo(cx-32*s, cy+10*s, cx-30*s, cy+30*s, cx-24*s, cy+40*s);
+      ctx.lineTo(cx+24*s, cy+40*s);
+      ctx.bezierCurveTo(cx+30*s, cy+30*s, cx+32*s, cy+10*s, cx+28*s, cy-18*s);
+      ctx.closePath(); ctx.fill();
+      break;
+    case 'afro':
+      ctx.beginPath(); ctx.arc(cx, cy-4*s, 42*s, 0, Math.PI*2); ctx.fill();
+      break;
+  }
+}
+
+// ── HAIR (FRONT LAYER) ──
+function avDrawHairFront(ctx, c, s, cx, cy) {
+  if (c.hairStyle === 'bald' || c.hairStyle === 'hijab') return;
+  ctx.fillStyle = c.hairColor;
+  switch(c.hairStyle) {
+    case 'buzz_cut':
+      ctx.globalAlpha = 0.6;
+      ctx.beginPath(); ctx.ellipse(cx, cy-12*s, 28*s, 22*s, 0, Math.PI, Math.PI*2); ctx.fill();
+      ctx.globalAlpha = 1;
+      break;
+    case 'short_straight':
+      ctx.beginPath();
+      ctx.moveTo(cx-26*s, cy-8*s);
+      ctx.bezierCurveTo(cx-28*s, cy-28*s, cx-14*s, cy-36*s, cx, cy-34*s);
+      ctx.bezierCurveTo(cx+14*s, cy-36*s, cx+28*s, cy-28*s, cx+26*s, cy-8*s);
+      ctx.lineTo(cx+22*s, cy-6*s);
+      ctx.bezierCurveTo(cx+20*s, cy-22*s, cx+10*s, cy-28*s, cx, cy-28*s);
+      ctx.bezierCurveTo(cx-10*s, cy-28*s, cx-20*s, cy-22*s, cx-22*s, cy-6*s);
+      ctx.closePath(); ctx.fill();
+      // Fringe
+      ctx.beginPath(); ctx.moveTo(cx-20*s, cy-16*s);
+      ctx.bezierCurveTo(cx-10*s, cy-20*s, cx+10*s, cy-22*s, cx+18*s, cy-18*s);
+      ctx.lineTo(cx+16*s, cy-12*s);
+      ctx.bezierCurveTo(cx+6*s, cy-16*s, cx-6*s, cy-14*s, cx-18*s, cy-12*s);
+      ctx.closePath(); ctx.fill();
+      break;
+    case 'short_wavy':
+      ctx.beginPath();
+      ctx.moveTo(cx-26*s, cy-6*s);
+      ctx.bezierCurveTo(cx-30*s, cy-30*s, cx-10*s, cy-38*s, cx, cy-36*s);
+      ctx.bezierCurveTo(cx+10*s, cy-38*s, cx+30*s, cy-30*s, cx+26*s, cy-6*s);
+      ctx.lineTo(cx+20*s, cy-4*s);
+      ctx.bezierCurveTo(cx+22*s, cy-24*s, cx+8*s, cy-30*s, cx, cy-30*s);
+      ctx.bezierCurveTo(cx-8*s, cy-30*s, cx-22*s, cy-24*s, cx-20*s, cy-4*s);
+      ctx.closePath(); ctx.fill();
+      // Wavy fringe
+      ctx.beginPath(); ctx.moveTo(cx-22*s, cy-14*s);
+      for (let i = 0; i < 6; i++) {
+        const x = cx + (-22 + i*8)*s;
+        ctx.quadraticCurveTo(x+2*s, cy+(-18+((i%2)?4:-4))*s, x+4*s, cy-14*s);
+      }
+      ctx.lineTo(cx+18*s, cy-10*s); ctx.lineTo(cx-22*s, cy-10*s);
+      ctx.closePath(); ctx.fill();
+      break;
+    case 'short_curly':
+      for (let a = -Math.PI; a < 0; a += 0.4) {
+        const r = 30*s;
+        const x = cx + Math.cos(a) * r;
+        const y = cy - 6*s + Math.sin(a) * r * 0.8;
+        ctx.beginPath(); ctx.arc(x, y, 6*s, 0, Math.PI*2); ctx.fill();
+      }
+      break;
+    case 'medium_straight':
+      ctx.beginPath();
+      ctx.moveTo(cx-28*s, cy-6*s);
+      ctx.bezierCurveTo(cx-30*s, cy-30*s, cx-14*s, cy-38*s, cx, cy-36*s);
+      ctx.bezierCurveTo(cx+14*s, cy-38*s, cx+30*s, cy-30*s, cx+28*s, cy-6*s);
+      ctx.lineTo(cx+24*s, cy-4*s);
+      ctx.bezierCurveTo(cx+24*s, cy-24*s, cx+10*s, cy-30*s, cx, cy-30*s);
+      ctx.bezierCurveTo(cx-10*s, cy-30*s, cx-24*s, cy-24*s, cx-24*s, cy-4*s);
+      ctx.closePath(); ctx.fill();
+      // Side falls
+      ctx.fillRect(cx-30*s, cy-6*s, 6*s, 30*s);
+      ctx.fillRect(cx+24*s, cy-6*s, 6*s, 30*s);
+      break;
+    case 'medium_wavy':
+      ctx.beginPath();
+      ctx.moveTo(cx-28*s, cy-6*s);
+      ctx.bezierCurveTo(cx-30*s, cy-30*s, cx-14*s, cy-38*s, cx, cy-36*s);
+      ctx.bezierCurveTo(cx+14*s, cy-38*s, cx+30*s, cy-30*s, cx+28*s, cy-6*s);
+      ctx.lineTo(cx+22*s, cy-4*s);
+      ctx.bezierCurveTo(cx+24*s, cy-24*s, cx+8*s, cy-30*s, cx, cy-30*s);
+      ctx.bezierCurveTo(cx-8*s, cy-30*s, cx-24*s, cy-24*s, cx-22*s, cy-4*s);
+      ctx.closePath(); ctx.fill();
+      // Wavy side falls
+      [-1, 1].forEach(side => {
+        ctx.beginPath(); ctx.moveTo(cx+side*28*s, cy-6*s);
+        for (let i = 0; i < 5; i++) {
+          ctx.quadraticCurveTo(cx+side*(30+(i%2?4:-4))*s, cy+(i*8)*s, cx+side*28*s, cy+(i*8+8)*s);
+        }
+        ctx.lineWidth = 5*s; ctx.strokeStyle = c.hairColor; ctx.stroke();
+      });
+      break;
+    case 'medium_curly':
+      ctx.beginPath();
+      ctx.moveTo(cx-26*s, cy-6*s);
+      ctx.bezierCurveTo(cx-28*s, cy-28*s, cx-12*s, cy-36*s, cx, cy-34*s);
+      ctx.bezierCurveTo(cx+12*s, cy-36*s, cx+28*s, cy-28*s, cx+26*s, cy-6*s);
+      ctx.lineTo(cx+20*s, cy-4*s);
+      ctx.bezierCurveTo(cx+22*s, cy-22*s, cx+8*s, cy-28*s, cx, cy-28*s);
+      ctx.bezierCurveTo(cx-8*s, cy-28*s, cx-22*s, cy-22*s, cx-20*s, cy-4*s);
+      ctx.closePath(); ctx.fill();
+      [-1, 1].forEach(side => {
+        for (let i = 0; i < 4; i++) {
+          ctx.beginPath(); ctx.arc(cx+side*26*s, cy+(i*8)*s, 5*s, 0, Math.PI*2); ctx.fill();
+        }
+      });
+      break;
+    case 'long_straight':
+      ctx.beginPath();
+      ctx.moveTo(cx-28*s, cy-6*s);
+      ctx.bezierCurveTo(cx-30*s, cy-32*s, cx-14*s, cy-40*s, cx, cy-38*s);
+      ctx.bezierCurveTo(cx+14*s, cy-40*s, cx+30*s, cy-32*s, cx+28*s, cy-6*s);
+      ctx.lineTo(cx+22*s, cy-4*s);
+      ctx.bezierCurveTo(cx+24*s, cy-26*s, cx+10*s, cy-32*s, cx, cy-32*s);
+      ctx.bezierCurveTo(cx-10*s, cy-32*s, cx-24*s, cy-26*s, cx-22*s, cy-4*s);
+      ctx.closePath(); ctx.fill();
+      break;
+    case 'long_wavy':
+      ctx.beginPath();
+      ctx.moveTo(cx-28*s, cy-6*s);
+      ctx.bezierCurveTo(cx-30*s, cy-32*s, cx-14*s, cy-40*s, cx, cy-38*s);
+      ctx.bezierCurveTo(cx+14*s, cy-40*s, cx+30*s, cy-32*s, cx+28*s, cy-6*s);
+      ctx.lineTo(cx+22*s, cy-4*s);
+      ctx.bezierCurveTo(cx+24*s, cy-26*s, cx+10*s, cy-32*s, cx, cy-32*s);
+      ctx.bezierCurveTo(cx-10*s, cy-32*s, cx-24*s, cy-26*s, cx-22*s, cy-4*s);
+      ctx.closePath(); ctx.fill();
+      // Wavy texture on top
+      ctx.strokeStyle = avShade(c.hairColor, 15); ctx.lineWidth = 1*s;
+      for (let i = -2; i < 3; i++) {
+        ctx.beginPath(); ctx.moveTo(cx+i*8*s, cy-32*s);
+        ctx.quadraticCurveTo(cx+i*8*s+4*s, cy-24*s, cx+i*8*s, cy-16*s);
+        ctx.stroke();
+      }
+      break;
+    case 'long_curly':
+      ctx.beginPath();
+      ctx.moveTo(cx-28*s, cy-6*s);
+      ctx.bezierCurveTo(cx-30*s, cy-32*s, cx-14*s, cy-40*s, cx, cy-38*s);
+      ctx.bezierCurveTo(cx+14*s, cy-40*s, cx+30*s, cy-32*s, cx+28*s, cy-6*s);
+      ctx.lineTo(cx+22*s, cy-4*s);
+      ctx.bezierCurveTo(cx+24*s, cy-26*s, cx+10*s, cy-32*s, cx, cy-32*s);
+      ctx.bezierCurveTo(cx-10*s, cy-32*s, cx-24*s, cy-26*s, cx-22*s, cy-4*s);
+      ctx.closePath(); ctx.fill();
+      for (let a = -Math.PI; a < 0; a += 0.5) {
+        const x = cx + Math.cos(a)*28*s, y = cy-6*s + Math.sin(a)*26*s;
+        ctx.beginPath(); ctx.arc(x, y, 4*s, 0, Math.PI*2); ctx.fill();
+      }
+      break;
+    case 'afro':
+      // Already drawn in back, just add texture
+      ctx.strokeStyle = avShade(c.hairColor, 10); ctx.lineWidth = 0.8*s;
+      for (let a = 0; a < Math.PI*2; a += 0.3) {
+        const r1 = 32*s, r2 = 40*s;
+        ctx.beginPath();
+        ctx.moveTo(cx + Math.cos(a)*r1, cy-4*s + Math.sin(a)*r1*0.9);
+        ctx.lineTo(cx + Math.cos(a)*r2, cy-4*s + Math.sin(a)*r2*0.9);
+        ctx.stroke();
+      }
+      break;
+    case 'mohawk':
+      ctx.beginPath();
+      ctx.moveTo(cx-4*s, cy+10*s);
+      for (let i = 0; i < 5; i++) {
+        ctx.lineTo(cx + (i%2?5:-5)*s, cy + (-10 - i*10)*s);
+        ctx.lineTo(cx + (i%2?-3:3)*s, cy + (-14 - i*10)*s);
+      }
+      ctx.lineTo(cx+4*s, cy+10*s);
+      ctx.closePath(); ctx.fill();
+      break;
+    case 'ponytail':
+      // Front: pulled back
+      ctx.beginPath();
+      ctx.moveTo(cx-26*s, cy-8*s);
+      ctx.bezierCurveTo(cx-28*s, cy-28*s, cx-10*s, cy-36*s, cx, cy-34*s);
+      ctx.bezierCurveTo(cx+10*s, cy-36*s, cx+28*s, cy-28*s, cx+26*s, cy-8*s);
+      ctx.lineTo(cx+22*s, cy-6*s);
+      ctx.bezierCurveTo(cx+22*s, cy-24*s, cx+8*s, cy-30*s, cx, cy-30*s);
+      ctx.bezierCurveTo(cx-8*s, cy-30*s, cx-22*s, cy-24*s, cx-22*s, cy-6*s);
+      ctx.closePath(); ctx.fill();
+      break;
+    case 'bun':
+      ctx.beginPath();
+      ctx.moveTo(cx-26*s, cy-8*s);
+      ctx.bezierCurveTo(cx-28*s, cy-28*s, cx-10*s, cy-36*s, cx, cy-34*s);
+      ctx.bezierCurveTo(cx+10*s, cy-36*s, cx+28*s, cy-28*s, cx+26*s, cy-8*s);
+      ctx.lineTo(cx+22*s, cy-6*s);
+      ctx.bezierCurveTo(cx+22*s, cy-24*s, cx+8*s, cy-30*s, cx, cy-30*s);
+      ctx.bezierCurveTo(cx-8*s, cy-30*s, cx-22*s, cy-24*s, cx-22*s, cy-6*s);
+      ctx.closePath(); ctx.fill();
+      break;
+    case 'braids':
+      ctx.beginPath();
+      ctx.moveTo(cx-22*s, cy-6*s);
+      ctx.bezierCurveTo(cx-26*s, cy-26*s, cx-10*s, cy-34*s, cx, cy-32*s);
+      ctx.bezierCurveTo(cx+10*s, cy-34*s, cx+26*s, cy-26*s, cx+22*s, cy-6*s);
+      ctx.lineTo(cx+18*s, cy-4*s);
+      ctx.bezierCurveTo(cx+20*s, cy-20*s, cx+8*s, cy-26*s, cx, cy-26*s);
+      ctx.bezierCurveTo(cx-8*s, cy-26*s, cx-20*s, cy-20*s, cx-18*s, cy-4*s);
+      ctx.closePath(); ctx.fill();
+      // Center part
+      ctx.strokeStyle = c.skinTone; ctx.lineWidth = 1.5*s;
+      ctx.beginPath(); ctx.moveTo(cx, cy-34*s); ctx.lineTo(cx, cy-8*s); ctx.stroke();
+      break;
+  }
+}
+
+// ── FACIAL HAIR ──
+function avDrawFacialHair(ctx, c, s, cx, cy) {
+  if (c.facialHair === 'none') return;
+  ctx.fillStyle = c.hairColor;
+  ctx.strokeStyle = c.hairColor;
+  switch(c.facialHair) {
+    case 'stubble':
+      ctx.globalAlpha = 0.4;
+      for (let i = 0; i < 40; i++) {
+        const sx = cx + (Math.sin(i*7.3)*16 - 8)*s;
+        const sy = cy + (16 + Math.cos(i*3.7)*10)*s;
+        ctx.beginPath(); ctx.arc(sx, sy, 0.7*s, 0, Math.PI*2); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      break;
+    case 'goatee':
+      ctx.beginPath();
+      ctx.moveTo(cx-6*s, cy+20*s);
+      ctx.bezierCurveTo(cx-8*s, cy+30*s, cx-4*s, cy+36*s, cx, cy+38*s);
+      ctx.bezierCurveTo(cx+4*s, cy+36*s, cx+8*s, cy+30*s, cx+6*s, cy+20*s);
+      ctx.closePath(); ctx.fill();
+      break;
+    case 'full_beard':
+      ctx.beginPath();
+      ctx.moveTo(cx-26*s, cy+6*s);
+      ctx.bezierCurveTo(cx-28*s, cy+18*s, cx-22*s, cy+36*s, cx-10*s, cy+42*s);
+      ctx.bezierCurveTo(cx-4*s, cy+46*s, cx+4*s, cy+46*s, cx+10*s, cy+42*s);
+      ctx.bezierCurveTo(cx+22*s, cy+36*s, cx+28*s, cy+18*s, cx+26*s, cy+6*s);
+      ctx.lineTo(cx+22*s, cy+8*s);
+      ctx.bezierCurveTo(cx+22*s, cy+16*s, cx+16*s, cy+30*s, cx, cy+36*s);
+      ctx.bezierCurveTo(cx-16*s, cy+30*s, cx-22*s, cy+16*s, cx-22*s, cy+8*s);
+      ctx.closePath(); ctx.fill();
+      break;
+    case 'mustache':
+      ctx.lineWidth = 2.5*s; ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(cx-10*s, cy+16*s);
+      ctx.quadraticCurveTo(cx-5*s, cy+12*s, cx, cy+14*s);
+      ctx.quadraticCurveTo(cx+5*s, cy+12*s, cx+10*s, cy+16*s);
+      ctx.stroke();
+      break;
+    case 'van_dyke':
+      // Mustache
+      ctx.lineWidth = 2*s; ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(cx-9*s, cy+16*s);
+      ctx.quadraticCurveTo(cx-4*s, cy+12*s, cx, cy+14*s);
+      ctx.quadraticCurveTo(cx+4*s, cy+12*s, cx+9*s, cy+16*s);
+      ctx.stroke();
+      // Goatee
+      ctx.beginPath();
+      ctx.moveTo(cx-5*s, cy+22*s);
+      ctx.bezierCurveTo(cx-6*s, cy+30*s, cx-3*s, cy+34*s, cx, cy+36*s);
+      ctx.bezierCurveTo(cx+3*s, cy+34*s, cx+6*s, cy+30*s, cx+5*s, cy+22*s);
+      ctx.closePath(); ctx.fill();
+      break;
+  }
+}
+
+// ── GLASSES ──
+function avDrawGlasses(ctx, c, s, cx, cy) {
+  if (c.glasses === 'none') return;
+  const ey = cy - 4*s;
+  ctx.strokeStyle = '#555'; ctx.lineWidth = 1.5*s;
+  switch(c.glasses) {
+    case 'round':
+      ctx.beginPath(); ctx.arc(cx-11*s, ey, 7*s, 0, Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx+11*s, ey, 7*s, 0, Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx-4*s, ey); ctx.lineTo(cx+4*s, ey); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx-18*s, ey); ctx.lineTo(cx-26*s, ey-2*s); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx+18*s, ey); ctx.lineTo(cx+26*s, ey-2*s); ctx.stroke();
+      break;
+    case 'square':
+      ctx.strokeRect(cx-18*s, ey-5*s, 14*s, 10*s);
+      ctx.strokeRect(cx+4*s, ey-5*s, 14*s, 10*s);
+      ctx.beginPath(); ctx.moveTo(cx-4*s, ey); ctx.lineTo(cx+4*s, ey); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx-18*s, ey); ctx.lineTo(cx-26*s, ey-2*s); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx+18*s, ey); ctx.lineTo(cx+26*s, ey-2*s); ctx.stroke();
+      break;
+    case 'sunglasses':
+      ctx.fillStyle = '#1a1a1a';
+      ctx.beginPath(); ctx.ellipse(cx-11*s, ey, 8*s, 6*s, 0, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(cx+11*s, ey, 8*s, 6*s, 0, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = '#333'; ctx.lineWidth = 2*s;
+      ctx.beginPath(); ctx.ellipse(cx-11*s, ey, 8*s, 6*s, 0, 0, Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(cx+11*s, ey, 8*s, 6*s, 0, 0, Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx-3*s, ey); ctx.lineTo(cx+3*s, ey); ctx.stroke();
+      break;
+    case 'visor':
+      ctx.fillStyle = 'rgba(100,100,255,0.3)';
+      const vw = 24*s, vh = 6*s;
+      ctx.beginPath();
+      ctx.moveTo(cx-vw, ey-vh); ctx.lineTo(cx+vw, ey-vh);
+      ctx.lineTo(cx+vw-2*s, ey+vh); ctx.lineTo(cx-vw+2*s, ey+vh);
+      ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = '#7C3AED'; ctx.lineWidth = 1.5*s; ctx.stroke();
+      break;
+  }
+}
+
+// ── HAT ──
+function avDrawHat(ctx, c, s, cx, cy) {
+  if (c.hat === 'none' || c.hairStyle === 'hijab') return;
+  switch(c.hat) {
+    case 'cap':
+      ctx.fillStyle = '#2d3748';
+      // Dome
+      ctx.beginPath(); ctx.ellipse(cx, cy-28*s, 28*s, 14*s, 0, Math.PI, Math.PI*2); ctx.fill();
+      // Brim
+      ctx.beginPath();
+      ctx.moveTo(cx-28*s, cy-28*s);
+      ctx.bezierCurveTo(cx-30*s, cy-26*s, cx-32*s, cy-24*s, cx-18*s, cy-22*s);
+      ctx.lineTo(cx+30*s, cy-24*s);
+      ctx.bezierCurveTo(cx+34*s, cy-26*s, cx+32*s, cy-28*s, cx+28*s, cy-28*s);
+      ctx.closePath(); ctx.fill();
+      break;
+    case 'beanie':
+      ctx.fillStyle = '#8B4513';
+      ctx.beginPath(); ctx.ellipse(cx, cy-24*s, 30*s, 18*s, 0, Math.PI, Math.PI*2); ctx.fill();
+      // Fold line
+      ctx.strokeStyle = avShade('#8B4513', -20); ctx.lineWidth = 2*s;
+      ctx.beginPath(); ctx.ellipse(cx, cy-24*s, 28*s, 4*s, 0, 0, Math.PI*2); ctx.stroke();
+      // Pom pom
+      ctx.beginPath(); ctx.arc(cx, cy-42*s, 5*s, 0, Math.PI*2); ctx.fill();
+      break;
+    case 'crown':
+      ctx.fillStyle = '#DAA520';
+      ctx.beginPath();
+      ctx.moveTo(cx-18*s, cy-28*s); ctx.lineTo(cx-18*s, cy-40*s);
+      ctx.lineTo(cx-10*s, cy-34*s); ctx.lineTo(cx, cy-44*s);
+      ctx.lineTo(cx+10*s, cy-34*s); ctx.lineTo(cx+18*s, cy-40*s);
+      ctx.lineTo(cx+18*s, cy-28*s);
+      ctx.closePath(); ctx.fill();
+      // Jewels
+      ctx.fillStyle = '#EF4444';
+      ctx.beginPath(); ctx.arc(cx, cy-34*s, 2*s, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#3B82F6';
+      ctx.beginPath(); ctx.arc(cx-10*s, cy-30*s, 1.5*s, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(cx+10*s, cy-30*s, 1.5*s, 0, Math.PI*2); ctx.fill();
+      break;
+    case 'headband':
+      ctx.strokeStyle = '#EF4444'; ctx.lineWidth = 3*s;
+      ctx.beginPath(); ctx.ellipse(cx, cy-14*s, 28*s, 20*s, 0, Math.PI+0.2, -0.2); ctx.stroke();
+      break;
+    case 'turban':
+      ctx.fillStyle = '#F5F5DC';
+      ctx.beginPath();
+      ctx.moveTo(cx-30*s, cy-16*s);
+      ctx.bezierCurveTo(cx-32*s, cy-36*s, cx-16*s, cy-48*s, cx, cy-46*s);
+      ctx.bezierCurveTo(cx+16*s, cy-48*s, cx+32*s, cy-36*s, cx+30*s, cy-16*s);
+      ctx.lineTo(cx+26*s, cy-14*s);
+      ctx.bezierCurveTo(cx+28*s, cy-30*s, cx+12*s, cy-38*s, cx, cy-38*s);
+      ctx.bezierCurveTo(cx-12*s, cy-38*s, cx-28*s, cy-30*s, cx-26*s, cy-14*s);
+      ctx.closePath(); ctx.fill();
+      // Fold lines
+      ctx.strokeStyle = avShade('#F5F5DC', -20); ctx.lineWidth = 1*s;
+      ctx.beginPath(); ctx.moveTo(cx, cy-46*s); ctx.bezierCurveTo(cx+6*s, cy-38*s, cx+4*s, cy-26*s, cx+2*s, cy-16*s); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx, cy-46*s); ctx.bezierCurveTo(cx-8*s, cy-36*s, cx-6*s, cy-24*s, cx-4*s, cy-16*s); ctx.stroke();
+      break;
+  }
+}
+
+// ── EARRING ──
+function avDrawEarring(ctx, c, s, cx, cy) {
+  if (c.earring === 'none' || c.hairStyle === 'hijab') return;
+  ctx.fillStyle = '#DAA520'; ctx.strokeStyle = '#DAA520'; ctx.lineWidth = 1.2*s;
+  const ex1 = cx - 28*s, ex2 = cx + 28*s, ey = cy + 8*s;
+  switch(c.earring) {
+    case 'stud':
+      ctx.beginPath(); ctx.arc(ex1, ey, 2*s, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(ex2, ey, 2*s, 0, Math.PI*2); ctx.fill();
+      break;
+    case 'hoop':
+      ctx.beginPath(); ctx.arc(ex1, ey+4*s, 4*s, 0, Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(ex2, ey+4*s, 4*s, 0, Math.PI*2); ctx.stroke();
+      break;
+    case 'dangle':
+      ctx.beginPath(); ctx.moveTo(ex1, ey); ctx.lineTo(ex1, ey+8*s); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(ex1-2*s, ey+8*s); ctx.lineTo(ex1, ey+12*s); ctx.lineTo(ex1+2*s, ey+8*s); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(ex2, ey); ctx.lineTo(ex2, ey+8*s); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(ex2-2*s, ey+8*s); ctx.lineTo(ex2, ey+12*s); ctx.lineTo(ex2+2*s, ey+8*s); ctx.closePath(); ctx.fill();
+      break;
+  }
+}
+
+// ── ELEMENT GLOW ──
+function avDrawElementGlow(ctx, c, s, cx, cy, elementKey) {
+  if (!elementKey || !MC.elements[elementKey]) return;
+  const e = MC.elements[elementKey];
+  const grd = ctx.createRadialGradient(cx, cy-10*s, 5*s, cx, cy-10*s, 55*s);
+  grd.addColorStop(0, avAlpha(e.color, 0.12));
+  grd.addColorStop(0.6, avAlpha(e.color, 0.04));
+  grd.addColorStop(1, 'transparent');
+  ctx.fillStyle = grd;
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  if (c.elementBadge) {
+    ctx.font = `${14*s}px serif`;
+    ctx.textAlign = 'center';
+    ctx.fillStyle = e.color;
+    ctx.fillText(e.icon, cx + 28*s, cy - 36*s);
+  }
+}
+
+// ──── AVATAR BUILDER UI ────
+
+function avatarOpen() {
+  avatarConfig = (MC.player && MC.player.avatar)
+    ? JSON.parse(JSON.stringify(MC.player.avatar))
+    : avatarSavedConfig
+      ? JSON.parse(JSON.stringify(avatarSavedConfig))
+      : JSON.parse(JSON.stringify(AVATAR_DEFAULTS));
+  document.getElementById('avatarBuilder').classList.add('active');
+  avatarSwitchTab('face');
+  avatarUpdatePreview();
+  avatarNoorSpeak("Let's create your Mindborn! Choose features to match your look.");
+  mcVoice("Let's create your Mindborn! Choose features to match your look.");
+}
+function avatarCancel() {
+  document.getElementById('avatarBuilder').classList.remove('active');
+  avatarConfig = null;
+}
+function avatarSave() {
+  avatarSavedConfig = JSON.parse(JSON.stringify(avatarConfig));
+  if (MC.player) MC.player.avatar = JSON.parse(JSON.stringify(avatarConfig));
+  document.getElementById('avatarBuilder').classList.remove('active');
+  avatarPersist();
+  if (MC.selectedElement) mcDrawPreview(MC.selectedElement);
+  avatarNoorSpeak("Looking great! Your Mindborn is ready for battle!");
+  mcVoice("Looking great! Your Mindborn is ready for battle!");
+}
+function avatarUpdatePreview() {
+  const canvas = document.getElementById('avatarPreviewCanvas');
+  if (!canvas || !avatarConfig) return;
+  avatarRender(canvas, avatarConfig, MC.selectedElement || 'ignis');
+}
+function avatarPersist() {
+  try {
+    const d = avatarSavedConfig || (MC.player && MC.player.avatar);
+    if (d) localStorage.setItem('ma_avatar', JSON.stringify(d));
+  } catch(e) {}
+}
+function avatarRestore() {
+  try {
+    const s = localStorage.getItem('ma_avatar');
+    if (s) { avatarSavedConfig = JSON.parse(s); return avatarSavedConfig; }
+  } catch(e) {}
+  return null;
+}
+
+function avatarSwitchTab(tab) {
+  document.querySelectorAll('.avatar-cat-tab').forEach(t => t.classList.remove('active'));
+  const btn = document.querySelector(`[data-tab="${tab}"]`);
+  if (btn) btn.classList.add('active');
+  const area = document.getElementById('avatarOptionsArea');
+  if (!area) return;
+  area.innerHTML = '';
+  switch(tab) {
+    case 'face': avatarBuildFace(area); break;
+    case 'hair': avatarBuildHair(area); break;
+    case 'body': avatarBuildBody(area); break;
+    case 'clothes': avatarBuildClothes(area); break;
+    case 'acc': avatarBuildAcc(area); break;
+  }
+}
+
+function avColorHTML(label, colors, selected, prop) {
+  const sw = colors.map(c =>
+    `<div class="avatar-color-swatch${c===selected?' selected':''}" style="background:${c}" onclick="avatarSetProp('${prop}','${c}')"></div>`
+  ).join('');
+  return `<div class="avatar-option-group"><label>${label}</label><div class="avatar-color-palette">${sw}</div></div>`;
+}
+function avStyleHTML(label, prop) {
+  const opts = AVATAR_OPTIONS_MAP[prop];
+  if (!opts) return '';
+  const cur = avatarConfig[prop] || opts[0];
+  const display = cur.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  return `<div class="avatar-option-group"><label>${label}</label>
+    <div class="avatar-style-selector">
+      <button class="avatar-style-prev" onclick="avatarCycleProp('${prop}',-1)">&lsaquo;</button>
+      <div class="avatar-style-label" id="avLbl_${prop}">${display}</div>
+      <button class="avatar-style-next" onclick="avatarCycleProp('${prop}',1)">&rsaquo;</button>
+    </div></div>`;
+}
+
+function avatarBuildFace(area) {
+  area.innerHTML = avColorHTML('Skin Tone', SKIN_TONES, avatarConfig.skinTone, 'skinTone')
+    + avStyleHTML('Face Shape', 'faceShape')
+    + avStyleHTML('Eye Shape', 'eyeShape')
+    + avColorHTML('Eye Color', EYE_COLORS, avatarConfig.eyeColor, 'eyeColor')
+    + avStyleHTML('Eyebrow Style', 'eyebrowStyle')
+    + avStyleHTML('Nose Shape', 'noseShape')
+    + avStyleHTML('Mouth Shape', 'mouthShape');
+}
+function avatarBuildHair(area) {
+  area.innerHTML = avStyleHTML('Hairstyle', 'hairStyle')
+    + avColorHTML('Hair Color', HAIR_COLORS, avatarConfig.hairColor, 'hairColor')
+    + avStyleHTML('Facial Hair', 'facialHair');
+}
+function avatarBuildBody(area) {
+  area.innerHTML = avStyleHTML('Body Type', 'bodyType');
+}
+function avatarBuildClothes(area) {
+  area.innerHTML = avStyleHTML('Top Style', 'topStyle')
+    + avColorHTML('Top Color', CLOTH_COLORS, avatarConfig.topColor, 'topColor')
+    + avStyleHTML('Bottom Style', 'bottomStyle')
+    + avColorHTML('Bottom Color', CLOTH_COLORS, avatarConfig.bottomColor, 'bottomColor');
+}
+function avatarBuildAcc(area) {
+  area.innerHTML = avStyleHTML('Glasses', 'glasses')
+    + avStyleHTML('Hat', 'hat')
+    + avStyleHTML('Earring', 'earring')
+    + avStyleHTML('Necklace', 'necklace');
+}
+
+function avatarCycleProp(prop, dir) {
+  const opts = AVATAR_OPTIONS_MAP[prop];
+  if (!opts) return;
+  const idx = opts.indexOf(avatarConfig[prop]);
+  const next = (idx + dir + opts.length) % opts.length;
+  avatarConfig[prop] = opts[next];
+  avatarUpdatePreview();
+  const lbl = document.getElementById('avLbl_' + prop);
+  if (lbl) lbl.textContent = opts[next].replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  avatarMaybeComment(prop, opts[next]);
+}
+function avatarSetProp(prop, value) {
+  avatarConfig[prop] = value;
+  avatarUpdatePreview();
+  // Update swatch selection
+  const activeTab = document.querySelector('.avatar-cat-tab.active');
+  if (activeTab) avatarSwitchTab(activeTab.dataset.tab);
+  avatarMaybeComment(prop, value);
+}
+
+// ──── NOOR AI ASSISTANT ────
+
+const NOOR_AVATAR_COMMENTS = {
+  skinTone: ["Beautiful complexion!", "That skin tone looks natural.", "Nice choice!"],
+  faceShape: ["Strong features!", "That shape gives real character.", "Distinctive look!"],
+  eyeShape: ["Expressive eyes!", "Those eyes tell a story.", "Nice eye shape."],
+  eyeColor: ["Striking eyes!", "Beautiful color.", "Those eyes will mesmerize opponents!"],
+  hairStyle: {
+    ignis:"Fiery warriors rock bold hair!", aqua:"Flowing, like ocean currents.",
+    terra:"Grounded and strong.", ventus:"Wind-swept and free!",
+    _d:"That hairstyle has personality!"
+  },
+  hairColor: ["Bold color choice!", "That suits you well.", "Unique look!"],
+  facialHair: ["That adds character!", "Distinguished!", "Nice facial hair."],
+  bodyType: ["Strong build!", "That build suits your element.", "Ready for battle!"],
+  topStyle: {
+    armor:"Battle-ready! Formidable armor.", robe:"Scholar-warrior. Wisdom meets strength.",
+    hoodie:"Casual but focused.", suit:"Sharp and commanding!",
+    _d:"Looking sharp!"
+  },
+  glasses: ["The scholarly look! Knowledge is power.", "Nice frames!", "Smart choice."],
+  hat: { crown:"A crown for a champion!", _d:"That completes the look." },
+};
+let avatarCommentCD = 0;
+
+function avatarMaybeComment(prop, value) {
+  if (Date.now() - avatarCommentCD < 2500) return;
+  if (Math.random() > 0.45) return;
+  avatarCommentCD = Date.now();
+  let comment = '';
+  const bank = NOOR_AVATAR_COMMENTS[prop];
+  if (bank) {
+    if (Array.isArray(bank)) comment = bank[Math.floor(Math.random()*bank.length)];
+    else { const el = MC.selectedElement||'ignis'; comment = bank[value]||bank[el]||bank._d||''; }
+  }
+  if (!comment) {
+    const g = ["Looking good!","Interesting choice!","I like it!","Your Mindborn is taking shape!","That works!","Nice!"];
+    comment = g[Math.floor(Math.random()*g.length)];
+  }
+  avatarNoorSpeak(comment);
+}
+function avatarNoorSpeak(text) {
+  const b = document.getElementById('avatarNoorBubble');
+  if (!b) return;
+  b.textContent = text;
+  b.classList.add('visible');
+  clearTimeout(b._timer);
+  b._timer = setTimeout(() => b.classList.remove('visible'), 4000);
+}
+
+function avatarAISuggest() {
+  const el = MC.selectedElement || 'ignis';
+  const presets = {
+    ignis: { skinTone:'#E59866', faceShape:'square', eyeShape:'narrow', eyeColor:'#DAA520',
+      eyebrowStyle:'angular', noseShape:'pointed', mouthShape:'thin',
+      hairStyle:'mohawk', hairColor:'#8B0000', facialHair:'stubble',
+      bodyType:'athletic', topStyle:'armor', topColor:'#ef4444',
+      bottomStyle:'pants', bottomColor:'#1E293B',
+      glasses:'none', hat:'none', earring:'stud', necklace:'chain', elementBadge:true },
+    aqua: { skinTone:'#F5CBA7', faceShape:'oval', eyeShape:'almond', eyeColor:'#4169E1',
+      eyebrowStyle:'curved', noseShape:'small', mouthShape:'full',
+      hairStyle:'long_wavy', hairColor:'#06B6D4', facialHair:'none',
+      bodyType:'slim', topStyle:'robe', topColor:'#06b6d4',
+      bottomStyle:'robe_bottom', bottomColor:'#164E63',
+      glasses:'none', hat:'none', earring:'hoop', necklace:'pendant', elementBadge:true },
+    terra: { skinTone:'#8D6E2C', faceShape:'square', eyeShape:'wide', eyeColor:'#2E8B57',
+      eyebrowStyle:'thick', noseShape:'wide', mouthShape:'medium',
+      hairStyle:'short_curly', hairColor:'#2C1810', facialHair:'full_beard',
+      bodyType:'heavy', topStyle:'armor', topColor:'#22c55e',
+      bottomStyle:'pants', bottomColor:'#1a3a1a',
+      glasses:'none', hat:'headband', earring:'none', necklace:'chain', elementBadge:true },
+    ventus: { skinTone:'#FDEBD0', faceShape:'heart', eyeShape:'upturned', eyeColor:'#708090',
+      eyebrowStyle:'arched', noseShape:'button', mouthShape:'cupid',
+      hairStyle:'ponytail', hairColor:'#C0C0C0', facialHair:'none',
+      bodyType:'slim', topStyle:'jacket', topColor:'#a78bfa',
+      bottomStyle:'pants', bottomColor:'#312e81',
+      glasses:'visor', hat:'none', earring:'dangle', necklace:'none', elementBadge:true },
+  };
+  avatarConfig = JSON.parse(JSON.stringify(presets[el] || presets.ignis));
+  avatarUpdatePreview();
+  const activeTab = document.querySelector('.avatar-cat-tab.active');
+  if (activeTab) avatarSwitchTab(activeTab.dataset.tab);
+  const msgs = {
+    ignis:"A fierce Ignis warrior — fire in their eyes, strength in their stance!",
+    aqua:"A serene Aqua healer — calm and deep like the ocean.",
+    terra:"An immovable Terra guardian — rooted and unbreakable!",
+    ventus:"A swift Ventus striker — light as air, fast as lightning!",
+  };
+  avatarNoorSpeak(msgs[el] || "Here's my suggestion!");
+  mcVoice(msgs[el] || "Here is my suggestion based on your element.");
+}
+
+function avatarRandomize() {
+  function pick(a) { return a[Math.floor(Math.random()*a.length)]; }
+  function rColor() { return '#'+Math.floor(Math.random()*16777215).toString(16).padStart(6,'0'); }
+  avatarConfig = {
+    skinTone:pick(SKIN_TONES), faceShape:pick(FACE_SHAPES), eyeShape:pick(EYE_SHAPES),
+    eyeColor:pick(EYE_COLORS), eyebrowStyle:pick(EYEBROW_STYLES), noseShape:pick(NOSE_SHAPES),
+    mouthShape:pick(MOUTH_SHAPES), hairStyle:pick(HAIR_STYLES), hairColor:pick(HAIR_COLORS),
+    facialHair:pick(FACIAL_HAIR_STYLES), bodyType:pick(BODY_TYPES),
+    topStyle:pick(TOP_STYLES), topColor:pick(CLOTH_COLORS),
+    bottomStyle:pick(BOTTOM_STYLES), bottomColor:pick(CLOTH_COLORS),
+    glasses:pick(GLASSES_STYLES), hat:pick(HAT_STYLES),
+    earring:pick(EARRING_STYLES), necklace:pick(NECKLACE_STYLES), elementBadge:true,
+  };
+  avatarUpdatePreview();
+  const activeTab = document.querySelector('.avatar-cat-tab.active');
+  if (activeTab) avatarSwitchTab(activeTab.dataset.tab);
+  avatarNoorSpeak("Interesting combination! Tweak anything you like.");
+  mcVoice("Interesting combination!");
+}
+
+function avatarGenerateRandom() {
+  function pick(a) { return a[Math.floor(Math.random()*a.length)]; }
+  return {
+    skinTone:pick(SKIN_TONES), faceShape:pick(FACE_SHAPES), eyeShape:pick(EYE_SHAPES),
+    eyeColor:pick(EYE_COLORS), eyebrowStyle:pick(EYEBROW_STYLES), noseShape:pick(NOSE_SHAPES),
+    mouthShape:pick(MOUTH_SHAPES), hairStyle:pick(HAIR_STYLES), hairColor:pick(HAIR_COLORS),
+    facialHair:pick(FACIAL_HAIR_STYLES), bodyType:pick(BODY_TYPES),
+    topStyle:pick(TOP_STYLES), topColor:pick(CLOTH_COLORS),
+    bottomStyle:pick(BOTTOM_STYLES), bottomColor:pick(CLOTH_COLORS),
+    glasses:pick(GLASSES_STYLES), hat:pick(HAT_STYLES),
+    earring:pick(EARRING_STYLES), necklace:pick(NECKLACE_STYLES), elementBadge:true,
+  };
+}
 
 // ──── VOICE INTERACTIONS ────
 function mcVoice(text) {
