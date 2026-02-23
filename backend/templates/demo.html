@@ -658,20 +658,6 @@ body {
 .chrono-task .ct-pts { font-size: 1.2rem; font-weight: 700; color: var(--gold); min-width: 40px; }
 .chrono-task .ct-q { flex: 1; font-size: 0.9rem; }
 
-/* Music visualizer */
-.mc-music-bar {
-  position: fixed; bottom: 0; left: 0; right: 0; height: 40px; background: rgba(15,15,26,0.95);
-  border-top: 1px solid var(--border); display: none; align-items: center; padding: 0 16px; gap: 12px;
-  z-index: 9000; font-size: 0.8rem;
-}
-.mc-music-bar.active { display: flex; }
-.mc-music-viz { display: flex; align-items: flex-end; gap: 2px; height: 20px; }
-.mc-music-viz .bar { width: 3px; background: var(--accent); border-radius: 1px; animation: mcFloat 0.8s ease infinite; }
-.mc-vol-slider { width: 80px; accent-color: var(--accent); }
-
-/* 3D Arena */
-.arena3d-container { width: 100%; height: 350px; position: relative; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); margin: 16px 0; }
-.arena3d-container canvas { width: 100% !important; height: 100% !important; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
@@ -1265,7 +1251,6 @@ body {
                 <div class="hp-text"><span id="demoP2HpText">100</span> / 100 HP</div>
               </div>
             </div>
-            <div class="arena3d-container" id="demoArena3d" style="margin:12px 0"></div>
             <div id="demoNarration" style="background:linear-gradient(135deg,rgba(124,58,237,0.1),rgba(236,72,153,0.1));border:1px solid var(--accent);border-radius:var(--radius);padding:16px;margin:12px 0;min-height:60px">
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
                 <span style="font-size:1.2rem">&#x1F9E0;</span>
@@ -1348,6 +1333,31 @@ body {
                 <div class="el-name" style="font-size:1rem">Chrono Trial</div>
                 <div class="el-desc">Time Management — Solve under pressure</div>
               </div>
+              <div class="mc-element-card" style="--el-color:#ec4899" onclick="mcStartBattle('riddle')">
+                <div class="el-icon">&#x1F9E9;</div>
+                <div class="el-name" style="font-size:1rem">Riddle Duel</div>
+                <div class="el-desc">Brain teasers &amp; riddles — think laterally</div>
+              </div>
+              <div class="mc-element-card" style="--el-color:#14b8a6" onclick="mcStartBattle('memory')">
+                <div class="el-icon">&#x1F0CF;</div>
+                <div class="el-name" style="font-size:1rem">Memory Matrix</div>
+                <div class="el-desc">Remember the pattern — test your recall</div>
+              </div>
+              <div class="mc-element-card" style="--el-color:#f97316" onclick="mcStartBattle('wordchain')">
+                <div class="el-icon">&#x1F524;</div>
+                <div class="el-name" style="font-size:1rem">Word Chain</div>
+                <div class="el-desc">Unscramble words &amp; complete chains</div>
+              </div>
+              <div class="mc-element-card" style="--el-color:#8b5cf6" onclick="mcStartBattle('logic')">
+                <div class="el-icon">&#x1F9EA;</div>
+                <div class="el-name" style="font-size:1rem">Logic Lock</div>
+                <div class="el-desc">Crack the code — deductive reasoning</div>
+              </div>
+              <div class="mc-element-card" style="--el-color:#06b6d4" onclick="mcStartBattle('sequence')">
+                <div class="el-icon">&#x1F522;</div>
+                <div class="el-name" style="font-size:1rem">Sequence Break</div>
+                <div class="el-desc">Find the pattern in number sequences</div>
+              </div>
             </div>
             <div style="text-align:center;margin-top:8px">
               <button class="btn btn-outline" onclick="mcBackToSelect()" style="font-size:0.85rem">Change Element</button>
@@ -1392,24 +1402,11 @@ body {
             </div>
           </div>
 
-          <!-- 3D Arena viewport -->
-          <div class="arena3d-container" id="arena3dContainer" style="display:none">
-            <canvas id="arena3dCanvas"></canvas>
-          </div>
         </div>
 
       </div>
     </div>
   </div>
-</div>
-
-<!-- Music Bar -->
-<div class="mc-music-bar" id="mcMusicBar">
-  <span style="color:var(--accent-light);font-weight:600">&#x266B;</span>
-  <span id="mcTrackName">Menu Theme</span>
-  <div class="mc-music-viz" id="mcMusicViz"></div>
-  <input type="range" class="mc-vol-slider" id="mcVolume" min="0" max="100" value="40" oninput="mcSetVolume(this.value)">
-  <button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem" onclick="mcToggleMusic()" id="mcMusicToggle">&#x23F8;</button>
 </div>
 
 <!-- Level-up celebration overlay -->
@@ -1503,7 +1500,8 @@ function closeLevelUp() { document.getElementById('levelUpOverlay').style.displa
 // ============ DEMO MODE ============
 // Set to true for fully offline standalone demo (no backend required)
 const DEMO_MODE = (new URLSearchParams(window.location.search).get('demo') === 'true')
-  || (window.location.protocol === 'file:');
+  || (window.location.protocol === 'file:')
+  || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
 const MOCK_DATA = {
   player: {
@@ -3848,7 +3846,7 @@ const MC = {
   enemyNames: ['Shadow Echo','Dark Fragment','Mind Wraith','Void Specter','Chaos Shard',
                'Dream Phantom','Night Surge','Rift Walker','Storm Shade','Abyss Flame'],
   player: null, enemy: null, battleMode: null, battleActive: false,
-  wins: 0, losses: 0, musicPlaying: false, musicCtx: null, musicGain: null, musicNodes: [],
+  wins: 0, losses: 0,
   voiceSynth: window.speechSynthesis || null,
   specialCharges: 0, maxSpecial: 3,
 };
@@ -4134,213 +4132,10 @@ function mcSkipDemo() {
   document.getElementById('mc-select').style.display = 'block';
 }
 
-// ── Demo 3D Arena ──
-function mcInitDemo3D(el1, el2) {
-  if (!window.THREE) return;
-  const container = document.getElementById('demoArena3d');
-  const e1 = MC.elements[el1], e2 = MC.elements[el2];
-
-  // Clear previous
-  container.innerHTML = '';
-  if (MC.demoAnimId) cancelAnimationFrame(MC.demoAnimId);
-
-  const w = container.clientWidth || 600, h = 350;
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x080818);
-  scene.fog = new THREE.FogExp2(0x080818, 0.04);
-
-  const camera = new THREE.PerspectiveCamera(50, w / h, 0.1, 100);
-  camera.position.set(0, 7, 14);
-  camera.lookAt(0, 1, 0);
-
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-  renderer.setSize(w, h);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  container.appendChild(renderer.domElement);
-
-  // Arena floor — hexagonal with glow edge
-  const floorGeo = new THREE.CylinderGeometry(9, 9, 0.2, 6);
-  const floorMat = new THREE.MeshStandardMaterial({ color: 0x12122a, metalness: 0.4, roughness: 0.7 });
-  const floor = new THREE.Mesh(floorGeo, floorMat);
-  floor.position.y = -0.1;
-  scene.add(floor);
-
-  // Inner ring
-  const ringGeo = new THREE.TorusGeometry(9, 0.12, 8, 6);
-  const ringMat = new THREE.MeshStandardMaterial({ color: 0x7c3aed, emissive: 0x7c3aed, emissiveIntensity: 0.8, transparent: true, opacity: 0.7 });
-  const ring = new THREE.Mesh(ringGeo, ringMat);
-  ring.rotation.x = Math.PI / 2;
-  ring.position.y = 0.15;
-  scene.add(ring);
-
-  // Divider line
-  const divGeo = new THREE.BoxGeometry(0.05, 0.1, 18);
-  const divMat = new THREE.MeshStandardMaterial({ color: 0x334155, emissive: 0x334155, emissiveIntensity: 0.3 });
-  scene.add(new THREE.Mesh(divGeo, divMat));
-
-  // Player 1 (left)
-  const p1Group = mcCreateFighter(e1.color, scene);
-  p1Group.position.set(-4, 0, 0);
-  scene.add(p1Group);
-
-  // Player 2 (right)
-  const p2Group = mcCreateFighter(e2.color, scene);
-  p2Group.position.set(4, 0, 0);
-  p2Group.rotation.y = Math.PI;
-  scene.add(p2Group);
-
-  // Element aura particles for each fighter
-  mcAddAuraParticles(scene, -4, e1.color);
-  mcAddAuraParticles(scene, 4, e2.color);
-
-  // Lights
-  scene.add(new THREE.AmbientLight(0x303050, 0.6));
-  const l1 = new THREE.PointLight(new THREE.Color(e1.color), 3, 25);
-  l1.position.set(-5, 6, 4);
-  scene.add(l1);
-  const l2 = new THREE.PointLight(new THREE.Color(e2.color), 3, 25);
-  l2.position.set(5, 6, -4);
-  scene.add(l2);
-  const topLight = new THREE.PointLight(0x7c3aed, 1.5, 30);
-  topLight.position.set(0, 10, 0);
-  scene.add(topLight);
-
-  // Ambient particles
-  const pCount = 150;
-  const pGeo = new THREE.BufferGeometry();
-  const pPos = new Float32Array(pCount * 3);
-  const pCol = new Float32Array(pCount * 3);
-  for (let i = 0; i < pCount; i++) {
-    pPos[i*3] = (Math.random() - 0.5) * 24;
-    pPos[i*3+1] = Math.random() * 12;
-    pPos[i*3+2] = (Math.random() - 0.5) * 24;
-    const c = new THREE.Color(Math.random() > 0.5 ? e1.color : e2.color);
-    pCol[i*3] = c.r; pCol[i*3+1] = c.g; pCol[i*3+2] = c.b;
-  }
-  pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
-  pGeo.setAttribute('color', new THREE.BufferAttribute(pCol, 3));
-  const pMat = new THREE.PointsMaterial({ size: 0.1, vertexColors: true, transparent: true, opacity: 0.5 });
-  const particles = new THREE.Points(pGeo, pMat);
-  scene.add(particles);
-
-  MC.demoP1Mesh = p1Group;
-  MC.demoP2Mesh = p2Group;
-  MC.demoScene = scene;
-
-  function animate() {
-    MC.demoAnimId = requestAnimationFrame(animate);
-    const t = Date.now() * 0.001;
-    // Idle float
-    p1Group.position.y = Math.sin(t * 1.5) * 0.15;
-    p2Group.position.y = Math.sin(t * 1.5 + 1) * 0.15;
-    // Ring pulse
-    ring.material.emissiveIntensity = 0.5 + Math.sin(t * 2) * 0.3;
-    // Particles drift up
-    const pos = particles.geometry.attributes.position;
-    for (let i = 0; i < pCount; i++) {
-      pos.array[i*3+1] += 0.008;
-      if (pos.array[i*3+1] > 12) pos.array[i*3+1] = 0;
-    }
-    pos.needsUpdate = true;
-    // Slow camera
-    camera.position.x = Math.sin(t * 0.15) * 3;
-    camera.position.z = 12 + Math.sin(t * 0.1) * 2;
-    camera.lookAt(0, 1.5, 0);
-    renderer.render(scene, camera);
-  }
-  animate();
-}
-
-function mcCreateFighter(color, scene) {
-  const group = new THREE.Group();
-  const mat = new THREE.MeshStandardMaterial({ color: new THREE.Color(color), emissive: new THREE.Color(color), emissiveIntensity: 0.4 });
-  // Body
-  const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.45, 1.2, 8, 16), mat);
-  body.position.y = 1.1;
-  group.add(body);
-  // Head
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.38, 16, 16), mat);
-  head.position.y = 2.2;
-  group.add(head);
-  // Eyes
-  const eyeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 1 });
-  const eyeGeo = new THREE.SphereGeometry(0.07, 8, 8);
-  const eye1 = new THREE.Mesh(eyeGeo, eyeMat);
-  eye1.position.set(-0.14, 2.25, 0.32);
-  group.add(eye1);
-  const eye2 = new THREE.Mesh(eyeGeo, eyeMat);
-  eye2.position.set(0.14, 2.25, 0.32);
-  group.add(eye2);
-  // Core
-  const coreMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: new THREE.Color(color), emissiveIntensity: 3 });
-  const core = new THREE.Mesh(new THREE.SphereGeometry(0.18, 8, 8), coreMat);
-  core.position.y = 1.3;
-  group.add(core);
-  // Arms
-  const armMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(color), emissive: new THREE.Color(color), emissiveIntensity: 0.2 });
-  const armGeo = new THREE.CapsuleGeometry(0.12, 0.7, 4, 8);
-  const arm1 = new THREE.Mesh(armGeo, armMat);
-  arm1.position.set(-0.65, 1.2, 0);
-  arm1.rotation.z = 0.3;
-  group.add(arm1);
-  const arm2 = new THREE.Mesh(armGeo, armMat);
-  arm2.position.set(0.65, 1.2, 0);
-  arm2.rotation.z = -0.3;
-  group.add(arm2);
-  return group;
-}
-
-function mcAddAuraParticles(scene, x, color) {
-  const count = 30;
-  const geo = new THREE.BufferGeometry();
-  const pos = new Float32Array(count * 3);
-  for (let i = 0; i < count; i++) {
-    pos[i*3] = x + (Math.random() - 0.5) * 2;
-    pos[i*3+1] = Math.random() * 3;
-    pos[i*3+2] = (Math.random() - 0.5) * 2;
-  }
-  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  const mat = new THREE.PointsMaterial({ size: 0.15, color: new THREE.Color(color), transparent: true, opacity: 0.7 });
-  scene.add(new THREE.Points(geo, mat));
-}
-
-function mcDemoAttackAnim(who) {
-  const mesh = who === 'p1' ? MC.demoP1Mesh : MC.demoP2Mesh;
-  const target = who === 'p1' ? MC.demoP2Mesh : MC.demoP1Mesh;
-  if (!mesh || !target) return;
-  const origX = mesh.position.x;
-  const dir = who === 'p1' ? 1 : -1;
-  let step = 0;
-  const anim = setInterval(() => {
-    step++;
-    if (step <= 8) mesh.position.x += dir * 0.3;
-    else if (step === 9) {
-      target.children.forEach(c => { if (c.material) { c.material.emissiveIntensity = 3; } });
-      // Shake target
-      target.position.z = (Math.random() - 0.5) * 0.4;
-    }
-    else if (step <= 18) mesh.position.x -= dir * 0.3;
-    else {
-      clearInterval(anim);
-      mesh.position.x = origX;
-      target.position.z = 0;
-      target.children.forEach(c => { if (c.material && c.material.emissiveIntensity > 1) c.material.emissiveIntensity = 0.4; });
-    }
-  }, 35);
-}
-
-function mcDemoSpecialAnim() {
-  if (!MC.demoScene) return;
-  const flash = new THREE.PointLight(0xffffff, 15, 40);
-  flash.position.set(0, 5, 0);
-  MC.demoScene.add(flash);
-  let intensity = 15;
-  const fade = setInterval(() => {
-    intensity -= 0.7;
-    flash.intensity = Math.max(0, intensity);
-    if (intensity <= 0) { clearInterval(fade); MC.demoScene.remove(flash); }
-  }, 30);
-}
+// Stubs for removed 3D demo (prevent errors)
+function mcInitDemo3D() {}
+function mcDemoAttackAnim() {}
+function mcDemoSpecialAnim() {}
 
 // ──── ELEMENT SELECTION ────
 function mcSelectElement(el) {
@@ -4426,7 +4221,6 @@ function mcAwaken() {
 function mcShowMode() {
   ['mc-select','mc-battle','mc-result'].forEach(id => document.getElementById(id).style.display = 'none');
   document.getElementById('mc-mode').style.display = 'block';
-  document.getElementById('arena3dContainer').style.display = 'none';
   const e = MC.elements[MC.player.element];
   document.getElementById('mcPlayerIcon').textContent = e.icon;
   document.getElementById('mcPlayerName').textContent = MC.player.name;
@@ -4462,8 +4256,6 @@ function mcStartBattle(mode) {
   ['mc-select','mc-mode','mc-result'].forEach(id => document.getElementById(id).style.display = 'none');
   document.getElementById('mc-battle').style.display = 'block';
   // Init 3D arena
-  document.getElementById('arena3dContainer').style.display = 'block';
-  mcInit3DArena();
 
   const pe = MC.elements[MC.player.element];
   const ee = MC.elements[MC.enemy.element];
@@ -4518,6 +4310,11 @@ function mcRunBattleMode(mode) {
   if (mode === 'reflex') mcReflexClash(area);
   else if (mode === 'siege') mcMindSiege(area);
   else if (mode === 'chrono') mcChronoTrial(area);
+  else if (mode === 'riddle') mcRiddleDuel(area);
+  else if (mode === 'memory') mcMemoryMatrix(area);
+  else if (mode === 'wordchain') mcWordChain(area);
+  else if (mode === 'logic') mcLogicLock(area);
+  else if (mode === 'sequence') mcSequenceBreak(area);
 }
 
 // ─── REFLEX CLASH ───
@@ -4805,6 +4602,409 @@ function mcChronoDone(score) {
   mcAfterRound();
 }
 
+// ─── RIDDLE DUEL ───
+function mcRiddleDuel(area) {
+  const riddles = [
+    { q: 'I have cities, but no houses. I have mountains, but no trees. I have water, but no fish. What am I?', a: 'map', hints: ['Think flat','You carry me','Navigation'] },
+    { q: 'What has keys but no locks, space but no room, and you can enter but can\'t go inside?', a: 'keyboard', hints: ['Technology','You touch me daily','Typing'] },
+    { q: 'I speak without a mouth and hear without ears. I have no body, but I come alive with wind. What am I?', a: 'echo', hints: ['Sound','Mountains','Repeat'] },
+    { q: 'The more you take, the more you leave behind. What am I?', a: 'footsteps', hints: ['Walking','Ground','Trail'] },
+    { q: 'I can be cracked, made, told, and played. What am I?', a: 'joke', hints: ['Funny','Laughter','Words'] },
+    { q: 'What has a head and a tail but no body?', a: 'coin', hints: ['Money','Metal','Flip'] },
+    { q: 'I have hands but can\'t clap. What am I?', a: 'clock', hints: ['Time','Ticking','Wall'] },
+    { q: 'What gets wetter the more it dries?', a: 'towel', hints: ['Bathroom','Fabric','After shower'] },
+    { q: 'I fly without wings. I cry without eyes. Wherever I go, darkness follows me. What am I?', a: 'cloud', hints: ['Sky','Rain','Weather'] },
+    { q: 'What can travel around the world while staying in a corner?', a: 'stamp', hints: ['Post','Mail','Small'] },
+    { q: 'I have teeth but cannot bite. What am I?', a: 'comb', hints: ['Hair','Grooming','Plastic'] },
+    { q: 'The person who makes it, sells it. The person who buys it never uses it. The person who uses it never knows they\'re using it. What is it?', a: 'coffin', hints: ['Death','Wood','Final'] },
+  ];
+  const picked = riddles.sort(() => Math.random() - 0.5).slice(0, 3);
+  let round = 0, score = 0;
+
+  function showRiddle() {
+    if (round >= picked.length) { mcRiddleDone(score); return; }
+    const r = picked[round];
+    let hintsUsed = 0;
+    area.innerHTML = `
+      <div style="text-align:center;margin-bottom:12px">
+        <span style="color:var(--muted)">Riddle ${round+1}/${picked.length}</span>
+        <span style="margin-left:12px;color:var(--gold)">Score: ${score}</span>
+      </div>
+      <div style="background:linear-gradient(135deg,rgba(124,58,237,0.1),rgba(236,72,153,0.1));border:1px solid var(--accent);border-radius:var(--radius);padding:20px;margin:12px 0;font-size:1.1rem;line-height:1.7;text-align:center">
+        "${r.q}"
+      </div>
+      <div style="text-align:center;margin:8px 0">
+        <button class="btn btn-outline" id="riddleHintBtn" onclick="mcRiddleHint()" style="font-size:0.8rem">Hint (${3 - hintsUsed} left)</button>
+        <div id="riddleHints" style="color:var(--gold);font-size:0.85rem;margin-top:6px"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <input type="text" id="riddleAnswer" style="flex:1;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:1rem" placeholder="Your answer..." onkeydown="if(event.key==='Enter')mcRiddleSubmit()">
+        <button class="btn btn-primary" onclick="mcRiddleSubmit()">Answer</button>
+      </div>
+      <div id="riddleFeedback" style="margin-top:10px;text-align:center;font-size:0.9rem"></div>
+    `;
+    document.getElementById('riddleAnswer').focus();
+
+    window.mcRiddleHint = function() {
+      if (hintsUsed >= 3) return;
+      const hintsDiv = document.getElementById('riddleHints');
+      hintsDiv.textContent = (hintsDiv.textContent ? hintsDiv.textContent + ' | ' : '') + r.hints[hintsUsed];
+      hintsUsed++;
+      document.getElementById('riddleHintBtn').textContent = `Hint (${3 - hintsUsed} left)`;
+    };
+
+    window.mcRiddleSubmit = function() {
+      const ans = document.getElementById('riddleAnswer').value.trim().toLowerCase();
+      const fb = document.getElementById('riddleFeedback');
+      if (ans.includes(r.a) || r.a.includes(ans)) {
+        const pts = Math.max(10, 30 - hintsUsed * 7);
+        score += pts;
+        fb.innerHTML = `<span style="color:var(--green)">\u2705 Correct! +${pts} points</span>`;
+        mcLog(`Riddle ${round+1}: Solved! +${pts}`, 'info');
+      } else {
+        fb.innerHTML = `<span style="color:var(--red)">\u274C Wrong! Answer: ${r.a}</span>`;
+        mcLog(`Riddle ${round+1}: Wrong — answer was "${r.a}"`, 'dmg');
+      }
+      round++;
+      setTimeout(showRiddle, 1500);
+    };
+  }
+  mcVoice('Riddle Duel. Think carefully, use hints if you need them.');
+  showRiddle();
+}
+
+function mcRiddleDone(score) {
+  const won = score >= 40;
+  const dmg = mcCalcDamage(won ? MC.player : MC.enemy, won ? MC.enemy : MC.player);
+  if (won) {
+    MC.enemy.hp -= dmg.dmg;
+    mcLog(`Riddle victory! ${dmg.dmg} damage dealt`, 'info');
+    MC.specialCharges = Math.min(MC.maxSpecial, MC.specialCharges + 1);
+  } else {
+    MC.player.hp -= dmg.dmg;
+    mcLog(`Riddle defeat. ${dmg.dmg} damage taken`, 'dmg');
+  }
+  mcUpdateHp();
+  mcAfterRound();
+}
+
+// ─── MEMORY MATRIX ───
+function mcMemoryMatrix(area) {
+  const gridSize = 4;
+  const patternCount = 5 + Math.floor(Math.random() * 3);
+  const pattern = new Set();
+  while (pattern.size < patternCount) pattern.add(Math.floor(Math.random() * gridSize * gridSize));
+
+  let phase = 'show', clicks = new Set(), score = 0;
+
+  function render() {
+    area.innerHTML = `
+      <div style="text-align:center;margin-bottom:12px">
+        <span style="color:var(--muted)">${phase === 'show' ? 'Memorize the pattern!' : 'Tap the cells you remember!'}</span>
+        <span style="margin-left:12px;color:var(--gold)">${phase === 'input' ? `${clicks.size}/${patternCount} selected` : `${patternCount} cells to remember`}</span>
+      </div>
+      <div class="siege-board" id="memoryBoard"></div>
+      ${phase === 'input' ? '<div style="text-align:center;margin-top:12px"><button class="btn btn-primary" onclick="mcMemoryCheck()">Lock In</button></div>' : ''}
+    `;
+    const board = document.getElementById('memoryBoard');
+    for (let i = 0; i < gridSize * gridSize; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'siege-cell';
+      if (phase === 'show' && pattern.has(i)) {
+        cell.style.background = 'rgba(124,58,237,0.4)';
+        cell.style.borderColor = '#7c3aed';
+        cell.textContent = '\u2B50';
+      }
+      if (phase === 'input') {
+        if (clicks.has(i)) { cell.style.background = 'rgba(59,130,246,0.3)'; cell.style.borderColor = '#3b82f6'; cell.textContent = '\u2714'; }
+        cell.onclick = () => {
+          if (clicks.has(i)) clicks.delete(i); else if (clicks.size < patternCount) clicks.add(i);
+          render();
+        };
+      }
+      board.appendChild(cell);
+    }
+  }
+
+  mcVoice('Memory Matrix. Remember the highlighted cells.');
+  render();
+
+  // Show pattern for 3 seconds, then switch to input
+  setTimeout(() => {
+    if (!MC.battleActive) return;
+    phase = 'input';
+    render();
+  }, 3000);
+
+  window.mcMemoryCheck = function() {
+    let correct = 0;
+    pattern.forEach(i => { if (clicks.has(i)) correct++; });
+    score = Math.round((correct / patternCount) * 100);
+    mcLog(`Memory: ${correct}/${patternCount} correct (${score}%)`, correct >= patternCount * 0.6 ? 'info' : 'dmg');
+
+    // Show result
+    const board = document.getElementById('memoryBoard');
+    if (board) {
+      board.innerHTML = '';
+      for (let i = 0; i < gridSize * gridSize; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'siege-cell';
+        if (pattern.has(i) && clicks.has(i)) { cell.style.background = 'rgba(16,185,129,0.3)'; cell.style.borderColor = '#10b981'; cell.textContent = '\u2705'; }
+        else if (pattern.has(i)) { cell.style.background = 'rgba(239,68,68,0.3)'; cell.style.borderColor = '#ef4444'; cell.textContent = '\u274C'; }
+        else if (clicks.has(i)) { cell.style.background = 'rgba(245,158,11,0.2)'; cell.style.borderColor = '#f59e0b'; cell.textContent = '\u26A0'; }
+        board.appendChild(cell);
+      }
+    }
+
+    setTimeout(() => {
+      const won = score >= 60;
+      const dmg = mcCalcDamage(won ? MC.player : MC.enemy, won ? MC.enemy : MC.player);
+      if (won) { MC.enemy.hp -= dmg.dmg; mcLog(`Memory win! ${dmg.dmg} damage`, 'info'); MC.specialCharges = Math.min(MC.maxSpecial, MC.specialCharges + 1); }
+      else { MC.player.hp -= dmg.dmg; mcLog(`Memory fail. ${dmg.dmg} damage taken`, 'dmg'); }
+      mcUpdateHp();
+      mcAfterRound();
+    }, 1500);
+  };
+}
+
+// ─── WORD CHAIN ───
+function mcWordChain(area) {
+  const wordSets = [
+    { scrambled: 'DMIN', answer: 'MIND', hint: 'Think with it' },
+    { scrambled: 'EIRF', answer: 'FIRE', hint: 'Element of Ignis' },
+    { scrambled: 'ARWTE', answer: 'WATER', hint: 'Element of Aqua' },
+    { scrambled: 'TRHEA', answer: 'EARTH', hint: 'Element of Terra' },
+    { scrambled: 'ILCOG', answer: 'LOGIC', hint: 'Realm of reasoning' },
+    { scrambled: 'AREAN', answer: 'ARENA', hint: 'Where battles happen' },
+    { scrambled: 'ZPULZE', answer: 'PUZZLE', hint: 'A brain teaser' },
+    { scrambled: 'ABTTL', answer: 'BATTLE', hint: 'A fight or clash' },
+    { scrambled: 'EYNRGE', answer: 'ENERGY', hint: 'Power source' },
+    { scrambled: 'SGHTRTEN', answer: 'STRENGTH', hint: 'Physical power' },
+    { scrambled: 'SWIODM', answer: 'WISDOM', hint: 'Knowledge + experience' },
+    { scrambled: 'COUARGE', answer: 'COURAGE', hint: 'Bravery in danger' },
+    { scrambled: 'ISPRITI', answer: 'SPIRIT', hint: 'Soul or ghost' },
+    { scrambled: 'HROEE', answer: 'HEROE', hint: 'One who saves others' },
+    { scrambled: 'SHEIDL', answer: 'SHIELD', hint: 'Protection device' },
+  ];
+  const picked = wordSets.sort(() => Math.random() - 0.5).slice(0, 5);
+  let round = 0, score = 0, timeLeft = 45;
+
+  function showWord() {
+    if (round >= picked.length || timeLeft <= 0) { mcWordDone(score); return; }
+    const w = picked[round];
+    area.innerHTML = `
+      <div style="display:flex;justify-content:space-between;margin-bottom:12px">
+        <span style="color:var(--muted)">Word ${round+1}/${picked.length}</span>
+        <span style="color:${timeLeft<15?'var(--red)':'var(--gold)'};font-weight:700">${timeLeft}s</span>
+        <span style="color:var(--green)">Score: ${score}</span>
+      </div>
+      <div style="text-align:center;margin:20px 0">
+        <div style="font-size:2.5rem;letter-spacing:12px;font-weight:700;color:var(--accent-light)">${w.scrambled.split('').join(' ')}</div>
+        <div style="color:var(--muted);font-size:0.8rem;margin-top:8px">Hint: ${w.hint}</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="wordAnswer" style="flex:1;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:1.2rem;text-transform:uppercase;letter-spacing:3px;text-align:center" placeholder="UNSCRAMBLE..." maxlength="${w.answer.length + 2}" onkeydown="if(event.key==='Enter')mcWordSubmit()">
+        <button class="btn btn-primary" onclick="mcWordSubmit()">Go</button>
+      </div>
+    `;
+    document.getElementById('wordAnswer').focus();
+
+    window.mcWordSubmit = function() {
+      const ans = document.getElementById('wordAnswer').value.trim().toUpperCase();
+      if (ans === w.answer.toUpperCase() || ans === w.answer.replace(/E$/, '').toUpperCase()) {
+        score += 20;
+        mcLog(`Word ${round+1}: "${w.answer}" Correct! +20`, 'info');
+      } else {
+        mcLog(`Word ${round+1}: Wrong! Was "${w.answer}"`, 'dmg');
+      }
+      round++;
+      showWord();
+    };
+  }
+
+  mcVoice('Word Chain. Unscramble the letters before time runs out.');
+  showWord();
+  const timer = setInterval(() => {
+    timeLeft--;
+    if (timeLeft <= 0 || !MC.battleActive) { clearInterval(timer); mcWordDone(score); }
+  }, 1000);
+}
+
+function mcWordDone(score) {
+  const won = score >= 40;
+  const dmg = mcCalcDamage(won ? MC.player : MC.enemy, won ? MC.enemy : MC.player);
+  if (won) { MC.enemy.hp -= dmg.dmg; mcLog(`Word Chain win! ${dmg.dmg} damage`, 'info'); MC.specialCharges = Math.min(MC.maxSpecial, MC.specialCharges + 1); }
+  else { MC.player.hp -= dmg.dmg; mcLog(`Word Chain fail. ${dmg.dmg} taken`, 'dmg'); }
+  mcUpdateHp();
+  mcAfterRound();
+}
+
+// ─── LOGIC LOCK ───
+function mcLogicLock(area) {
+  // Generate a 4-digit code and give clues
+  const code = [];
+  for (let i = 0; i < 4; i++) code.push(Math.floor(Math.random() * 6) + 1);
+  let attempts = 0;
+  const maxAttempts = 6;
+  const history = [];
+
+  function render() {
+    area.innerHTML = `
+      <div style="text-align:center;margin-bottom:12px">
+        <span style="color:var(--muted)">Crack the 4-digit code (digits 1-6)</span>
+        <span style="margin-left:12px;color:var(--gold)">Attempts: ${attempts}/${maxAttempts}</span>
+      </div>
+      <div id="logicHistory" style="margin:12px 0">${history.map(h => `
+        <div style="display:flex;gap:8px;justify-content:center;margin:6px 0">
+          ${h.guess.map((g, i) => {
+            const correct = g === code[i];
+            const inCode = !correct && code.includes(g);
+            return `<div style="width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.2rem;
+              background:${correct ? 'rgba(16,185,129,0.3)' : inCode ? 'rgba(245,158,11,0.3)' : 'rgba(255,255,255,0.05)'};
+              border:2px solid ${correct ? '#10b981' : inCode ? '#f59e0b' : 'var(--border)'};
+              color:${correct ? '#10b981' : inCode ? '#f59e0b' : 'var(--muted)'}">${g}</div>`;
+          }).join('')}
+          <div style="display:flex;align-items:center;font-size:0.8rem;color:var(--muted);margin-left:8px">
+            <span style="color:#10b981">${h.exact}\u2713</span>&nbsp;
+            <span style="color:#f59e0b">${h.partial}\u25CB</span>
+          </div>
+        </div>
+      `).join('')}</div>
+      <div style="display:flex;gap:6px;justify-content:center;margin:12px 0">
+        ${[1,2,3,4,5,6].map(n => `<button class="btn btn-outline" style="width:40px;height:40px;font-size:1.2rem;padding:0" onclick="mcLogicAdd(${n})">${n}</button>`).join('')}
+      </div>
+      <div style="display:flex;gap:8px;justify-content:center">
+        <div style="display:flex;gap:6px" id="logicInput">${MC._logicInput ? MC._logicInput.map(d => `<div style="width:36px;height:36px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700">${d}</div>`).join('') : ''}</div>
+        <button class="btn btn-outline" onclick="mcLogicClear()" style="font-size:0.8rem">Clear</button>
+        <button class="btn btn-primary" onclick="mcLogicGuess()" ${(MC._logicInput||[]).length < 4 ? 'disabled' : ''}>Guess</button>
+      </div>
+      <div style="text-align:center;margin-top:8px;font-size:0.75rem;color:var(--muted)">\u2713 = correct position | \u25CB = right digit, wrong position</div>
+    `;
+  }
+
+  MC._logicInput = [];
+  window.mcLogicAdd = function(n) {
+    if ((MC._logicInput || []).length >= 4) return;
+    MC._logicInput.push(n);
+    render();
+  };
+  window.mcLogicClear = function() { MC._logicInput = []; render(); };
+  window.mcLogicGuess = function() {
+    if ((MC._logicInput || []).length < 4) return;
+    const guess = [...MC._logicInput];
+    let exact = 0, partial = 0;
+    const codeCopy = [...code], guessCopy = [...guess];
+    // Count exact matches
+    for (let i = 0; i < 4; i++) {
+      if (guess[i] === code[i]) { exact++; codeCopy[i] = -1; guessCopy[i] = -2; }
+    }
+    // Count partial matches
+    for (let i = 0; i < 4; i++) {
+      if (guessCopy[i] === -2) continue;
+      const idx = codeCopy.indexOf(guessCopy[i]);
+      if (idx >= 0) { partial++; codeCopy[idx] = -1; }
+    }
+    history.push({ guess, exact, partial });
+    attempts++;
+    MC._logicInput = [];
+
+    if (exact === 4) {
+      mcLog(`Logic Lock: Cracked in ${attempts} attempts!`, 'crit');
+      mcVoice('Code cracked!');
+      const won = true;
+      const dmg = mcCalcDamage(MC.player, MC.enemy);
+      const bonus = Math.max(1, 7 - attempts);
+      MC.enemy.hp -= dmg.dmg + bonus * 3;
+      mcLog(`Logic win! ${dmg.dmg + bonus * 3} damage (speed bonus: ${bonus})`, 'info');
+      MC.specialCharges = Math.min(MC.maxSpecial, MC.specialCharges + 1);
+      mcUpdateHp();
+      setTimeout(mcAfterRound, 1000);
+      return;
+    }
+    if (attempts >= maxAttempts) {
+      mcLog(`Logic Lock: Failed! Code was ${code.join('')}`, 'dmg');
+      const dmg = mcCalcDamage(MC.enemy, MC.player);
+      MC.player.hp -= dmg.dmg;
+      mcLog(`Logic fail. ${dmg.dmg} damage taken`, 'dmg');
+      mcUpdateHp();
+      setTimeout(mcAfterRound, 1000);
+      return;
+    }
+    render();
+  };
+
+  mcVoice('Logic Lock. Crack the four digit code. Green means correct position, yellow means wrong position.');
+  render();
+}
+
+// ─── SEQUENCE BREAK ───
+function mcSequenceBreak(area) {
+  const sequences = [
+    { seq: [2, 4, 8, 16], next: 32, rule: 'x2 each time' },
+    { seq: [1, 1, 2, 3, 5], next: 8, rule: 'Fibonacci' },
+    { seq: [3, 6, 9, 12], next: 15, rule: '+3 each time' },
+    { seq: [1, 4, 9, 16], next: 25, rule: 'Perfect squares' },
+    { seq: [2, 6, 18, 54], next: 162, rule: 'x3 each time' },
+    { seq: [100, 90, 81, 73], next: 66, rule: '-10, -9, -8, -7...' },
+    { seq: [1, 3, 7, 15], next: 31, rule: 'x2+1 each time' },
+    { seq: [0, 1, 3, 6, 10], next: 15, rule: 'Triangle numbers' },
+    { seq: [2, 3, 5, 7, 11], next: 13, rule: 'Prime numbers' },
+    { seq: [1, 8, 27, 64], next: 125, rule: 'Perfect cubes' },
+    { seq: [5, 10, 20, 40], next: 80, rule: 'x2 each time' },
+    { seq: [1, 2, 4, 7, 11], next: 16, rule: '+1, +2, +3, +4, +5' },
+  ];
+  const picked = sequences.sort(() => Math.random() - 0.5).slice(0, 4);
+  let round = 0, score = 0;
+
+  function showSeq() {
+    if (round >= picked.length) { mcSeqDone(score); return; }
+    const s = picked[round];
+    area.innerHTML = `
+      <div style="text-align:center;margin-bottom:12px">
+        <span style="color:var(--muted)">Sequence ${round+1}/${picked.length}</span>
+        <span style="margin-left:12px;color:var(--gold)">Score: ${score}</span>
+      </div>
+      <div style="display:flex;gap:12px;justify-content:center;margin:24px 0;flex-wrap:wrap">
+        ${s.seq.map(n => `<div style="width:50px;height:50px;border-radius:10px;background:var(--card);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:700">${n}</div>`).join('')}
+        <div style="width:50px;height:50px;border-radius:10px;background:rgba(245,158,11,0.1);border:2px dashed var(--gold);display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--gold)">?</div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:center">
+        <input type="number" id="seqAnswer" style="width:100px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:1.3rem;text-align:center" placeholder="?" onkeydown="if(event.key==='Enter')mcSeqSubmit()">
+        <button class="btn btn-primary" onclick="mcSeqSubmit()">Check</button>
+      </div>
+      <div id="seqFeedback" style="text-align:center;margin-top:10px;font-size:0.9rem"></div>
+    `;
+    document.getElementById('seqAnswer').focus();
+
+    window.mcSeqSubmit = function() {
+      const ans = parseInt(document.getElementById('seqAnswer').value);
+      const fb = document.getElementById('seqFeedback');
+      if (ans === s.next) {
+        score += 25;
+        fb.innerHTML = `<span style="color:var(--green)">\u2705 Correct! Pattern: ${s.rule} &nbsp; +25</span>`;
+        mcLog(`Sequence ${round+1}: Correct! (${s.rule})`, 'info');
+      } else {
+        fb.innerHTML = `<span style="color:var(--red)">\u274C Answer: ${s.next} (${s.rule})</span>`;
+        mcLog(`Sequence ${round+1}: Wrong. Answer: ${s.next}`, 'dmg');
+      }
+      round++;
+      setTimeout(showSeq, 1500);
+    };
+  }
+
+  mcVoice('Sequence Break. Find the next number in the pattern.');
+  showSeq();
+}
+
+function mcSeqDone(score) {
+  const won = score >= 50;
+  const dmg = mcCalcDamage(won ? MC.player : MC.enemy, won ? MC.enemy : MC.player);
+  if (won) { MC.enemy.hp -= dmg.dmg; mcLog(`Sequence win! ${dmg.dmg} damage`, 'info'); MC.specialCharges = Math.min(MC.maxSpecial, MC.specialCharges + 1); }
+  else { MC.player.hp -= dmg.dmg; mcLog(`Sequence fail. ${dmg.dmg} taken`, 'dmg'); }
+  mcUpdateHp();
+  mcAfterRound();
+}
+
 // ──── AFTER ROUND ────
 function mcAfterRound() {
   if (MC.enemy.hp <= 0) { mcBattleEnd(true); return; }
@@ -4868,8 +5068,7 @@ function mcBattleEnd(won) {
   setTimeout(() => {
     ['mc-select','mc-mode','mc-battle'].forEach(id => document.getElementById(id).style.display = 'none');
     document.getElementById('mc-result').style.display = 'block';
-    document.getElementById('arena3dContainer').style.display = 'none';
-    document.getElementById('mcResultIcon').textContent = won ? '\u{1F3C6}' : '\u{1F480}';
+      document.getElementById('mcResultIcon').textContent = won ? '\u{1F3C6}' : '\u{1F480}';
     document.getElementById('mcResultTitle').textContent = won ? 'VICTORY!' : 'DEFEAT';
     document.getElementById('mcResultTitle').style.color = won ? '#f59e0b' : '#ef4444';
     document.getElementById('mcResultSub').textContent = won
@@ -4887,106 +5086,13 @@ function mcBattleEnd(won) {
   }, 1200);
 }
 
-// ╔══════════════════════════════════════════════════════════════════╗
-// ║                    PROCEDURAL MUSIC SYSTEM                      ║
-// ╚══════════════════════════════════════════════════════════════════╝
+// Stubs for removed systems (prevent errors from existing calls)
+function mcStartMusic() {}
+function mcStopMusic() {}
+function mc3DAttackAnim() {}
+function mc3DSpecialAnim() {}
 
-function mcInitAudio() {
-  if (MC.musicCtx) return;
-  MC.musicCtx = new (window.AudioContext || window.webkitAudioContext)();
-  MC.musicGain = MC.musicCtx.createGain();
-  MC.musicGain.gain.value = 0.4;
-  MC.musicGain.connect(MC.musicCtx.destination);
-  // Build visualizer bars
-  const viz = document.getElementById('mcMusicViz');
-  for (let i = 0; i < 8; i++) {
-    const bar = document.createElement('div');
-    bar.className = 'bar';
-    bar.style.height = (4 + Math.random() * 12) + 'px';
-    bar.style.animationDelay = (i * 0.1) + 's';
-    viz.appendChild(bar);
-  }
-}
-
-function mcStopMusic() {
-  MC.musicNodes.forEach(n => { try { n.stop(); } catch(e) {} });
-  MC.musicNodes = [];
-  MC.musicPlaying = false;
-}
-
-function mcStartMusic(track) {
-  mcInitAudio();
-  mcStopMusic();
-  MC.musicPlaying = true;
-  document.getElementById('mcMusicBar').classList.add('active');
-  document.getElementById('mcMusicToggle').textContent = '\u23F8';
-
-  const ctx = MC.musicCtx;
-  const gain = MC.musicGain;
-  const tracks = {
-    menu:    { notes: [261.6,329.6,392.0,523.3,392.0,329.6], tempo: 0.6, wave: 'sine', filterFreq: 800 },
-    battle:  { notes: [196.0,233.1,261.6,293.7,349.2,293.7,261.6,233.1], tempo: 0.25, wave: 'sawtooth', filterFreq: 2000 },
-    victory: { notes: [523.3,659.3,784.0,1047,784.0,659.3,523.3,659.3], tempo: 0.35, wave: 'triangle', filterFreq: 3000 },
-    defeat:  { notes: [196.0,185.0,174.6,164.8,155.6,146.8], tempo: 0.7, wave: 'sine', filterFreq: 400 },
-  };
-  const t = tracks[track] || tracks.menu;
-  document.getElementById('mcTrackName').textContent = track.charAt(0).toUpperCase() + track.slice(1) + ' Theme';
-
-  function playLoop() {
-    if (!MC.musicPlaying) return;
-    const now = ctx.currentTime;
-    t.notes.forEach((freq, i) => {
-      const osc = ctx.createOscillator();
-      const noteGain = ctx.createGain();
-      const filter = ctx.createBiquadFilter();
-      filter.type = 'lowpass';
-      filter.frequency.value = t.filterFreq;
-      osc.type = t.wave;
-      osc.frequency.value = freq;
-      noteGain.gain.setValueAtTime(0, now + i * t.tempo);
-      noteGain.gain.linearRampToValueAtTime(0.15, now + i * t.tempo + 0.05);
-      noteGain.gain.linearRampToValueAtTime(0, now + i * t.tempo + t.tempo * 0.9);
-      osc.connect(filter);
-      filter.connect(noteGain);
-      noteGain.connect(gain);
-      osc.start(now + i * t.tempo);
-      osc.stop(now + i * t.tempo + t.tempo);
-      MC.musicNodes.push(osc);
-    });
-    // Bass drone
-    const bass = ctx.createOscillator();
-    const bassGain = ctx.createGain();
-    bass.type = 'sine';
-    bass.frequency.value = t.notes[0] / 2;
-    bassGain.gain.value = 0.08;
-    bass.connect(bassGain);
-    bassGain.connect(gain);
-    bass.start(now);
-    bass.stop(now + t.notes.length * t.tempo);
-    MC.musicNodes.push(bass);
-    // Loop
-    setTimeout(playLoop, t.notes.length * t.tempo * 1000);
-  }
-  playLoop();
-}
-
-function mcToggleMusic() {
-  if (MC.musicPlaying) {
-    mcStopMusic();
-    document.getElementById('mcMusicToggle').textContent = '\u25B6';
-  } else {
-    mcStartMusic('menu');
-  }
-}
-
-function mcSetVolume(val) {
-  if (MC.musicGain) MC.musicGain.gain.value = val / 100;
-}
-
-// ╔══════════════════════════════════════════════════════════════════╗
-// ║                      VOICE INTERACTIONS                         ║
-// ╚══════════════════════════════════════════════════════════════════╝
-
+// ──── VOICE INTERACTIONS ────
 function mcVoice(text) {
   if (!text || !MC.voiceSynth) return;
   try {
@@ -4995,7 +5101,6 @@ function mcVoice(text) {
     utter.rate = 1.0;
     utter.pitch = 1.1;
     utter.volume = 0.7;
-    // Try to find a good English voice
     const voices = MC.voiceSynth.getVoices();
     const eng = voices.find(v => v.lang.startsWith('en') && v.name.includes('Female'))
              || voices.find(v => v.lang.startsWith('en'))
@@ -5003,175 +5108,6 @@ function mcVoice(text) {
     if (eng) utter.voice = eng;
     MC.voiceSynth.speak(utter);
   } catch(e) {}
-}
-
-// ╔══════════════════════════════════════════════════════════════════╗
-// ║                    SIMPLE 3D BATTLE ARENA                       ║
-// ╚══════════════════════════════════════════════════════════════════╝
-
-let arena3D = { scene: null, camera: null, renderer: null, animId: null, playerMesh: null, enemyMesh: null };
-
-function mcInit3DArena() {
-  if (!window.THREE) return;
-  const container = document.getElementById('arena3dContainer');
-  const canvas = document.getElementById('arena3dCanvas');
-  if (arena3D.animId) cancelAnimationFrame(arena3D.animId);
-
-  const w = container.clientWidth, h = 350;
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x0a0a1a);
-  scene.fog = new THREE.Fog(0x0a0a1a, 20, 50);
-
-  const camera = new THREE.PerspectiveCamera(50, w / h, 0.1, 100);
-  camera.position.set(0, 6, 12);
-  camera.lookAt(0, 1, 0);
-
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-  renderer.setSize(w, h);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-  // Arena floor — hexagonal
-  const floorGeo = new THREE.CylinderGeometry(8, 8, 0.3, 6);
-  const pe = MC.elements[MC.player.element];
-  const ee = MC.elements[MC.enemy.element];
-  const floorMat = new THREE.MeshStandardMaterial({ color: 0x1a1a2e, metalness: 0.3, roughness: 0.8 });
-  const floor = new THREE.Mesh(floorGeo, floorMat);
-  floor.position.y = -0.15;
-  scene.add(floor);
-
-  // Arena ring
-  const ringGeo = new THREE.TorusGeometry(8, 0.15, 8, 32);
-  const ringMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(pe.color), emissive: new THREE.Color(pe.color), emissiveIntensity: 0.5 });
-  const ring = new THREE.Mesh(ringGeo, ringMat);
-  ring.rotation.x = Math.PI / 2;
-  ring.position.y = 0.1;
-  scene.add(ring);
-
-  // Player character
-  const playerGroup = new THREE.Group();
-  const bodyGeo = new THREE.CapsuleGeometry(0.4, 1, 8, 16);
-  const bodyMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(pe.color), emissive: new THREE.Color(pe.color), emissiveIntensity: 0.3 });
-  const body = new THREE.Mesh(bodyGeo, bodyMat);
-  body.position.y = 1;
-  playerGroup.add(body);
-  const headGeo = new THREE.SphereGeometry(0.35, 16, 16);
-  const head = new THREE.Mesh(headGeo, bodyMat);
-  head.position.y = 2;
-  playerGroup.add(head);
-  // Core glow
-  const coreGeo = new THREE.SphereGeometry(0.15, 8, 8);
-  const coreMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: new THREE.Color(pe.color), emissiveIntensity: 2 });
-  const core = new THREE.Mesh(coreGeo, coreMat);
-  core.position.y = 1.2;
-  playerGroup.add(core);
-  playerGroup.position.set(-3, 0, 0);
-  scene.add(playerGroup);
-
-  // Enemy character
-  const enemyGroup = new THREE.Group();
-  const eBodyMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(ee.color), emissive: new THREE.Color(ee.color), emissiveIntensity: 0.3 });
-  const eBody = new THREE.Mesh(bodyGeo, eBodyMat);
-  eBody.position.y = 1;
-  enemyGroup.add(eBody);
-  const eHead = new THREE.Mesh(headGeo, eBodyMat);
-  eHead.position.y = 2;
-  enemyGroup.add(eHead);
-  const eCoreMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: new THREE.Color(ee.color), emissiveIntensity: 2 });
-  const eCore = new THREE.Mesh(coreGeo, eCoreMat);
-  eCore.position.y = 1.2;
-  enemyGroup.add(eCore);
-  enemyGroup.position.set(3, 0, 0);
-  enemyGroup.rotation.y = Math.PI;
-  scene.add(enemyGroup);
-
-  // Lights
-  scene.add(new THREE.AmbientLight(0x404060, 0.5));
-  const spot1 = new THREE.PointLight(new THREE.Color(pe.color), 2, 20);
-  spot1.position.set(-4, 5, 3);
-  scene.add(spot1);
-  const spot2 = new THREE.PointLight(new THREE.Color(ee.color), 2, 20);
-  spot2.position.set(4, 5, -3);
-  scene.add(spot2);
-
-  // Particles
-  const particleCount = 100;
-  const pGeo = new THREE.BufferGeometry();
-  const pPos = new Float32Array(particleCount * 3);
-  for (let i = 0; i < particleCount; i++) {
-    pPos[i * 3] = (Math.random() - 0.5) * 20;
-    pPos[i * 3 + 1] = Math.random() * 10;
-    pPos[i * 3 + 2] = (Math.random() - 0.5) * 20;
-  }
-  pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
-  const pMat = new THREE.PointsMaterial({ size: 0.08, color: 0x7c3aed, transparent: true, opacity: 0.6 });
-  const particles = new THREE.Points(pGeo, pMat);
-  scene.add(particles);
-
-  arena3D = { scene, camera, renderer, animId: null, playerMesh: playerGroup, enemyMesh: enemyGroup, particles, core, eCore };
-
-  function animate() {
-    arena3D.animId = requestAnimationFrame(animate);
-    const t = Date.now() * 0.001;
-    // Idle animations
-    playerGroup.position.y = Math.sin(t * 2) * 0.1;
-    enemyGroup.position.y = Math.sin(t * 2 + 1) * 0.1;
-    // Core pulse
-    core.scale.setScalar(1 + Math.sin(t * 4) * 0.2);
-    eCore.scale.setScalar(1 + Math.sin(t * 4 + 2) * 0.2);
-    // Particles drift
-    const pos = particles.geometry.attributes.position;
-    for (let i = 0; i < particleCount; i++) {
-      pos.array[i * 3 + 1] += 0.01;
-      if (pos.array[i * 3 + 1] > 10) pos.array[i * 3 + 1] = 0;
-    }
-    pos.needsUpdate = true;
-    // Slow camera orbit
-    camera.position.x = Math.sin(t * 0.2) * 2;
-    camera.lookAt(0, 1.5, 0);
-    renderer.render(scene, camera);
-  }
-  animate();
-}
-
-function mc3DAttackAnim(who) {
-  if (!arena3D.playerMesh) return;
-  const mesh = who === 'player' ? arena3D.playerMesh : arena3D.enemyMesh;
-  const target = who === 'player' ? arena3D.enemyMesh : arena3D.playerMesh;
-  const origX = mesh.position.x;
-  const targetX = target.position.x + (who === 'player' ? -1 : 1);
-  // Lunge forward
-  let step = 0;
-  const anim = setInterval(() => {
-    step++;
-    if (step < 10) mesh.position.x += (targetX - origX) / 10;
-    else if (step === 10) {
-      // Flash target
-      target.children.forEach(c => { if (c.material) c.material.emissiveIntensity = 2; });
-    }
-    else if (step < 20) mesh.position.x -= (targetX - origX) / 10;
-    else {
-      clearInterval(anim);
-      mesh.position.x = origX;
-      target.children.forEach(c => { if (c.material) c.material.emissiveIntensity = 0.3; });
-    }
-  }, 30);
-}
-
-function mc3DSpecialAnim() {
-  if (!arena3D.scene) return;
-  // Big flash
-  const flash = new THREE.PointLight(0xffffff, 10, 30);
-  flash.position.set(0, 3, 0);
-  arena3D.scene.add(flash);
-  let intensity = 10;
-  const fade = setInterval(() => {
-    intensity -= 0.5;
-    flash.intensity = Math.max(0, intensity);
-    if (intensity <= 0) {
-      clearInterval(fade);
-      arena3D.scene.remove(flash);
-    }
-  }, 30);
 }
 </script>
 </body>
