@@ -983,7 +983,9 @@ body {
         <div class="panel" id="panel-profile">
           <h2>Player Profile</h2>
           <div style="display:flex;align-items:center;gap:20px;margin-bottom:24px;padding:20px;background:var(--bg);border-radius:var(--radius);border:1px solid var(--border)">
-            <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#ec4899);display:flex;align-items:center;justify-content:center;font-size:2.5rem">&#x1F9D1;</div>
+            <div id="profileAvatarWrap" style="width:80px;height:107px;border-radius:var(--radius);background:linear-gradient(135deg,var(--accent),#ec4899);display:flex;align-items:center;justify-content:center;overflow:hidden;border:2px solid var(--accent)">
+              <canvas id="profileAvatarCanvas" width="80" height="107" style="width:80px;height:107px"></canvas>
+            </div>
             <div style="flex:1">
               <h3 id="profileName" style="font-size:1.3rem;margin-bottom:4px"></h3>
               <div style="color:var(--muted);font-size:0.9rem;margin-bottom:8px">Level <strong id="profileLevel" style="color:var(--accent-light)"></strong></div>
@@ -2668,6 +2670,13 @@ function showPanel(name) {
 // ============ PROFILE ============
 let profileRadarChart = null;
 function loadProfile() {
+  // Render avatar in profile
+  const pac = document.getElementById('profileAvatarCanvas');
+  if (pac) {
+    const avCfg = (MC.player && MC.player.avatar) || avatarSavedConfig || AVATAR_DEFAULTS;
+    const elKey = (MC.player && MC.player.element) || MC.selectedElement || null;
+    avatarRender(pac, avCfg, elKey);
+  }
   document.getElementById('profileName').textContent = player.display_name || 'Explorer';
   document.getElementById('profileLevel').textContent = player.overall_level;
   const nextXp = xpForLevel(player.overall_level + 1);
@@ -5143,14 +5152,23 @@ function mc3DSpecialAnim() {}
 // ██  AVATAR BUILDER SYSTEM  ██
 // ════════════════════════════════════════════════════════════════
 
-const AVATAR_DEFAULTS = {
-  skinTone:'#C68642', faceShape:'oval', eyeShape:'almond', eyeColor:'#4A3728',
-  eyebrowStyle:'arched', noseShape:'medium', mouthShape:'medium',
-  hairStyle:'short_wavy', hairColor:'#2C1810', facialHair:'none',
-  bodyType:'average', topStyle:'tshirt', topColor:'#3B82F6',
+const AVATAR_MALE = {
+  gender:'male', skinTone:'#D2A272', faceShape:'square', eyeShape:'almond', eyeColor:'#4A3728',
+  eyebrowStyle:'thick', noseShape:'medium', mouthShape:'medium',
+  hairStyle:'short_straight', hairColor:'#2C1810', facialHair:'stubble',
+  bodyType:'athletic', topStyle:'tshirt', topColor:'#3B82F6',
   bottomStyle:'pants', bottomColor:'#1E293B',
   glasses:'none', hat:'none', earring:'none', necklace:'none', elementBadge:true
 };
+const AVATAR_FEMALE = {
+  gender:'female', skinTone:'#F0B27A', faceShape:'oval', eyeShape:'round', eyeColor:'#2E8B57',
+  eyebrowStyle:'arched', noseShape:'button', mouthShape:'full',
+  hairStyle:'long_wavy', hairColor:'#4A3728', facialHair:'none',
+  bodyType:'slim', topStyle:'crop_top', topColor:'#EC4899',
+  bottomStyle:'skirt', bottomColor:'#1E293B',
+  glasses:'none', hat:'none', earring:'hoop', necklace:'pendant', elementBadge:true
+};
+const AVATAR_DEFAULTS = AVATAR_MALE;
 const SKIN_TONES = ['#FDEBD0','#F5CBA7','#F0B27A','#E59866','#D2A272','#C68642','#B07D3A','#8D6E2C','#6E4B1E','#4A3728','#3B2F2F','#2C1810'];
 const HAIR_COLORS = ['#0A0A0A','#2C1810','#4A3728','#71503A','#B8860B','#DAA520','#D4A574','#C0C0C0','#FFFFFF','#8B0000','#FF4500','#7C3AED','#EC4899','#06B6D4'];
 const EYE_COLORS = ['#4A3728','#8B6914','#2E8B57','#4169E1','#708090','#0A0A0A','#DAA520','#800020'];
@@ -6194,8 +6212,25 @@ function avStyleHTML(label, prop) {
     </div></div>`;
 }
 
+function avGenderHTML() {
+  const g = avatarConfig.gender || 'male';
+  return `<div class="avatar-option-group"><label>Gender Preset</label>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-sm ${g==='male'?'btn-primary':'btn-outline'}" onclick="avatarSetGender('male')" style="flex:1;padding:10px">&#x1F468; Male</button>
+      <button class="btn btn-sm ${g==='female'?'btn-primary':'btn-outline'}" onclick="avatarSetGender('female')" style="flex:1;padding:10px">&#x1F469; Female</button>
+    </div></div>`;
+}
+function avatarSetGender(g) {
+  const base = g === 'female' ? AVATAR_FEMALE : AVATAR_MALE;
+  avatarConfig = JSON.parse(JSON.stringify(base));
+  avatarUpdatePreview();
+  const activeTab = document.querySelector('.avatar-cat-tab.active');
+  if (activeTab) avatarSwitchTab(activeTab.dataset.tab);
+  avatarNoorSpeak(g === 'female' ? 'Beautiful base! Now make her yours.' : 'Strong base! Now make him yours.');
+}
 function avatarBuildFace(area) {
-  area.innerHTML = avColorHTML('Skin Tone', SKIN_TONES, avatarConfig.skinTone, 'skinTone')
+  area.innerHTML = avGenderHTML()
+    + avColorHTML('Skin Tone', SKIN_TONES, avatarConfig.skinTone, 'skinTone')
     + avStyleHTML('Face Shape', 'faceShape')
     + avStyleHTML('Eye Shape', 'eyeShape')
     + avColorHTML('Eye Color', EYE_COLORS, avatarConfig.eyeColor, 'eyeColor')
@@ -6296,30 +6331,31 @@ function avatarNoorSpeak(text) {
 
 function avatarAISuggest() {
   const el = MC.selectedElement || 'ignis';
+  const g = (avatarConfig && avatarConfig.gender) || 'male';
   const presets = {
-    ignis: { skinTone:'#E59866', faceShape:'square', eyeShape:'narrow', eyeColor:'#DAA520',
+    ignis: { gender:g, skinTone:'#E59866', faceShape:'square', eyeShape:'narrow', eyeColor:'#DAA520',
       eyebrowStyle:'angular', noseShape:'pointed', mouthShape:'thin',
-      hairStyle:'mohawk', hairColor:'#8B0000', facialHair:'stubble',
+      hairStyle: g==='female'?'short_curly':'mohawk', hairColor:'#8B0000', facialHair: g==='female'?'none':'stubble',
       bodyType:'athletic', topStyle:'armor', topColor:'#ef4444',
       bottomStyle:'pants', bottomColor:'#1E293B',
-      glasses:'none', hat:'none', earring:'stud', necklace:'chain', elementBadge:true },
-    aqua: { skinTone:'#F5CBA7', faceShape:'oval', eyeShape:'almond', eyeColor:'#4169E1',
+      glasses:'none', hat:'none', earring: g==='female'?'hoop':'stud', necklace:'chain', elementBadge:true },
+    aqua: { gender:g, skinTone:'#F5CBA7', faceShape:'oval', eyeShape:'almond', eyeColor:'#4169E1',
       eyebrowStyle:'curved', noseShape:'small', mouthShape:'full',
       hairStyle:'long_wavy', hairColor:'#06B6D4', facialHair:'none',
       bodyType:'slim', topStyle:'robe', topColor:'#06b6d4',
-      bottomStyle:'robe_bottom', bottomColor:'#164E63',
+      bottomStyle: g==='female'?'skirt':'robe_bottom', bottomColor:'#164E63',
       glasses:'none', hat:'none', earring:'hoop', necklace:'pendant', elementBadge:true },
-    terra: { skinTone:'#8D6E2C', faceShape:'square', eyeShape:'wide', eyeColor:'#2E8B57',
+    terra: { gender:g, skinTone:'#8D6E2C', faceShape:'square', eyeShape:'wide', eyeColor:'#2E8B57',
       eyebrowStyle:'thick', noseShape:'wide', mouthShape:'medium',
-      hairStyle:'short_curly', hairColor:'#2C1810', facialHair:'full_beard',
-      bodyType:'heavy', topStyle:'armor', topColor:'#22c55e',
+      hairStyle: g==='female'?'braids':'short_curly', hairColor:'#2C1810', facialHair: g==='female'?'none':'full_beard',
+      bodyType: g==='female'?'athletic':'heavy', topStyle:'armor', topColor:'#22c55e',
       bottomStyle:'pants', bottomColor:'#1a3a1a',
       glasses:'none', hat:'headband', earring:'none', necklace:'chain', elementBadge:true },
-    ventus: { skinTone:'#FDEBD0', faceShape:'heart', eyeShape:'upturned', eyeColor:'#708090',
+    ventus: { gender:g, skinTone:'#FDEBD0', faceShape:'heart', eyeShape:'upturned', eyeColor:'#708090',
       eyebrowStyle:'arched', noseShape:'button', mouthShape:'cupid',
       hairStyle:'ponytail', hairColor:'#C0C0C0', facialHair:'none',
       bodyType:'slim', topStyle:'jacket', topColor:'#a78bfa',
-      bottomStyle:'pants', bottomColor:'#312e81',
+      bottomStyle: g==='female'?'skirt':'pants', bottomColor:'#312e81',
       glasses:'visor', hat:'none', earring:'dangle', necklace:'none', elementBadge:true },
   };
   avatarConfig = JSON.parse(JSON.stringify(presets[el] || presets.ignis));
@@ -6338,12 +6374,13 @@ function avatarAISuggest() {
 
 function avatarRandomize() {
   function pick(a) { return a[Math.floor(Math.random()*a.length)]; }
-  function rColor() { return '#'+Math.floor(Math.random()*16777215).toString(16).padStart(6,'0'); }
+  const g = (avatarConfig && avatarConfig.gender) || 'male';
+  const isFemale = g === 'female';
   avatarConfig = {
-    skinTone:pick(SKIN_TONES), faceShape:pick(FACE_SHAPES), eyeShape:pick(EYE_SHAPES),
+    gender:g, skinTone:pick(SKIN_TONES), faceShape:pick(FACE_SHAPES), eyeShape:pick(EYE_SHAPES),
     eyeColor:pick(EYE_COLORS), eyebrowStyle:pick(EYEBROW_STYLES), noseShape:pick(NOSE_SHAPES),
     mouthShape:pick(MOUTH_SHAPES), hairStyle:pick(HAIR_STYLES), hairColor:pick(HAIR_COLORS),
-    facialHair:pick(FACIAL_HAIR_STYLES), bodyType:pick(BODY_TYPES),
+    facialHair: isFemale ? 'none' : pick(FACIAL_HAIR_STYLES), bodyType:pick(BODY_TYPES),
     topStyle:pick(TOP_STYLES), topColor:pick(CLOTH_COLORS),
     bottomStyle:pick(BOTTOM_STYLES), bottomColor:pick(CLOTH_COLORS),
     glasses:pick(GLASSES_STYLES), hat:pick(HAT_STYLES),
@@ -6358,11 +6395,12 @@ function avatarRandomize() {
 
 function avatarGenerateRandom() {
   function pick(a) { return a[Math.floor(Math.random()*a.length)]; }
+  const g = pick(['male','female']);
   return {
-    skinTone:pick(SKIN_TONES), faceShape:pick(FACE_SHAPES), eyeShape:pick(EYE_SHAPES),
+    gender:g, skinTone:pick(SKIN_TONES), faceShape:pick(FACE_SHAPES), eyeShape:pick(EYE_SHAPES),
     eyeColor:pick(EYE_COLORS), eyebrowStyle:pick(EYEBROW_STYLES), noseShape:pick(NOSE_SHAPES),
     mouthShape:pick(MOUTH_SHAPES), hairStyle:pick(HAIR_STYLES), hairColor:pick(HAIR_COLORS),
-    facialHair:pick(FACIAL_HAIR_STYLES), bodyType:pick(BODY_TYPES),
+    facialHair: g==='female'?'none':pick(FACIAL_HAIR_STYLES), bodyType:pick(BODY_TYPES),
     topStyle:pick(TOP_STYLES), topColor:pick(CLOTH_COLORS),
     bottomStyle:pick(BOTTOM_STYLES), bottomColor:pick(CLOTH_COLORS),
     glasses:pick(GLASSES_STYLES), hat:pick(HAT_STYLES),
